@@ -74,13 +74,19 @@ class _ModerationsViewState extends State<ModerationsView> {
               decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide(color: AppColors.border)),
               ),
-              child: Row(
-                children: [
-                  _buildTab('All'),
-                  _buildTab('High priority'),
-                  _buildTab('Companies'),
-                  _buildTab('Investors'),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildTab('All'),
+                    _buildTab('Companies'),
+                    _buildTab('Investors'),
+                    _buildTab('Members'),
+                    _buildTab('Packages'),
+                    _buildTab('Founders'),
+                    _buildTab('Investments'),
+                  ],
+                ),
               ),
             ),
             
@@ -100,10 +106,13 @@ class _ModerationsViewState extends State<ModerationsView> {
                   
                   // Filter logic based on tab
                   var filteredList = controller.pendingRevisions.where((r) {
-                    if (_selectedTab == 'Companies') return r.entityType.toLowerCase() == 'company';
-                    if (_selectedTab == 'Investors') return r.entityType.toLowerCase() == 'investor';
-                    if (_selectedTab == 'High priority') return false; // Mock filtering
-                    return true;
+                    if (_selectedTab == 'All') return true;
+                    // For specific categories like Companies, Investors, Members, Packages, Founders
+                    // we remove the 's' at the end to match the singular entityType and compare case-insensitively.
+                    String tabSingular = _selectedTab.endsWith('ies') 
+                        ? 'company' 
+                        : _selectedTab.substring(0, _selectedTab.length - 1).toLowerCase();
+                    return r.entityType.toLowerCase() == tabSingular;
                   }).toList();
 
                   if (filteredList.isEmpty) {
@@ -223,7 +232,9 @@ class _ModerationsViewState extends State<ModerationsView> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Update to ${revision.entityType} ID: ${revision.entityId}',
+                  revision.entityId == null 
+                      ? 'Create new ${revision.entityType}'
+                      : 'Update ${revision.entityType} ID: ${revision.entityId}',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.3),
                 ),
                 const SizedBox(height: 4),
@@ -296,15 +307,36 @@ class _ModerationsViewState extends State<ModerationsView> {
           Row(
             children: [
               OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Proposed Changes Details'),
+                      content: SingleChildScrollView(
+                        child: Text(changes.toString()),
+                      ),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                      ],
+                    ),
+                  );
+                },
                 icon: const Icon(LucideIcons.eye, size: 14),
                 label: const Text('Diff', style: TextStyle(fontSize: 13)),
                 style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
               ),
               const SizedBox(width: 6),
               OutlinedButton.icon(
-                onPressed: () {
-                  controller.rejectRevision(revision.id);
+                onPressed: () async {
+                  final success = await controller.rejectRevision(revision.id);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? 'Revision rejected.' : (controller.errorMessage ?? 'Failed to reject revision.')),
+                        backgroundColor: success ? AppColors.warning : AppColors.error,
+                      ),
+                    );
+                  }
                 },
                 icon: const Icon(LucideIcons.x, size: 14, color: Colors.red),
                 label: const Text('Reject', style: TextStyle(fontSize: 13, color: Colors.red)),
@@ -315,8 +347,16 @@ class _ModerationsViewState extends State<ModerationsView> {
               ),
               const SizedBox(width: 6),
               ElevatedButton.icon(
-                onPressed: () {
-                  controller.approveRevision(revision.id);
+                onPressed: () async {
+                  final success = await controller.approveRevision(revision.id);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? 'Revision approved and published!' : (controller.errorMessage ?? 'Failed to approve revision.')),
+                        backgroundColor: success ? AppColors.success : AppColors.error,
+                      ),
+                    );
+                  }
                 },
                 icon: const Icon(LucideIcons.check, size: 14),
                 label: const Text('Approve', style: TextStyle(fontSize: 13)),

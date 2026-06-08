@@ -164,7 +164,7 @@ class _CompaniesViewState extends State<CompaniesView> {
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
                                   minHeight: constraints.maxHeight,
-                                  minWidth: MediaQuery.of(context).size.width - 64,
+                                  minWidth: constraints.maxWidth,
                                 ),
                                 child: Scrollbar(
                                   controller: _verticalScroll,

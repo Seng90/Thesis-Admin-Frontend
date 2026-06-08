@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/members/controllers/members_controller.dart';
+import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
 
@@ -163,7 +164,16 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                     const SizedBox(height: 16),
                                     _buildInfoRow(Icons.email_outlined, 'Email Address', member.email),
                                     const SizedBox(height: 12),
-                                    _buildInfoRow(Icons.card_membership_outlined, 'Package ID', member.packageId ?? 'Lifetime'),
+                                    Consumer<PackagesController>(
+                                      builder: (context, packagesController, child) {
+                                        String packageName = 'Lifetime';
+                                        if (member.packageId != null) {
+                                          final package = packagesController.packages.where((p) => p.id == member.packageId).firstOrNull;
+                                          packageName = package?.name ?? member.packageId!;
+                                        }
+                                        return _buildInfoRow(Icons.card_membership_outlined, 'Package', packageName);
+                                      }
+                                    ),
                                     const SizedBox(height: 12),
                                     _buildInfoRow(Icons.event_busy_outlined, 'Expiry Date', member.expiryDate?.toString().split(' ')[0] ?? 'Lifetime'),
                                   ],

@@ -69,9 +69,9 @@ class _EditInvestorViewState extends State<EditInvestorView> {
     final proposedChanges = {
       if (_nameController.text.trim() != _existingInvestor?.name) 'name': _nameController.text.trim(),
       if (_type != _existingInvestor?.type) 'type': _type,
-      if (_logoUrlController.text.trim() != _existingInvestor?.logoUrl) 'logoUrl': _logoUrlController.text.trim(),
-      if (_websiteController.text.trim() != _existingInvestor?.websiteUrl) 'websiteUrl': _websiteController.text.trim(),
-      if (_contactController.text.trim() != _existingInvestor?.contactInfo) 'contactInfo': _contactController.text.trim(),
+      if (_logoUrlController.text.trim() != _existingInvestor?.logoUrl) 'logo_url': _logoUrlController.text.trim(),
+      if (_websiteController.text.trim() != _existingInvestor?.websiteUrl) 'website_url': _websiteController.text.trim(),
+      if (_contactController.text.trim() != _existingInvestor?.contactInfo) 'contact_info': _contactController.text.trim(),
     };
 
     if (proposedChanges.isEmpty) {

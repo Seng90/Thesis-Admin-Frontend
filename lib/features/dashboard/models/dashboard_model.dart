@@ -4,6 +4,7 @@ class DashboardSummary {
   final int revisionsAwaitingReview;
   final double totalFundingYTD;
   final double fundingChangePct;
+  final int totalInvestors;
 
   DashboardSummary({
     required this.newCompaniesThisMonth,
@@ -11,15 +12,17 @@ class DashboardSummary {
     required this.revisionsAwaitingReview,
     required this.totalFundingYTD,
     required this.fundingChangePct,
+    required this.totalInvestors,
   });
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
     return DashboardSummary(
-      newCompaniesThisMonth: json['new_companies_this_month'] ?? 0,
-      companiesAwaitingReview: json['companies_awaiting_review'] ?? 0,
-      revisionsAwaitingReview: json['revisions_awaiting_review'] ?? 0,
-      totalFundingYTD: (json['total_funding_ytd'] ?? 0).toDouble(),
-      fundingChangePct: (json['funding_change_pct'] ?? 0).toDouble(),
+      newCompaniesThisMonth: json['newCompaniesThisMonth'] ?? 0,
+      companiesAwaitingReview: json['pendingCompanyApprovals'] ?? 0,
+      revisionsAwaitingReview: json['pendingRevisionApprovals'] ?? 0,
+      totalFundingYTD: (json['totalInvestmentsVolume'] ?? 0).toDouble(),
+      fundingChangePct: 0.0, // Needs API support in the future
+      totalInvestors: json['totalInvestors'] ?? 0,
     );
   }
 }
@@ -48,6 +51,32 @@ class FundingHistoryItem {
     return FundingHistoryItem(
       date: json['date'] ?? '',
       totalAmount: (json['totalAmount'] ?? json['total_amount'] ?? 0).toDouble(),
+    );
+  }
+}
+
+class RecentCompany {
+  final String id;
+  final String name;
+  final String industry;
+  final String? logoUrl;
+  final DateTime? updatedAt;
+
+  RecentCompany({
+    required this.id,
+    required this.name,
+    required this.industry,
+    this.logoUrl,
+    this.updatedAt,
+  });
+
+  factory RecentCompany.fromJson(Map<String, dynamic> json) {
+    return RecentCompany(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      industry: json['industry'] ?? '',
+      logoUrl: json['logo_url'] ?? json['logoUrl'],
+      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
     );
   }
 }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
-import 'package:investrack_admin/features/packages/models/package_model.dart';
+import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 
 class AddPackageView extends StatefulWidget {
   const AddPackageView({super.key});
@@ -26,21 +25,34 @@ class _AddPackageViewState extends State<AddPackageView> {
     super.dispose();
   }
 
-  void _saveForm() {
+  void _saveForm() async {
     if (_formKey.currentState!.validate()) {
-      final controller = Provider.of<PackagesController>(context, listen: false);
+      final revisionsController = Provider.of<RevisionsController>(context, listen: false);
           
-      final package = Package(
-        id: '', // Backend will generate the ID
-        name: _nameController.text,
-        price: double.tryParse(_priceController.text) ?? 0,
-        features: _featuresController.text,
-        purchaseCount: 0,
-        createdAt: DateTime.now(),
+      Map<String, dynamic> proposedChanges = {
+        'name': _nameController.text,
+        'price': double.tryParse(_priceController.text) ?? 0,
+        'features': _featuresController.text,
+      };
+
+      final success = await revisionsController.createRevision(
+        entityType: 'Package',
+        entityId: null,
+        proposedChanges: proposedChanges,
       );
 
-      controller.addPackage(package);
-      context.pop();
+      if (mounted) {
+        if (!success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(revisionsController.errorMessage ?? 'Failed to submit revision')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Package creation submitted for review!')),
+          );
+          context.pop();
+        }
+      }
     }
   }
 

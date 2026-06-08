@@ -29,6 +29,16 @@ import 'features/packages/views/packages_view.dart';
 import 'features/packages/views/add_package_view.dart';
 import 'features/packages/views/edit_package_view.dart';
 import 'features/packages/views/package_details_view.dart';
+import 'features/founders/controllers/founders_controller.dart';
+import 'features/founders/views/founders_view.dart';
+import 'features/founders/views/add_founder_view.dart';
+import 'features/founders/views/edit_founder_view.dart';
+import 'features/founders/views/founder_details_view.dart';
+import 'features/funding_rounds/controllers/investments_controller.dart';
+import 'features/funding_rounds/views/investments_view.dart';
+import 'features/funding_rounds/views/add_investment_view.dart';
+import 'features/funding_rounds/views/edit_investment_view.dart';
+import 'features/funding_rounds/views/investment_details_view.dart';
 import 'features/dashboard/controllers/dashboard_controller.dart';
 import 'features/revisions/controllers/revisions_controller.dart';
 import 'features/settings/controllers/settings_controller.dart';
@@ -52,6 +62,8 @@ class InvesTrackAdminApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InvestorsController()),
         ChangeNotifierProvider(create: (_) => MembersController()),
         ChangeNotifierProvider(create: (_) => PackagesController()),
+        ChangeNotifierProvider(create: (_) => FoundersController()),
+        ChangeNotifierProvider(create: (_) => InvestmentsController()),
         ChangeNotifierProvider(create: (_) => SettingsController()),
       ],
       child: Consumer<SettingsController>(
@@ -83,11 +95,11 @@ final GoRouter _router = GoRouter(
       routes: [
         GoRoute(
           path: '/dashboard',
-          builder: (context, state) => const DashboardView(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: DashboardView()),
         ),
         GoRoute(
           path: '/companies',
-          builder: (context, state) => const CompaniesView(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: CompaniesView()),
         ),
         GoRoute(
           path: '/companies/add',
@@ -105,7 +117,7 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/investors',
-          builder: (context, state) => const InvestorsView(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: InvestorsView()),
         ),
         GoRoute(
           path: '/investors/add',
@@ -123,7 +135,7 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/members',
-          builder: (context, state) => const MembersView(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: MembersView()),
         ),
         GoRoute(
           path: '/members/view/:id',
@@ -137,7 +149,7 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/packages',
-          builder: (context, state) => const PackagesView(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: PackagesView()),
         ),
         GoRoute(
           path: '/packages/add',
@@ -149,17 +161,49 @@ final GoRouter _router = GoRouter(
               PackageDetailsView(packageId: state.pathParameters['id']!),
         ),
         GoRoute(
+          path: '/founders',
+          pageBuilder: (context, state) => const NoTransitionPage(child: FoundersView()),
+        ),
+        GoRoute(
+          path: '/founders/add',
+          builder: (context, state) => const AddFounderView(),
+        ),
+        GoRoute(
+          path: '/founders/edit/:id',
+          builder: (context, state) => EditFounderView(founderId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/founders/view/:id',
+          builder: (context, state) => FounderDetailsView(founderId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/investments',
+          pageBuilder: (context, state) => const NoTransitionPage(child: InvestmentsView()),
+        ),
+        GoRoute(
+          path: '/investments/add',
+          builder: (context, state) => const AddInvestmentView(),
+        ),
+        GoRoute(
+          path: '/investments/edit/:id',
+          builder: (context, state) => EditInvestmentView(investmentId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/investments/view/:id',
+          builder: (context, state) => InvestmentDetailsView(investmentId: state.pathParameters['id']!),
+        ),
+        GoRoute(
           path: '/packages/edit/:id',
           builder: (context, state) =>
               EditPackageView(packageId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/moderations',
-          builder: (context, state) => const ModerationsView(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: ModerationsView()),
         ),
         GoRoute(
           path: '/settings',
-          builder: (context, state) => const SettingsView(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: SettingsView()),
         ),
       ],
     ),

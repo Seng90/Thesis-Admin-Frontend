@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
-import 'package:investrack_admin/features/companies/models/company_model.dart';
+import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 
 class AddCompanyView extends StatefulWidget {
@@ -57,34 +56,43 @@ class _AddCompanyViewState extends State<AddCompanyView> {
     
     setState(() => _isSaving = true);
     
-    final controller = Provider.of<CompaniesController>(context, listen: false);
+    final revisionsController = Provider.of<RevisionsController>(context, listen: false);
     
-    final company = Company(
-      id: '',
-      name: _nameController.text.trim(),
-      description: _descController.text.trim(),
-      industry: _industryController.text.trim(),
-      location: _locationController.text.trim(),
-      contactEmail: _emailController.text.trim(),
-      status: _status,
-      viewCount: 0,
-      foundedDate: _foundedDate,
-      logoUrl: _logoUrlController.text.trim().isNotEmpty ? _logoUrlController.text.trim() : null,
-      websiteUrl: _websiteUrlController.text.trim().isNotEmpty ? _websiteUrlController.text.trim() : null,
-    );
+    Map<String, dynamic> proposedChanges = {
+      'name': _nameController.text.trim(),
+      'description': _descController.text.trim(),
+      'industry': _industryController.text.trim(),
+      'location': _locationController.text.trim(),
+      'contact_email': _emailController.text.trim(),
+      'status': _status,
+    };
+    
+    if (_logoUrlController.text.trim().isNotEmpty) {
+      proposedChanges['logo_url'] = _logoUrlController.text.trim();
+    }
+    if (_websiteUrlController.text.trim().isNotEmpty) {
+      proposedChanges['website_url'] = _websiteUrlController.text.trim();
+    }
+    if (_foundedDate != null) {
+      proposedChanges['founded_date'] = _foundedDate!.toIso8601String();
+    }
 
-    await controller.addCompany(company);
+    final success = await revisionsController.createRevision(
+      entityType: 'Company',
+      entityId: null,
+      proposedChanges: proposedChanges,
+    );
     
     if (mounted) {
       setState(() => _isSaving = false);
       
-      if (controller.errorMessage != null) {
+      if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(controller.errorMessage!), backgroundColor: AppColors.error),
+          SnackBar(content: Text(revisionsController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Company added successfully!'), backgroundColor: AppColors.success),
+          const SnackBar(content: Text('Company creation submitted for review!'), backgroundColor: AppColors.success),
         );
         context.pop();
       }
@@ -102,13 +110,13 @@ class _AddCompanyViewState extends State<AddCompanyView> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(24.0),
         child: Center(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 700),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(32.0),
+                padding: const EdgeInsets.all(24.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -118,7 +126,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                         'Company Information',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _nameController,
                         decoration: const InputDecoration(
@@ -128,7 +136,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                         ),
                         validator: (v) => v!.trim().isEmpty ? 'Company name is required' : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _descController,
                         maxLines: 3,
@@ -140,7 +148,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                         ),
                         validator: (v) => v!.trim().isEmpty ? 'Description is required' : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
@@ -154,7 +162,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                               validator: (v) => v!.trim().isEmpty ? 'Industry is required' : null,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: TextFormField(
                               controller: _locationController,
@@ -168,7 +176,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _emailController,
                         decoration: const InputDecoration(
@@ -179,12 +187,12 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) => v!.trim().isEmpty || !v.contains('@') ? 'Enter a valid email' : null,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       const Text(
                         'Additional Details',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
@@ -197,7 +205,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: TextFormField(
                               controller: _logoUrlController,

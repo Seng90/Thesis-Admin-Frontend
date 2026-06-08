@@ -94,11 +94,11 @@ class _EditCompanyViewState extends State<EditCompanyView> {
       if (_descController.text.trim() != _existingCompany?.description) 'description': _descController.text.trim(),
       if (_industryController.text.trim() != _existingCompany?.industry) 'industry': _industryController.text.trim(),
       if (_locationController.text.trim() != _existingCompany?.location) 'location': _locationController.text.trim(),
-      if (_emailController.text.trim() != _existingCompany?.contactEmail) 'contactEmail': _emailController.text.trim(),
+      if (_emailController.text.trim() != _existingCompany?.contactEmail) 'contact_email': _emailController.text.trim(),
       if (_status != _existingCompany?.status) 'status': _status,
-      if (_foundedDate != _existingCompany?.foundedDate) 'foundedDate': _foundedDate?.toIso8601String(),
-      if (_logoUrlController.text.trim() != _existingCompany?.logoUrl) 'logoUrl': _logoUrlController.text.trim(),
-      if (_websiteUrlController.text.trim() != _existingCompany?.websiteUrl) 'websiteUrl': _websiteUrlController.text.trim(),
+      if (_foundedDate != _existingCompany?.foundedDate) 'founded_date': _foundedDate?.toIso8601String(),
+      if (_logoUrlController.text.trim() != _existingCompany?.logoUrl) 'logo_url': _logoUrlController.text.trim(),
+      if (_websiteUrlController.text.trim() != _existingCompany?.websiteUrl) 'website_url': _websiteUrlController.text.trim(),
     };
 
     if (proposedChanges.isEmpty) {
@@ -150,13 +150,13 @@ class _EditCompanyViewState extends State<EditCompanyView> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(24.0),
         child: Center(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 700),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(32.0),
+                padding: const EdgeInsets.all(24.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -166,7 +166,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                         'Company Information',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _nameController,
                         decoration: const InputDecoration(
@@ -175,7 +175,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                         ),
                         validator: (v) => v!.trim().isEmpty ? 'Company name is required' : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _descController,
                         maxLines: 3,
@@ -186,7 +186,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                         ),
                         validator: (v) => v!.trim().isEmpty ? 'Description is required' : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
@@ -199,7 +199,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                               validator: (v) => v!.trim().isEmpty ? 'Industry is required' : null,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: TextFormField(
                               controller: _locationController,
@@ -212,7 +212,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _emailController,
                         decoration: const InputDecoration(
@@ -222,12 +222,12 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) => v!.trim().isEmpty || !v.contains('@') ? 'Enter a valid email' : null,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       const Text(
                         'Additional Details',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
@@ -239,7 +239,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: TextFormField(
                               controller: _logoUrlController,
@@ -251,7 +251,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
@@ -273,7 +273,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               initialValue: _status,

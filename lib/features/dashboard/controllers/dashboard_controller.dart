@@ -8,10 +8,12 @@ class DashboardController extends ChangeNotifier {
   DashboardSummary? summary;
   List<SectorStat> sectors = [];
   List<FundingHistoryItem> fundingHistory = [];
+  List<RecentCompany> recentCompanies = [];
   
   bool isLoadingSummary = false;
   bool isLoadingSectors = false;
   bool isLoadingFunding = false;
+  bool isLoadingRecent = false;
   
   String? errorMessage;
   String currentFundingPeriod = '1M';
@@ -28,6 +30,7 @@ class DashboardController extends ChangeNotifier {
       loadSummary(),
       loadSectors(),
       loadFundingHistory(currentFundingPeriod),
+      loadRecentCompanies(),
     ]);
   }
 
@@ -78,6 +81,22 @@ class DashboardController extends ChangeNotifier {
       _handleError(e);
     } finally {
       isLoadingFunding = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadRecentCompanies() async {
+    isLoadingRecent = true;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.client.get('/admin/dashboard/recent-companies');
+      final List<dynamic> data = response.data;
+      recentCompanies = data.map((json) => RecentCompany.fromJson(json)).toList();
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      isLoadingRecent = false;
       notifyListeners();
     }
   }

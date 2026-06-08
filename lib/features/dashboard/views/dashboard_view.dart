@@ -695,65 +695,51 @@ class _RecentCompaniesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mockData = [
-      {'name': 'LaoPay', 'logo': 'LP', 'sector': 'FinTech', 'province': 'Vientiane Capital', 'status': 'verified', 'amount': '\$4.20M'},
-      {'name': 'MekongFresh', 'logo': 'MF', 'sector': 'AgriTech', 'province': 'Champasak', 'status': 'verified', 'amount': '\$0.85M'},
-      {'name': 'JumboRide', 'logo': 'JR', 'sector': 'Mobility', 'province': 'Vientiane Capital', 'status': 'pending', 'amount': '\$6.50M'},
-      {'name': 'Sabaidee Health', 'logo': 'SH', 'sector': 'HealthTech', 'province': 'Luang Prabang', 'status': 'draft', 'amount': '\$0.22M'},
-      {'name': 'NamKhan Solar', 'logo': 'NK', 'sector': 'CleanTech', 'province': 'Luang Prabang', 'status': 'verified', 'amount': '\$1.40M'},
-    ];
+    return Consumer<DashboardController>(
+      builder: (context, controller, child) {
+        if (controller.isLoadingRecent) return const Center(child: CircularProgressIndicator());
+        if (controller.recentCompanies.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('No recent updates')));
 
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: mockData.length,
-      separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.border),
-      itemBuilder: (context, index) {
-        final item = mockData[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: AppColors.primaryLight,
-                child: Text(item['logo']!, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item['name']!, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-                    const SizedBox(height: 2),
-                    Text('${item['sector']} · ${item['province']} · Updated today', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                  ],
-                ),
-              ),
-              Text(item['amount']!, style: const TextStyle(fontFamily: 'monospace', color: AppColors.textSecondary, fontSize: 12)),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: item['status'] == 'verified' ? AppColors.successBg : AppColors.warningBg,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  item['status']!.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: item['status'] == 'verified' ? AppColors.success : AppColors.warning,
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.recentCompanies.length,
+          separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.border),
+          itemBuilder: (context, index) {
+            final item = controller.recentCompanies[index];
+            final logoInitial = item.name.isNotEmpty ? item.name.substring(0, 1).toUpperCase() : '?';
+            
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: AppColors.primaryLight,
+                    backgroundImage: item.logoUrl != null ? NetworkImage(item.logoUrl!) : null,
+                    child: item.logoUrl == null 
+                        ? Text(logoInitial, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12))
+                        : null,
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(item.name, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                        const SizedBox(height: 2),
+                        Text('${item.industry} · Updated recently', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 }
-
 class _ModerationQueueList extends StatelessWidget {
   final RevisionsController controller;
   const _ModerationQueueList({required this.controller});

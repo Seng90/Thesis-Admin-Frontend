@@ -102,14 +102,16 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                 // Navigation Links
                 _buildNavItem(context, 'Dashboard'.tr(context), Icons.dashboard_outlined, Icons.dashboard, 0, selectedIndex, '/dashboard'),
                 _buildNavItem(context, 'Companies'.tr(context), Icons.business_outlined, Icons.business, 1, selectedIndex, '/companies'),
-                _buildNavItem(context, 'Investors'.tr(context), Icons.attach_money_outlined, Icons.attach_money, 2, selectedIndex, '/investors'),
-                _buildNavItem(context, 'Members'.tr(context), Icons.person_outline, Icons.person, 3, selectedIndex, '/members'),
-                _buildNavItem(context, 'Packages'.tr(context), Icons.card_membership_outlined, Icons.card_membership, 4, selectedIndex, '/packages'),
-                _buildNavItem(context, 'Moderation'.tr(context), Icons.gavel_outlined, Icons.gavel, 5, selectedIndex, '/moderations'),
+                _buildNavItem(context, 'Founders'.tr(context), Icons.people_outline, Icons.people, 2, selectedIndex, '/founders'),
+                _buildNavItem(context, 'Investors'.tr(context), Icons.attach_money_outlined, Icons.attach_money, 3, selectedIndex, '/investors'),
+                _buildNavItem(context, 'Investments'.tr(context), Icons.trending_up_outlined, Icons.trending_up, 4, selectedIndex, '/investments'),
+                _buildNavItem(context, 'Members'.tr(context), Icons.person_outline, Icons.person, 5, selectedIndex, '/members'),
+                _buildNavItem(context, 'Packages'.tr(context), Icons.card_membership_outlined, Icons.card_membership, 6, selectedIndex, '/packages'),
+                _buildNavItem(context, 'Moderation'.tr(context), Icons.gavel_outlined, Icons.gavel, 7, selectedIndex, '/moderations'),
                 
                 const Spacer(),
                 
-                _buildNavItem(context, 'Settings'.tr(context), Icons.settings_outlined, Icons.settings, 6, selectedIndex, '/settings'),
+                _buildNavItem(context, 'Settings'.tr(context), Icons.settings_outlined, Icons.settings, 8, selectedIndex, '/settings'),
                 
                 // Profile & Logout Area
                 const Divider(color: AppColors.border, height: 1),
@@ -264,11 +266,13 @@ class _MainLayoutViewState extends State<MainLayoutView> {
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/dashboard')) return 0;
     if (location.startsWith('/companies')) return 1;
-    if (location.startsWith('/investors')) return 2;
-    if (location.startsWith('/members')) return 3;
-    if (location.startsWith('/packages')) return 4;
-    if (location.startsWith('/moderations')) return 5;
-    if (location.startsWith('/settings')) return 6;
+    if (location.startsWith('/founders')) return 2;
+    if (location.startsWith('/investors')) return 3;
+    if (location.startsWith('/investments')) return 4;
+    if (location.startsWith('/members')) return 5;
+    if (location.startsWith('/packages')) return 6;
+    if (location.startsWith('/moderations')) return 7;
+    if (location.startsWith('/settings')) return 8;
     return 0;
   }
 }

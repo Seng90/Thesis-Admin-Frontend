@@ -34,7 +34,7 @@ class RevisionsController extends ChangeNotifier {
     }
   }
 
-  Future<bool> createRevision({required String entityType, required String entityId, required Map<String, dynamic> proposedChanges}) async {
+  Future<bool> createRevision({required String entityType, required String? entityId, required Map<String, dynamic> proposedChanges}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

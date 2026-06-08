@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/members/controllers/members_controller.dart';
 import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
-import 'package:investrack_admin/features/members/models/member_model.dart';
+import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
+
 import 'package:investrack_admin/utils/localizations.dart';
 
 class EditMemberView extends StatefulWidget {
@@ -59,17 +60,40 @@ class _EditMemberViewState extends State<EditMemberView> {
       final controller = Provider.of<MembersController>(context, listen: false);
       final existingMember = controller.members.firstWhere((m) => m.id == widget.memberId);
       
-      final updatedMember = Member(
-        id: existingMember.id,
-        username: _usernameController.text,
-        email: _emailController.text,
-        status: _status,
-        packageId: _packageId,
-        expiryDate: _expiryDate,
-        createdAt: existingMember.createdAt,
-      );
+      Map<String, dynamic> changes = {};
+      
+      if (_usernameController.text != existingMember.username) {
+        changes['username'] = _usernameController.text;
+      }
+      if (_emailController.text != existingMember.email) {
+        changes['email'] = _emailController.text;
+      }
+      if (_status != existingMember.status) {
+        changes['status'] = _status;
+      }
+      if (_packageId != existingMember.packageId) {
+        changes['packageId'] = _packageId;
+      }
+      if (_expiryDate != existingMember.expiryDate) {
+        changes['expiryDate'] = _expiryDate?.toIso8601String();
+      }
 
-      controller.updateMember(updatedMember);
+      if (changes.isNotEmpty) {
+        final revisionsController = Provider.of<RevisionsController>(context, listen: false);
+        revisionsController.createRevision(
+          entityType: 'Member',
+          entityId: widget.memberId,
+          proposedChanges: changes,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Edit submitted for review!'.tr(context))),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No changes detected.'.tr(context))),
+        );
+      }
+      
       context.pop();
     }
   }

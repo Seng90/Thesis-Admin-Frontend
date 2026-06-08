@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
-import 'package:investrack_admin/features/packages/models/package_model.dart';
+import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
+import 'package:investrack_admin/utils/localizations.dart';
+
 
 class EditPackageView extends StatefulWidget {
   final String packageId;
@@ -50,16 +52,35 @@ class _EditPackageViewState extends State<EditPackageView> {
       final controller = Provider.of<PackagesController>(context, listen: false);
       final existingPackage = controller.packages.firstWhere((p) => p.id == widget.packageId);
           
-      final package = Package(
-        id: widget.packageId,
-        name: _nameController.text,
-        price: double.tryParse(_priceController.text) ?? 0,
-        features: _featuresController.text,
-        purchaseCount: existingPackage.purchaseCount,
-        createdAt: existingPackage.createdAt,
-      );
+      Map<String, dynamic> changes = {};
+      
+      if (_nameController.text != existingPackage.name) {
+        changes['name'] = _nameController.text;
+      }
+      final newPrice = double.tryParse(_priceController.text) ?? 0;
+      if (newPrice != existingPackage.price) {
+        changes['price'] = newPrice;
+      }
+      if (_featuresController.text != existingPackage.features) {
+        changes['features'] = _featuresController.text;
+      }
 
-      controller.updatePackage(package);
+      if (changes.isNotEmpty) {
+        final revisionsController = Provider.of<RevisionsController>(context, listen: false);
+        revisionsController.createRevision(
+          entityType: 'Package',
+          entityId: widget.packageId,
+          proposedChanges: changes,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Edit submitted for review!'.tr(context))),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No changes detected.'.tr(context))),
+        );
+      }
+
       context.pop();
     }
   }
