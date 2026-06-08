@@ -39,8 +39,9 @@ class _EditMemberViewState extends State<EditMemberView> {
       _packageId = existingMember.packageId;
       _expiryDate = existingMember.expiryDate;
       
-      // Ensure packages are loaded
-      Provider.of<PackagesController>(context, listen: false).loadPackages();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<PackagesController>(context, listen: false).loadPackages();
+      });
       
       _isInit = true;
     }

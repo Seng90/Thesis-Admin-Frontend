@@ -23,7 +23,11 @@ class CompaniesController extends ChangeNotifier {
       final List<dynamic> data = response.data is List ? response.data : [];
       _companies = data.map((json) => Company.fromJson(json)).toList();
     } catch (e) {
-      _errorMessage = 'Failed to load companies: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to load companies: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -57,7 +61,11 @@ class CompaniesController extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _errorMessage = 'Failed to update company status: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to update company status: $e';
+      }
       notifyListeners();
     }
   }
@@ -73,7 +81,11 @@ class CompaniesController extends ChangeNotifier {
       final newCompany = Company.fromJson(response.data);
       _companies.add(newCompany);
     } catch (e) {
-      _errorMessage = 'Failed to add company: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to add company: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -95,7 +107,11 @@ class CompaniesController extends ChangeNotifier {
         _companies[index] = updatedCompany;
       }
     } catch (e) {
-      _errorMessage = 'Failed to update company: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to update company: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -111,7 +127,11 @@ class CompaniesController extends ChangeNotifier {
       await _apiService.client.delete('/admin/companies/$id');
       _companies.removeWhere((c) => c.id == id);
     } catch (e) {
-      _errorMessage = 'Failed to delete company: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to delete company: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -23,7 +23,11 @@ class InvestorsController extends ChangeNotifier {
       final List<dynamic> data = response.data;
       _investors = data.map((json) => Investor.fromJson(json)).toList();
     } catch (e) {
-      _errorMessage = 'Failed to load investors: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to load investors: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -39,7 +43,11 @@ class InvestorsController extends ChangeNotifier {
       await _apiService.client.delete('/admin/investors/$id');
       _investors.removeWhere((i) => i.id == id);
     } catch (e) {
-      _errorMessage = 'Failed to delete investor: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to delete investor: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -57,7 +65,11 @@ class InvestorsController extends ChangeNotifier {
       final newInvestor = Investor.fromJson(response.data);
       _investors.add(newInvestor);
     } catch (e) {
-      _errorMessage = 'Failed to add investor: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to add investor: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -77,7 +89,11 @@ class InvestorsController extends ChangeNotifier {
         _investors[index] = updatedInvestor;
       }
     } catch (e) {
-      _errorMessage = 'Failed to update investor: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to update investor: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

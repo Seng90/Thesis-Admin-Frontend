@@ -46,7 +46,11 @@ class AuthController extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _errorMessage = 'Invalid username or password.';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Invalid username or password.';
+      }
       _setLoading(false);
       return false;
     }

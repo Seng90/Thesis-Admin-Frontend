@@ -15,6 +15,8 @@ class MembersView extends StatefulWidget {
 class _MembersViewState extends State<MembersView> {
   final ScrollController _verticalScroll = ScrollController();
   final ScrollController _horizontalScroll = ScrollController();
+  String _searchQuery = '';
+  String _statusFilter = 'All';
 
   @override
   void dispose() {
@@ -31,6 +33,7 @@ class _MembersViewState extends State<MembersView> {
     final strExpiry = 'EXPIRY'.tr(context);
     final strActions = 'ACTIONS'.tr(context);
     final strBlock = 'Block'.tr(context);
+    final strViewDetails = 'View Details'.tr(context);
     final strEditManage = 'Edit / Manage'.tr(context);
 
     return Scaffold(
@@ -49,38 +52,85 @@ class _MembersViewState extends State<MembersView> {
               return Center(child: Text(controller.errorMessage!));
             }
 
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Card(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Scrollbar(
-                      controller: _horizontalScroll,
-                      thumbVisibility: true,
-                      child: SingleChildScrollView(
-                        controller: _horizontalScroll,
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                            minWidth: MediaQuery.of(context).size.width - 64,
-                          ),
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search by username or email...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    DropdownButton<String>(
+                      value: _statusFilter,
+                      items: ['All', 'Active', 'Blocked', 'Inactive'].map((status) {
+                        return DropdownMenuItem(value: status, child: Text(status));
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _statusFilter = value;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      var filteredList = controller.members.where((m) {
+                        final matchesSearch = _searchQuery.isEmpty || m.username.toLowerCase().contains(_searchQuery.toLowerCase()) || m.email.toLowerCase().contains(_searchQuery.toLowerCase());
+                        final matchesStatus = _statusFilter == 'All' || m.status == _statusFilter;
+                        return matchesSearch && matchesStatus;
+                      }).toList();
+
+                      if (filteredList.isEmpty) {
+                        return const Center(child: Text('No members match your filters.'));
+                      }
+
+                      return Card(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
                           child: Scrollbar(
-                            controller: _verticalScroll,
+                            controller: _horizontalScroll,
                             thumbVisibility: true,
                             child: SingleChildScrollView(
-                              controller: _verticalScroll,
-                              scrollDirection: Axis.vertical,
-                              child: DataTable(
-                                columnSpacing: 16.0,
-                                showCheckboxColumn: false,
-                                columns: [
-                                  DataColumn(label: Text(strMember)),
-                                  DataColumn(label: Text(strStatus)),
-                                  DataColumn(label: Text(strExpiry)),
-                                  DataColumn(label: Text(strActions)),
-                                ],
-                                rows: controller.members.map((member) {
+                              controller: _horizontalScroll,
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                  minWidth: MediaQuery.of(context).size.width - 64,
+                                ),
+                                child: Scrollbar(
+                                  controller: _verticalScroll,
+                                  thumbVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _verticalScroll,
+                                    scrollDirection: Axis.vertical,
+                                    child: DataTable(
+                                      columnSpacing: 16.0,
+                                      showCheckboxColumn: false,
+                                      columns: [
+                                        DataColumn(label: Text(strMember)),
+                                        DataColumn(label: Text(strStatus)),
+                                        DataColumn(label: Text(strExpiry)),
+                                        DataColumn(label: Text(strActions)),
+                                      ],
+                                      rows: filteredList.map((member) {
                                   final isActive = member.status == 'Active';
                                   return DataRow(
                                     cells: [
@@ -108,7 +158,9 @@ class _MembersViewState extends State<MembersView> {
                                             PopupMenuButton<String>(
                                               icon: const Icon(Icons.more_horiz, color: AppColors.textMuted),
                                               onSelected: (value) {
-                                                if (value == 'edit') {
+                                                if (value == 'view') {
+                                                  context.push('/members/view/${member.id}');
+                                                } else if (value == 'edit') {
                                                   context.push('/members/edit/${member.id}');
                                                 } else if (value == 'block') {
                                                   controller.blockMember(member.id);
@@ -120,6 +172,10 @@ class _MembersViewState extends State<MembersView> {
                                                     value: 'block',
                                                     child: Text(strBlock, style: const TextStyle(color: AppColors.error)),
                                                   ),
+                                                PopupMenuItem(
+                                                  value: 'view',
+                                                  child: Text(strViewDetails),
+                                                ),
                                                 PopupMenuItem(
                                                   value: 'edit',
                                                   child: Text(strEditManage),
@@ -140,11 +196,14 @@ class _MembersViewState extends State<MembersView> {
                     ),
                   ),
                 );
-              }
-            );
-          },
-        ),
-      ),
-    );
-  }
+              },
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+),
+);
+}
 }

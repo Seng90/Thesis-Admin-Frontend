@@ -23,7 +23,11 @@ class PackagesController extends ChangeNotifier {
       final List<dynamic> data = response.data;
       _packages = data.map((json) => Package.fromJson(json)).toList();
     } catch (e) {
-      _errorMessage = 'Failed to load packages: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to load packages: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -39,7 +43,11 @@ class PackagesController extends ChangeNotifier {
       await _apiService.client.delete('/admin/packages/$id');
       _packages.removeWhere((p) => p.id == id);
     } catch (e) {
-      _errorMessage = 'Failed to delete package: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to delete package: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -58,7 +66,11 @@ class PackagesController extends ChangeNotifier {
       final newPackage = Package.fromJson(response.data);
       _packages.add(newPackage);
     } catch (e) {
-      _errorMessage = 'Failed to add package: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to add package: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -78,7 +90,11 @@ class PackagesController extends ChangeNotifier {
         _packages[index] = updatedPackage;
       }
     } catch (e) {
-      _errorMessage = 'Failed to update package: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to update package: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

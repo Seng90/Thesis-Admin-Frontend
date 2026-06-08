@@ -15,6 +15,8 @@ class InvestorsView extends StatefulWidget {
 class _InvestorsViewState extends State<InvestorsView> {
   final ScrollController _verticalScroll = ScrollController();
   final ScrollController _horizontalScroll = ScrollController();
+  String _searchQuery = '';
+  String _typeFilter = 'All';
 
   @override
   void dispose() {
@@ -31,6 +33,7 @@ class _InvestorsViewState extends State<InvestorsView> {
     final strType = 'TYPE'.tr(context);
     final strWebsite = 'WEBSITE'.tr(context);
     final strActions = 'ACTIONS'.tr(context);
+    final strViewDetails = 'View Details'.tr(context);
     final strEdit = 'Edit'.tr(context);
     final strDelete = 'Delete'.tr(context);
     final strCancel = 'Cancel'.tr(context);
@@ -61,38 +64,85 @@ class _InvestorsViewState extends State<InvestorsView> {
               return Center(child: Text(controller.errorMessage!));
             }
 
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Card(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Scrollbar(
-                      controller: _horizontalScroll,
-                      thumbVisibility: true,
-                      child: SingleChildScrollView(
-                        controller: _horizontalScroll,
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                            minWidth: MediaQuery.of(context).size.width - 64,
-                          ),
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search by name...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    DropdownButton<String>(
+                      value: _typeFilter,
+                      items: ['All', 'Angel', 'VC', 'Corporate', 'PE', 'Accelerator'].map((type) {
+                        return DropdownMenuItem(value: type, child: Text(type));
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _typeFilter = value;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      var filteredList = controller.investors.where((i) {
+                        final matchesSearch = _searchQuery.isEmpty || i.name.toLowerCase().contains(_searchQuery.toLowerCase());
+                        final matchesType = _typeFilter == 'All' || i.type == _typeFilter;
+                        return matchesSearch && matchesType;
+                      }).toList();
+
+                      if (filteredList.isEmpty) {
+                        return const Center(child: Text('No investors match your filters.'));
+                      }
+
+                      return Card(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
                           child: Scrollbar(
-                            controller: _verticalScroll,
+                            controller: _horizontalScroll,
                             thumbVisibility: true,
                             child: SingleChildScrollView(
-                              controller: _verticalScroll,
-                              scrollDirection: Axis.vertical,
-                              child: DataTable(
-                                columnSpacing: 16.0,
-                                showCheckboxColumn: false,
-                                columns: [
-                                  DataColumn(label: Text(strInvestor)),
-                                  DataColumn(label: Text(strType)),
-                                  DataColumn(label: Text(strWebsite)),
-                                  DataColumn(label: Text(strActions)),
-                                ],
-                                rows: controller.investors.map((investor) {
+                              controller: _horizontalScroll,
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                  minWidth: MediaQuery.of(context).size.width - 64,
+                                ),
+                                child: Scrollbar(
+                                  controller: _verticalScroll,
+                                  thumbVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _verticalScroll,
+                                    scrollDirection: Axis.vertical,
+                                    child: DataTable(
+                                      columnSpacing: 16.0,
+                                      showCheckboxColumn: false,
+                                      columns: [
+                                        DataColumn(label: Text(strInvestor)),
+                                        DataColumn(label: Text(strType)),
+                                        DataColumn(label: Text(strWebsite)),
+                                        DataColumn(label: Text(strActions)),
+                                      ],
+                                      rows: filteredList.map((investor) {
                                   return DataRow(
                                     cells: [
                                       DataCell(
@@ -119,7 +169,9 @@ class _InvestorsViewState extends State<InvestorsView> {
                                             PopupMenuButton<String>(
                                               icon: const Icon(Icons.more_horiz, color: AppColors.textMuted),
                                               onSelected: (value) {
-                                                if (value == 'edit') {
+                                                if (value == 'view') {
+                                                  context.push('/investors/view/${investor.id}');
+                                                } else if (value == 'edit') {
                                                   context.push('/investors/edit/${investor.id}');
                                                 } else if (value == 'delete') {
                                                   showDialog(
@@ -146,6 +198,10 @@ class _InvestorsViewState extends State<InvestorsView> {
                                               },
                                               itemBuilder: (context) => [
                                                 PopupMenuItem(
+                                                  value: 'view',
+                                                  child: Text(strViewDetails),
+                                                ),
+                                                PopupMenuItem(
                                                   value: 'edit',
                                                   child: Text(strEdit),
                                                 ),
@@ -169,11 +225,14 @@ class _InvestorsViewState extends State<InvestorsView> {
                     ),
                   ),
                 );
-              }
-            );
-          },
-        ),
-      ),
-    );
-  }
+              },
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+),
+);
+}
 }

@@ -23,7 +23,11 @@ class MembersController extends ChangeNotifier {
       final List<dynamic> data = response.data;
       _members = data.map((json) => Member.fromJson(json)).toList();
     } catch (e) {
-      _errorMessage = 'Failed to load members: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to load members: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -50,7 +54,12 @@ class MembersController extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _errorMessage = 'Failed to block member: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to block member: $e';
+      }
+    } finally {
       notifyListeners();
     }
   }
@@ -70,7 +79,11 @@ class MembersController extends ChangeNotifier {
         _members[index] = updatedMember;
       }
     } catch (e) {
-      _errorMessage = 'Failed to update member: $e';
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to update member: $e';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

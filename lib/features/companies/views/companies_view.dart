@@ -15,6 +15,8 @@ class CompaniesView extends StatefulWidget {
 class _CompaniesViewState extends State<CompaniesView> {
   final ScrollController _verticalScroll = ScrollController();
   final ScrollController _horizontalScroll = ScrollController();
+  String _searchQuery = '';
+  String _statusFilter = 'All';
 
   @override
   void dispose() {
@@ -101,41 +103,88 @@ class _CompaniesViewState extends State<CompaniesView> {
               );
             }
 
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Card(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Scrollbar(
-                      controller: _horizontalScroll,
-                      thumbVisibility: true,
-                      child: SingleChildScrollView(
-                        controller: _horizontalScroll,
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                            minWidth: MediaQuery.of(context).size.width - 64,
-                          ),
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search by name or industry...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    DropdownButton<String>(
+                      value: _statusFilter,
+                      items: ['All', 'Approved', 'Pending', 'Rejected'].map((status) {
+                        return DropdownMenuItem(value: status, child: Text(status));
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _statusFilter = value;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      var filteredList = controller.companies.where((c) {
+                        final matchesSearch = _searchQuery.isEmpty || c.name.toLowerCase().contains(_searchQuery.toLowerCase()) || c.industry.toLowerCase().contains(_searchQuery.toLowerCase());
+                        final matchesStatus = _statusFilter == 'All' || c.status == _statusFilter;
+                        return matchesSearch && matchesStatus;
+                      }).toList();
+
+                      if (filteredList.isEmpty) {
+                        return const Center(child: Text('No companies match your filters.'));
+                      }
+
+                      return Card(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
                           child: Scrollbar(
-                            controller: _verticalScroll,
+                            controller: _horizontalScroll,
                             thumbVisibility: true,
                             child: SingleChildScrollView(
-                              controller: _verticalScroll,
-                              scrollDirection: Axis.vertical,
-                              child: DataTable(
-                                columnSpacing: 16.0,
-                                showCheckboxColumn: false,
-                                columns: [
-                                  DataColumn(label: Text(strCompany)),
-                                  DataColumn(label: Text(strIndustry)),
-                                  DataColumn(label: Text(strLocation)),
-                                  DataColumn(label: Text(strStatus)),
-                                  DataColumn(label: Text(strActions)),
-                                ],
-                                rows: controller.companies.map((company) {
-                                  final isApproved = company.status == 'Approved';
-                                  final isPending = company.status == 'Pending';
+                              controller: _horizontalScroll,
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                  minWidth: MediaQuery.of(context).size.width - 64,
+                                ),
+                                child: Scrollbar(
+                                  controller: _verticalScroll,
+                                  thumbVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _verticalScroll,
+                                    scrollDirection: Axis.vertical,
+                                    child: DataTable(
+                                      columnSpacing: 16.0,
+                                      showCheckboxColumn: false,
+                                      columns: [
+                                        DataColumn(label: Text(strCompany)),
+                                        DataColumn(label: Text(strIndustry)),
+                                        DataColumn(label: Text(strLocation)),
+                                        DataColumn(label: Text(strStatus)),
+                                        DataColumn(label: Text(strActions)),
+                                      ],
+                                      rows: filteredList.map((company) {
+                                        final isApproved = company.status == 'Approved';
+                                        final isPending = company.status == 'Pending';
                                   return DataRow(
                                     cells: [
                                       DataCell(
@@ -233,10 +282,13 @@ class _CompaniesViewState extends State<CompaniesView> {
                   ),
                 );
               }
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+),
     );
   }
 }

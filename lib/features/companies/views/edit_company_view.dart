@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
 import 'package:investrack_admin/features/companies/models/company_model.dart';
+import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 
 class EditCompanyView extends StatefulWidget {
@@ -86,35 +87,45 @@ class _EditCompanyViewState extends State<EditCompanyView> {
     
     setState(() => _isSaving = true);
     
-    final controller = Provider.of<CompaniesController>(context, listen: false);
+    final revController = Provider.of<RevisionsController>(context, listen: false);
     
-    final company = Company(
-      id: widget.companyId,
-      name: _nameController.text.trim(),
-      description: _descController.text.trim(),
-      industry: _industryController.text.trim(),
-      location: _locationController.text.trim(),
-      contactEmail: _emailController.text.trim(),
-      status: _status,
-      viewCount: _existingCompany?.viewCount ?? 0,
-      foundedDate: _foundedDate,
-      logoUrl: _logoUrlController.text.trim().isNotEmpty ? _logoUrlController.text.trim() : null,
-      websiteUrl: _websiteUrlController.text.trim().isNotEmpty ? _websiteUrlController.text.trim() : null,
-      approvedBy: _existingCompany?.approvedBy,
-    );
+    final proposedChanges = {
+      if (_nameController.text.trim() != _existingCompany?.name) 'name': _nameController.text.trim(),
+      if (_descController.text.trim() != _existingCompany?.description) 'description': _descController.text.trim(),
+      if (_industryController.text.trim() != _existingCompany?.industry) 'industry': _industryController.text.trim(),
+      if (_locationController.text.trim() != _existingCompany?.location) 'location': _locationController.text.trim(),
+      if (_emailController.text.trim() != _existingCompany?.contactEmail) 'contactEmail': _emailController.text.trim(),
+      if (_status != _existingCompany?.status) 'status': _status,
+      if (_foundedDate != _existingCompany?.foundedDate) 'foundedDate': _foundedDate?.toIso8601String(),
+      if (_logoUrlController.text.trim() != _existingCompany?.logoUrl) 'logoUrl': _logoUrlController.text.trim(),
+      if (_websiteUrlController.text.trim() != _existingCompany?.websiteUrl) 'websiteUrl': _websiteUrlController.text.trim(),
+    };
 
-    await controller.updateCompany(company);
+    if (proposedChanges.isEmpty) {
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No changes made.')),
+      );
+      context.pop();
+      return;
+    }
+
+    final success = await revController.createRevision(
+      entityType: 'Company',
+      entityId: widget.companyId,
+      proposedChanges: proposedChanges,
+    );
     
     if (mounted) {
       setState(() => _isSaving = false);
       
-      if (controller.errorMessage != null) {
+      if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(controller.errorMessage!), backgroundColor: AppColors.error),
+          SnackBar(content: Text(revController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Company updated successfully!'), backgroundColor: AppColors.success),
+          const SnackBar(content: Text('Edit submitted for review!'), backgroundColor: AppColors.success),
         );
         context.pop();
       }

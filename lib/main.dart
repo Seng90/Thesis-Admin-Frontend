@@ -18,13 +18,19 @@ import 'features/investors/controllers/investors_controller.dart';
 import 'features/investors/views/investors_view.dart';
 import 'features/investors/views/add_investor_view.dart';
 import 'features/investors/views/edit_investor_view.dart';
+import 'features/investors/views/investor_details_view.dart';
 import 'features/members/controllers/members_controller.dart';
 import 'features/members/views/members_view.dart';
 import 'features/members/views/edit_member_view.dart';
+import 'features/members/views/member_details_view.dart';
+import 'features/revisions/views/moderations_view.dart';
 import 'features/packages/controllers/packages_controller.dart';
 import 'features/packages/views/packages_view.dart';
 import 'features/packages/views/add_package_view.dart';
 import 'features/packages/views/edit_package_view.dart';
+import 'features/packages/views/package_details_view.dart';
+import 'features/dashboard/controllers/dashboard_controller.dart';
+import 'features/revisions/controllers/revisions_controller.dart';
 import 'features/settings/controllers/settings_controller.dart';
 import 'features/settings/views/settings_view.dart';
 
@@ -40,6 +46,8 @@ class InvesTrackAdminApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthController()),
+        ChangeNotifierProvider(create: (_) => DashboardController()),
+        ChangeNotifierProvider(create: (_) => RevisionsController()),
         ChangeNotifierProvider(create: (_) => CompaniesController()),
         ChangeNotifierProvider(create: (_) => InvestorsController()),
         ChangeNotifierProvider(create: (_) => MembersController()),
@@ -49,13 +57,15 @@ class InvesTrackAdminApp extends StatelessWidget {
       child: Consumer<SettingsController>(
         builder: (context, settingsController, child) {
           return MaterialApp.router(
-        title: 'InvesTrack Admin',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: settingsController.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-        routerConfig: _router,
-        debugShowCheckedModeBanner: false,
-      );
+            title: 'InvesTrack Admin',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: settingsController.isDarkMode
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            routerConfig: _router,
+            debugShowCheckedModeBanner: false,
+          );
         },
       ),
     );
@@ -65,10 +75,7 @@ class InvesTrackAdminApp extends StatelessWidget {
 final GoRouter _router = GoRouter(
   initialLocation: '/login',
   routes: [
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginView(),
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginView()),
     ShellRoute(
       builder: (context, state, child) {
         return MainLayoutView(child: child);
@@ -88,11 +95,13 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/companies/view/:id',
-          builder: (context, state) => CompanyDetailsView(companyId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              CompanyDetailsView(companyId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/companies/edit/:id',
-          builder: (context, state) => EditCompanyView(companyId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              EditCompanyView(companyId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/investors',
@@ -103,16 +112,28 @@ final GoRouter _router = GoRouter(
           builder: (context, state) => const AddInvestorView(),
         ),
         GoRoute(
+          path: '/investors/view/:id',
+          builder: (context, state) =>
+              InvestorDetailsView(investorId: state.pathParameters['id']!),
+        ),
+        GoRoute(
           path: '/investors/edit/:id',
-          builder: (context, state) => EditInvestorView(investorId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              EditInvestorView(investorId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/members',
           builder: (context, state) => const MembersView(),
         ),
         GoRoute(
+          path: '/members/view/:id',
+          builder: (context, state) =>
+              MemberDetailsView(memberId: state.pathParameters['id']!),
+        ),
+        GoRoute(
           path: '/members/edit/:id',
-          builder: (context, state) => EditMemberView(memberId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              EditMemberView(memberId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/packages',
@@ -123,8 +144,18 @@ final GoRouter _router = GoRouter(
           builder: (context, state) => const AddPackageView(),
         ),
         GoRoute(
+          path: '/packages/view/:id',
+          builder: (context, state) =>
+              PackageDetailsView(packageId: state.pathParameters['id']!),
+        ),
+        GoRoute(
           path: '/packages/edit/:id',
-          builder: (context, state) => EditPackageView(packageId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              EditPackageView(packageId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/moderations',
+          builder: (context, state) => const ModerationsView(),
         ),
         GoRoute(
           path: '/settings',

@@ -4,7 +4,7 @@ import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/auth/controllers/auth_controller.dart';
-
+import 'package:investrack_admin/features/settings/controllers/settings_controller.dart';
 class MainLayoutView extends StatefulWidget {
   final Widget child;
 
@@ -45,7 +45,7 @@ class _MainLayoutViewState extends State<MainLayoutView> {
             width: _isSidebarCollapsed ? 80 : 250,
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
-              border: Border(right: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1), width: 1)),
+              border: Border(right: BorderSide(color: theme.brightness == Brightness.dark ? const Color(0xFF334155) : AppColors.border, width: 1)),
             ),
             child: Column(
               children: [
@@ -105,13 +105,14 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                 _buildNavItem(context, 'Investors'.tr(context), Icons.attach_money_outlined, Icons.attach_money, 2, selectedIndex, '/investors'),
                 _buildNavItem(context, 'Members'.tr(context), Icons.person_outline, Icons.person, 3, selectedIndex, '/members'),
                 _buildNavItem(context, 'Packages'.tr(context), Icons.card_membership_outlined, Icons.card_membership, 4, selectedIndex, '/packages'),
+                _buildNavItem(context, 'Moderation'.tr(context), Icons.gavel_outlined, Icons.gavel, 5, selectedIndex, '/moderations'),
                 
                 const Spacer(),
                 
-                _buildNavItem(context, 'Settings'.tr(context), Icons.settings_outlined, Icons.settings, 5, selectedIndex, '/settings'),
+                _buildNavItem(context, 'Settings'.tr(context), Icons.settings_outlined, Icons.settings, 6, selectedIndex, '/settings'),
                 
                 // Profile & Logout Area
-                Divider(color: theme.dividerColor.withValues(alpha: 0.1), height: 1),
+                const Divider(color: AppColors.border, height: 1),
                 Padding(
                   padding: EdgeInsets.all(_isSidebarCollapsed ? 16.0 : 16.0),
                   child: _isSidebarCollapsed
@@ -120,6 +121,16 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                             CircleAvatar(
                               backgroundColor: AppColors.primaryLight,
                               child: Text(adminInitials, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                            ),
+                            const SizedBox(height: 16),
+                            Consumer<SettingsController>(
+                              builder: (context, settings, child) {
+                                return IconButton(
+                                  icon: Icon(settings.isDarkMode ? Icons.light_mode : Icons.dark_mode, color: AppColors.textSecondary, size: 20),
+                                  onPressed: () => settings.toggleDarkMode(!settings.isDarkMode),
+                                  tooltip: 'Toggle Theme',
+                                );
+                              }
                             ),
                             const SizedBox(height: 16),
                             IconButton(
@@ -144,6 +155,15 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                                   const Text('Admin', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                                 ],
                               ),
+                            ),
+                            Consumer<SettingsController>(
+                              builder: (context, settings, child) {
+                                return IconButton(
+                                  icon: Icon(settings.isDarkMode ? Icons.light_mode : Icons.dark_mode, color: AppColors.textSecondary, size: 20),
+                                  onPressed: () => settings.toggleDarkMode(!settings.isDarkMode),
+                                  tooltip: 'Toggle Theme',
+                                );
+                              }
                             ),
                             IconButton(
                               icon: const Icon(Icons.logout, color: AppColors.error, size: 20),
@@ -247,7 +267,8 @@ class _MainLayoutViewState extends State<MainLayoutView> {
     if (location.startsWith('/investors')) return 2;
     if (location.startsWith('/members')) return 3;
     if (location.startsWith('/packages')) return 4;
-    if (location.startsWith('/settings')) return 5;
+    if (location.startsWith('/moderations')) return 5;
+    if (location.startsWith('/settings')) return 6;
     return 0;
   }
 }

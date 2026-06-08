@@ -6,7 +6,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      textTheme: GoogleFonts.interTextTheme().apply(
+      textTheme: GoogleFonts.robotoFlexTextTheme().apply(
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,
       ),
@@ -30,9 +30,10 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        elevation: 0,
+        elevation: 2,
+        shadowColor: const Color(0x1A000000), // Very subtle shadow like shadow-sm
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16), // 1rem from CSS
           side: const BorderSide(color: AppColors.border, width: 1),
         ),
         color: AppColors.surface,
@@ -73,8 +74,11 @@ class AppTheme {
         headingRowColor: WidgetStateProperty.all(AppColors.background),
         dataRowColor: WidgetStateProperty.all(AppColors.surface),
         dividerThickness: 1,
-        horizontalMargin: 24,
-        columnSpacing: 24,
+        horizontalMargin: 16,
+        columnSpacing: 16,
+        dataRowMinHeight: 40,
+        dataRowMaxHeight: 48,
+        headingRowHeight: 40,
         headingTextStyle: const TextStyle(
           color: AppColors.textSecondary,
           fontWeight: FontWeight.w600,
@@ -82,7 +86,7 @@ class AppTheme {
         ),
         dataTextStyle: const TextStyle(
           color: AppColors.textPrimary,
-          fontSize: 14,
+          fontSize: 13,
         ),
       ),
       chipTheme: ChipThemeData(
@@ -100,15 +104,15 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+      textTheme: GoogleFonts.robotoFlexTextTheme(ThemeData.dark().textTheme),
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         brightness: Brightness.dark,
         primary: AppColors.primary,
         secondary: AppColors.primaryLight,
-        surface: const Color(0xFF1E293B), // Slate 800
+        surface: const Color(0xFF211E29), // Card color from dark mode
       ),
-      scaffoldBackgroundColor: const Color(0xFF0F172A), // Slate 900
+      scaffoldBackgroundColor: const Color(0xFF17151E), // Background dark mode
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF0F172A),
         foregroundColor: Colors.white,
@@ -162,11 +166,14 @@ class AppTheme {
         hintStyle: const TextStyle(color: Color(0xFF475569)),
       ),
       dataTableTheme: DataTableThemeData(
-        headingRowColor: WidgetStateProperty.all(const Color(0xFF0F172A)),
-        dataRowColor: WidgetStateProperty.all(const Color(0xFF1E293B)),
+        headingRowColor: WidgetStateProperty.all(const Color(0xFF17151E)),
+        dataRowColor: WidgetStateProperty.all(const Color(0xFF211E29)),
         dividerThickness: 1,
-        horizontalMargin: 24,
-        columnSpacing: 24,
+        horizontalMargin: 16,
+        columnSpacing: 16,
+        dataRowMinHeight: 40,
+        dataRowMaxHeight: 48,
+        headingRowHeight: 40,
         headingTextStyle: const TextStyle(
           color: AppColors.textMuted,
           fontWeight: FontWeight.w600,
@@ -174,7 +181,7 @@ class AppTheme {
         ),
         dataTextStyle: const TextStyle(
           color: Colors.white,
-          fontSize: 14,
+          fontSize: 13,
         ),
       ),
       chipTheme: ChipThemeData(

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+export 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants.dart';
 
@@ -32,8 +33,42 @@ class ApiService {
           return handler.next(response);
         },
         onError: (DioException e, handler) {
-          // TODO: Handle global errors (e.g., 401 Unauthorized -> logout)
-          return handler.next(e);
+          String userFriendlyMessage = 'An unexpected error occurred.';
+          
+          if (e.type == DioExceptionType.connectionTimeout || 
+              e.type == DioExceptionType.receiveTimeout || 
+              e.type == DioExceptionType.sendTimeout) {
+            userFriendlyMessage = 'Connection timed out. Please check your internet connection.';
+          } else if (e.type == DioExceptionType.connectionError) {
+            userFriendlyMessage = 'Cannot connect to the server. Please verify your connection.';
+          } else if (e.response != null) {
+            final statusCode = e.response?.statusCode;
+            final data = e.response?.data;
+            
+            if (statusCode == 401) {
+              userFriendlyMessage = 'Session expired or unauthorized. Please log in again.';
+              // Note: We can emit an event or use a global navigator key here to force logout.
+            } else if (statusCode == 403) {
+              userFriendlyMessage = 'You do not have permission to perform this action.';
+            } else if (statusCode == 404) {
+              userFriendlyMessage = 'The requested resource was not found.';
+            } else if (statusCode == 500) {
+              userFriendlyMessage = 'Internal server error. Please try again later.';
+            } else if (data is Map && data['message'] != null) {
+              userFriendlyMessage = data['message'].toString();
+            } else {
+              userFriendlyMessage = 'Server error ($statusCode).';
+            }
+          }
+          
+          final customError = DioException(
+            requestOptions: e.requestOptions,
+            response: e.response,
+            type: e.type,
+            error: userFriendlyMessage,
+          );
+          
+          return handler.next(customError);
         },
       ),
     );

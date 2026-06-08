@@ -15,6 +15,7 @@ class PackagesView extends StatefulWidget {
 class _PackagesViewState extends State<PackagesView> {
   final ScrollController _verticalScroll = ScrollController();
   final ScrollController _horizontalScroll = ScrollController();
+  String _searchQuery = '';
 
   @override
   void dispose() {
@@ -31,6 +32,7 @@ class _PackagesViewState extends State<PackagesView> {
     final strPrice = 'PRICE'.tr(context);
     final strPurchases = 'PURCHASES'.tr(context);
     final strActions = 'ACTIONS'.tr(context);
+    final strViewDetails = 'View Details'.tr(context);
     final strEdit = 'Edit'.tr(context);
     final strDelete = 'Delete'.tr(context);
     final strCancel = 'Cancel'.tr(context);
@@ -61,38 +63,69 @@ class _PackagesViewState extends State<PackagesView> {
               return Center(child: Text(controller.errorMessage!));
             }
 
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Card(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Scrollbar(
-                      controller: _horizontalScroll,
-                      thumbVisibility: true,
-                      child: SingleChildScrollView(
-                        controller: _horizontalScroll,
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                            minWidth: MediaQuery.of(context).size.width - 64,
-                          ),
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search by package name...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      var filteredList = controller.packages.where((p) {
+                        return _searchQuery.isEmpty || p.name.toLowerCase().contains(_searchQuery.toLowerCase());
+                      }).toList();
+
+                      if (filteredList.isEmpty) {
+                        return const Center(child: Text('No packages match your search.'));
+                      }
+
+                      return Card(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
                           child: Scrollbar(
-                            controller: _verticalScroll,
+                            controller: _horizontalScroll,
                             thumbVisibility: true,
                             child: SingleChildScrollView(
-                              controller: _verticalScroll,
-                              scrollDirection: Axis.vertical,
-                              child: DataTable(
-                                columnSpacing: 16.0,
-                                showCheckboxColumn: false,
-                                columns: [
-                                  DataColumn(label: Text(strPackage)),
-                                  DataColumn(label: Text(strPrice)),
-                                  DataColumn(label: Text(strPurchases)),
-                                  DataColumn(label: Text(strActions)),
-                                ],
-                                rows: controller.packages.map((pkg) {
+                              controller: _horizontalScroll,
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                  minWidth: MediaQuery.of(context).size.width - 64,
+                                ),
+                                child: Scrollbar(
+                                  controller: _verticalScroll,
+                                  thumbVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _verticalScroll,
+                                    scrollDirection: Axis.vertical,
+                                    child: DataTable(
+                                      columnSpacing: 16.0,
+                                      showCheckboxColumn: false,
+                                      columns: [
+                                        DataColumn(label: Text(strPackage)),
+                                        DataColumn(label: Text(strPrice)),
+                                        DataColumn(label: Text(strPurchases)),
+                                        DataColumn(label: Text(strActions)),
+                                      ],
+                                      rows: filteredList.map((pkg) {
                                   return DataRow(
                                     cells: [
                                       DataCell(
@@ -128,7 +161,9 @@ class _PackagesViewState extends State<PackagesView> {
                                             PopupMenuButton<String>(
                                               icon: const Icon(Icons.more_horiz, color: AppColors.textMuted),
                                               onSelected: (value) {
-                                                if (value == 'edit') {
+                                                if (value == 'view') {
+                                                  context.push('/packages/view/${pkg.id}');
+                                                } else if (value == 'edit') {
                                                   context.push('/packages/edit/${pkg.id}');
                                                 } else if (value == 'delete') {
                                                   showDialog(
@@ -155,6 +190,10 @@ class _PackagesViewState extends State<PackagesView> {
                                               },
                                               itemBuilder: (context) => [
                                                 PopupMenuItem(
+                                                  value: 'view',
+                                                  child: Text(strViewDetails),
+                                                ),
+                                                PopupMenuItem(
                                                   value: 'edit',
                                                   child: Text(strEdit),
                                                 ),
@@ -178,11 +217,14 @@ class _PackagesViewState extends State<PackagesView> {
                     ),
                   ),
                 );
-              }
-            );
-          },
-        ),
-      ),
-    );
-  }
+              },
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+),
+);
+}
 }

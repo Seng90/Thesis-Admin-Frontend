@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
 import 'package:investrack_admin/features/investors/models/investor_model.dart';
+import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
+import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
 
 class EditInvestorView extends StatefulWidget {
@@ -23,20 +25,26 @@ class _EditInvestorViewState extends State<EditInvestorView> {
   late TextEditingController _logoUrlController;
   late String _type;
   
+  bool _isSaving = false;
   bool _isInit = false;
+  Investor? _existingInvestor;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
       final controller = Provider.of<InvestorsController>(context, listen: false);
-      final existingInvestor = controller.investors.firstWhere((i) => i.id == widget.investorId);
+      try {
+        _existingInvestor = controller.investors.firstWhere((i) => i.id == widget.investorId);
+      } catch (_) {
+        _existingInvestor = null;
+      }
       
-      _nameController = TextEditingController(text: existingInvestor.name);
-      _websiteController = TextEditingController(text: existingInvestor.websiteUrl ?? '');
-      _contactController = TextEditingController(text: existingInvestor.contactInfo ?? '');
-      _logoUrlController = TextEditingController(text: existingInvestor.logoUrl ?? '');
-      _type = existingInvestor.type;
+      _nameController = TextEditingController(text: _existingInvestor?.name ?? '');
+      _websiteController = TextEditingController(text: _existingInvestor?.websiteUrl ?? '');
+      _contactController = TextEditingController(text: _existingInvestor?.contactInfo ?? '');
+      _logoUrlController = TextEditingController(text: _existingInvestor?.logoUrl ?? '');
+      _type = _existingInvestor?.type ?? 'Venture Capital';
       
       _isInit = true;
     }
@@ -51,23 +59,47 @@ class _EditInvestorViewState extends State<EditInvestorView> {
     super.dispose();
   }
 
-  void _saveForm() {
-    if (_formKey.currentState!.validate()) {
-      final controller = Provider.of<InvestorsController>(context, listen: false);
-      final existingInvestor = controller.investors.firstWhere((i) => i.id == widget.investorId);
-      
-      final investor = Investor(
-        id: widget.investorId,
-        name: _nameController.text,
-        type: _type,
-        logoUrl: _logoUrlController.text.isNotEmpty ? _logoUrlController.text : null,
-        websiteUrl: _websiteController.text.isNotEmpty ? _websiteController.text : null,
-        contactInfo: _contactController.text.isNotEmpty ? _contactController.text : null,
-        createdAt: existingInvestor.createdAt,
-      );
+  Future<void> _saveForm() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isSaving = true);
+    
+    final revController = Provider.of<RevisionsController>(context, listen: false);
+    
+    final proposedChanges = {
+      if (_nameController.text.trim() != _existingInvestor?.name) 'name': _nameController.text.trim(),
+      if (_type != _existingInvestor?.type) 'type': _type,
+      if (_logoUrlController.text.trim() != _existingInvestor?.logoUrl) 'logoUrl': _logoUrlController.text.trim(),
+      if (_websiteController.text.trim() != _existingInvestor?.websiteUrl) 'websiteUrl': _websiteController.text.trim(),
+      if (_contactController.text.trim() != _existingInvestor?.contactInfo) 'contactInfo': _contactController.text.trim(),
+    };
 
-      controller.updateInvestor(investor);
+    if (proposedChanges.isEmpty) {
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No changes made.')));
       context.pop();
+      return;
+    }
+
+    final success = await revController.createRevision(
+      entityType: 'Investor',
+      entityId: widget.investorId,
+      proposedChanges: proposedChanges,
+    );
+
+    if (mounted) {
+      setState(() => _isSaving = false);
+      
+      if (!success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(revController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Edit submitted for review!'), backgroundColor: AppColors.success),
+        );
+        context.pop();
+      }
     }
   }
 
@@ -134,8 +166,10 @@ class _EditInvestorViewState extends State<EditInvestorView> {
                       ),
                       const SizedBox(height: 32),
                       ElevatedButton(
-                        onPressed: _saveForm,
-                        child: Text('Update Investor'.tr(context)),
+                        onPressed: _isSaving ? null : _saveForm,
+                        child: _isSaving 
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : Text('Update Investor'.tr(context)),
                       ),
                     ],
                   ),

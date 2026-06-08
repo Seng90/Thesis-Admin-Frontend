@@ -6,6 +6,8 @@ import '../../companies/controllers/companies_controller.dart';
 import '../../investors/controllers/investors_controller.dart';
 import '../../members/controllers/members_controller.dart';
 import '../../packages/controllers/packages_controller.dart';
+import '../../../widgets/desktop_text_field.dart';
+
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -44,7 +46,7 @@ class _LoginViewState extends State<LoginView> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  TextField(
+                  DesktopTextField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
                       labelText: 'Username',
@@ -52,7 +54,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  DesktopTextField(
                     controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
