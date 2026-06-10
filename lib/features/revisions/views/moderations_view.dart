@@ -5,6 +5,12 @@ import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/widgets/admin_header.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/features/revisions/models/revision_model.dart';
+import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
+import 'package:investrack_admin/features/members/controllers/members_controller.dart';
+import 'package:investrack_admin/features/founders/controllers/founders_controller.dart';
+import 'package:investrack_admin/features/funding_rounds/controllers/investments_controller.dart';
+import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
+import 'package:investrack_admin/features/fundraising_posts/controllers/fundraising_posts_controller.dart';
 
 class ModerationsView extends StatefulWidget {
   const ModerationsView({super.key});
@@ -232,7 +238,7 @@ class _ModerationsViewState extends State<ModerationsView> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  revision.entityId == null 
+                  revision.entityId.isEmpty 
                       ? 'Create new ${revision.entityType}'
                       : 'Update ${revision.entityType} ID: ${revision.entityId}',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.3),
@@ -330,6 +336,9 @@ class _ModerationsViewState extends State<ModerationsView> {
                 onPressed: () async {
                   final success = await controller.rejectRevision(revision.id);
                   if (context.mounted) {
+                    if (success) {
+                      _reloadRelatedController(context, revision.entityType);
+                    }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(success ? 'Revision rejected.' : (controller.errorMessage ?? 'Failed to reject revision.')),
@@ -350,6 +359,9 @@ class _ModerationsViewState extends State<ModerationsView> {
                 onPressed: () async {
                   final success = await controller.approveRevision(revision.id);
                   if (context.mounted) {
+                    if (success) {
+                      _reloadRelatedController(context, revision.entityType);
+                    }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(success ? 'Revision approved and published!' : (controller.errorMessage ?? 'Failed to approve revision.')),
@@ -372,5 +384,29 @@ class _ModerationsViewState extends State<ModerationsView> {
         ],
       ),
     );
+  }
+  void _reloadRelatedController(BuildContext context, String entityType) {
+    switch (entityType.toLowerCase()) {
+      case 'company':
+        context.read<CompaniesController>().loadCompanies();
+        break;
+      case 'member':
+        context.read<MembersController>().loadMembers();
+        break;
+      case 'founder':
+        context.read<FoundersController>().fetchFounders();
+        break;
+      case 'investment':
+      case 'fundinground':
+        context.read<InvestmentsController>().fetchInvestments();
+        break;
+      case 'package':
+        context.read<PackagesController>().loadPackages();
+        break;
+      case 'fundraisingpost':
+      case 'fundraising_post':
+        context.read<FundraisingPostsController>().loadPosts();
+        break;
+    }
   }
 }

@@ -9,6 +9,7 @@ import 'package:investrack_admin/features/members/controllers/members_controller
 import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
 import 'package:investrack_admin/features/dashboard/controllers/dashboard_controller.dart';
 import 'package:investrack_admin/features/dashboard/models/dashboard_model.dart';
+import 'package:investrack_admin/features/dashboard/services/report_generator_service.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 
 class DashboardView extends StatefulWidget {
@@ -40,9 +41,11 @@ class _DashboardViewState extends State<DashboardView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(LucideIcons.download, size: 16),
-                  label: const Text('Export'),
+                  onPressed: () {
+                    context.read<DashboardController>().loadAll();
+                  },
+                  icon: const Icon(LucideIcons.refreshCcw, size: 16),
+                  label: const Text('Refresh'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,
                     side: const BorderSide(color: AppColors.border),
@@ -50,14 +53,24 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.textPrimary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                    elevation: 0,
-                  ),
-                  child: const Text('Generate report'),
+                Consumer<DashboardController>(
+                  builder: (context, dashboardCtrl, _) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        ReportGeneratorService.generateAndShowReport(
+                          dashboardCtrl.summary,
+                          dashboardCtrl.sectors,
+                          dashboardCtrl.recentCompanies,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.textPrimary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Generate report'),
+                    );
+                  }
                 ),
               ],
             ),
@@ -79,7 +92,7 @@ class _DashboardViewState extends State<DashboardView> {
                   children: [
                     _buildStatCard(
                       'Companies',
-                      companiesCtrl.companies.length.toString(),
+                      (sum?.totalCompanies ?? companiesCtrl.companies.length).toString(),
                       '+${sum?.newCompaniesThisMonth ?? 0} this month',
                       true,
                       '${sum?.companiesAwaitingReview ?? 0} awaiting review',
@@ -88,16 +101,16 @@ class _DashboardViewState extends State<DashboardView> {
                     const SizedBox(width: 16),
                     _buildStatCard(
                       'Founders & people',
-                      membersCtrl.members.length.toString(),
-                      '+0', // placeholder
+                      (sum?.totalMembers ?? membersCtrl.members.length).toString(),
+                      '+${sum?.newMembersThisMonth ?? 0} this month',
                       true,
-                      '0 unverified',
+                      'Total registered users',
                       LucideIcons.users,
                     ),
                     const SizedBox(width: 16),
                     _buildStatCard(
                       'Active investors',
-                      investorsCtrl.investors.length.toString(),
+                      (sum?.totalInvestors ?? investorsCtrl.investors.length).toString(),
                       '+0',
                       true,
                       'across multiple countries',
@@ -111,6 +124,15 @@ class _DashboardViewState extends State<DashboardView> {
                       (sum?.fundingChangePct ?? 0) >= 0,
                       'vs. same period last year',
                       LucideIcons.trendingUp,
+                    ),
+                    const SizedBox(width: 16),
+                    _buildStatCard(
+                      'Subscription Revenue',
+                      '\$${sum?.monthlySubscriptionRevenue.toStringAsFixed(2) ?? '0.00'}',
+                      'This month',
+                      true,
+                      'Monthly recurring',
+                      LucideIcons.banknote,
                     ),
                   ],
                 );
@@ -608,16 +630,25 @@ class _SectorBarChart extends StatelessWidget {
     final sorted = List<SectorStat>.from(sectors)
       ..sort((a, b) => b.count.compareTo(a.count));
 
+    List<SectorStat> displaySectors = sorted;
+    if (sorted.length > 6) {
+      final top5 = sorted.take(5).toList();
+      final otherCount = sorted.skip(5).fold<int>(0, (sum, item) => sum + item.count);
+      displaySectors = [...top5, SectorStat(industry: 'Other', count: otherCount)];
+    }
+
+    final displayMaxCount = displaySectors.map((e) => e.count).reduce((a, b) => a > b ? a : b);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: sorted.asMap().entries.map((entry) {
+        children: displaySectors.asMap().entries.map((entry) {
           final index = entry.key;
           final sector = entry.value;
           final color = colors[index % colors.length];
           final pct = (sector.count / total * 100);
-          final fraction = sector.count / maxCount; // for bar width
+          final fraction = sector.count / displayMaxCount; // for bar width
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 5.0),

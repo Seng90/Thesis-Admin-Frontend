@@ -48,8 +48,11 @@ class MembersController extends ChangeNotifier {
           email: old.email,
           status: 'Blocked',
           packageId: old.packageId,
+          avatarUrl: old.avatarUrl,
+          role: old.role,
           expiryDate: old.expiryDate,
           createdAt: old.createdAt,
+          updatedAt: old.updatedAt,
         );
         notifyListeners();
       }

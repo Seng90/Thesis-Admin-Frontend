@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
+import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
+import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
+import 'package:investrack_admin/services/api_service.dart';
 
 class AddInvestmentView extends StatefulWidget {
   const AddInvestmentView({super.key});
@@ -15,19 +18,61 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _currencyController = TextEditingController(text: 'USD');
-  final _companyIdController = TextEditingController();
-  final _investorIdController = TextEditingController();
-  final _roundIdController = TextEditingController();
   DateTime? _investDate;
   bool _isSaving = false;
+
+  String? _selectedCompanyId;
+  String? _selectedInvestorId;
+  String? _selectedRoundId;
+
+  // Funding rounds loaded from API
+  List<Map<String, dynamic>> _fundingRounds = [];
+  bool _isLoadingRounds = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDependencies();
+    });
+  }
+
+  Future<void> _loadDependencies() async {
+    // Load companies and investors if not already loaded
+    final companiesCtrl = Provider.of<CompaniesController>(context, listen: false);
+    final investorsCtrl = Provider.of<InvestorsController>(context, listen: false);
+
+    if (companiesCtrl.companies.isEmpty) {
+      companiesCtrl.loadCompanies();
+    }
+    if (investorsCtrl.investors.isEmpty) {
+      investorsCtrl.loadInvestors();
+    }
+
+    // Load funding rounds
+    await _loadFundingRounds();
+  }
+
+  Future<void> _loadFundingRounds() async {
+    setState(() => _isLoadingRounds = true);
+    try {
+      final api = ApiService();
+      final response = await api.client.get('/admin/funding-rounds');
+      final List<dynamic> data = response.data is List ? response.data : [];
+      setState(() {
+        _fundingRounds = data.map((e) => Map<String, dynamic>.from(e)).toList();
+      });
+    } catch (e) {
+      // Silently fail — user can still type round ID if needed
+    } finally {
+      setState(() => _isLoadingRounds = false);
+    }
+  }
 
   @override
   void dispose() {
     _amountController.dispose();
     _currencyController.dispose();
-    _companyIdController.dispose();
-    _investorIdController.dispose();
-    _roundIdController.dispose();
     super.dispose();
   }
 
@@ -51,16 +96,20 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an investment date')));
       return;
     }
-    
+    if (_selectedCompanyId == null || _selectedInvestorId == null || _selectedRoundId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select Company, Investor, and Funding Round')));
+      return;
+    }
+
     setState(() => _isSaving = true);
     final revisionsController = Provider.of<RevisionsController>(context, listen: false);
-    
+
     Map<String, dynamic> proposedChanges = {
       'amount': double.tryParse(_amountController.text.trim()) ?? 0.0,
       'currency': _currencyController.text.trim(),
-      'company_id': _companyIdController.text.trim(),
-      'investor_id': _investorIdController.text.trim(),
-      'round_id': _roundIdController.text.trim(),
+      'company_id': _selectedCompanyId,
+      'investor_id': _selectedInvestorId,
+      'round_id': _selectedRoundId,
       'invest_date': _investDate!.toIso8601String(),
     };
 
@@ -69,7 +118,7 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
       entityId: null,
       proposedChanges: proposedChanges,
     );
-    
+
     if (mounted) {
       setState(() => _isSaving = false);
       if (!success) {
@@ -108,36 +157,88 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextFormField(
-                        controller: _companyIdController,
-                        decoration: const InputDecoration(labelText: 'Company ID *'),
-                        validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                      // Company Dropdown
+                      Consumer<CompaniesController>(
+                        builder: (context, ctrl, _) {
+                          return DropdownButtonFormField<String>(
+                            initialValue: _selectedCompanyId,
+                            decoration: const InputDecoration(
+                              labelText: 'Company *',
+                              prefixIcon: Icon(Icons.business),
+                            ),
+                            items: ctrl.companies.map((c) {
+                              return DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.name, overflow: TextOverflow.ellipsis),
+                              );
+                            }).toList(),
+                            onChanged: (v) => setState(() => _selectedCompanyId = v),
+                            validator: (v) => v == null ? 'Please select a company' : null,
+                            isExpanded: true,
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _investorIdController,
-                        decoration: const InputDecoration(labelText: 'Investor ID *'),
-                        validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                      // Investor Dropdown
+                      Consumer<InvestorsController>(
+                        builder: (context, ctrl, _) {
+                          return DropdownButtonFormField<String>(
+                            initialValue: _selectedInvestorId,
+                            decoration: const InputDecoration(
+                              labelText: 'Investor *',
+                              prefixIcon: Icon(Icons.person),
+                            ),
+                            items: ctrl.investors.map((i) {
+                              return DropdownMenuItem(
+                                value: i.id,
+                                child: Text(i.name, overflow: TextOverflow.ellipsis),
+                              );
+                            }).toList(),
+                            onChanged: (v) => setState(() => _selectedInvestorId = v),
+                            validator: (v) => v == null ? 'Please select an investor' : null,
+                            isExpanded: true,
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _roundIdController,
-                        decoration: const InputDecoration(labelText: 'Round ID *'),
-                        validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-                      ),
+                      // Funding Round Dropdown
+                      _isLoadingRounds
+                          ? const LinearProgressIndicator()
+                          : DropdownButtonFormField<String>(
+                              initialValue: _selectedRoundId,
+                              decoration: const InputDecoration(
+                                labelText: 'Funding Round *',
+                                prefixIcon: Icon(Icons.cyclone),
+                              ),
+                              items: _fundingRounds.map((r) {
+                                final id = r['id']?.toString() ?? '';
+                                final name = r['round_name'] ?? r['name'] ?? 'Round ${id.substring(0, id.length > 8 ? 8 : id.length)}';
+                                return DropdownMenuItem(
+                                  value: id,
+                                  child: Text(name.toString(), overflow: TextOverflow.ellipsis),
+                                );
+                              }).toList(),
+                              onChanged: (v) => setState(() => _selectedRoundId = v),
+                              validator: (v) => v == null ? 'Please select a funding round' : null,
+                              isExpanded: true,
+                            ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
                           Expanded(
                             child: TextFormField(
                               controller: _amountController,
-                              decoration: const InputDecoration(labelText: 'Amount *'),
+                              decoration: const InputDecoration(
+                                labelText: 'Amount *',
+                                prefixIcon: Icon(Icons.attach_money),
+                              ),
                               keyboardType: TextInputType.number,
                               validator: (v) => v!.trim().isEmpty ? 'Required' : null,
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Expanded(
+                          SizedBox(
+                            width: 120,
                             child: TextFormField(
                               controller: _currencyController,
                               decoration: const InputDecoration(labelText: 'Currency *'),
@@ -169,7 +270,7 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                         height: 48,
                         child: ElevatedButton(
                           onPressed: _isSaving ? null : _saveForm,
-                          child: _isSaving 
+                          child: _isSaving
                               ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                               : const Text('Save Investment'),
                         ),

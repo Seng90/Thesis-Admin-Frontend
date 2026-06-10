@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../controllers/packages_controller.dart';
+import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
 
@@ -178,8 +179,22 @@ class _PackagesViewState extends State<PackagesView> {
                                                         ),
                                                         TextButton(
                                                           onPressed: () {
-                                                            controller.deletePackage(pkg.id);
                                                             Navigator.pop(context);
+                                                            final revController = Provider.of<RevisionsController>(context, listen: false);
+                                                            revController.createRevision(
+                                                              entityType: 'Package',
+                                                              entityId: pkg.id,
+                                                              proposedChanges: {'_action': 'delete'},
+                                                            ).then((success) {
+                                                              if (context.mounted) {
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  SnackBar(
+                                                                    content: Text(success ? 'Delete request submitted for review!' : 'Failed to submit.'),
+                                                                    backgroundColor: success ? AppColors.success : AppColors.error,
+                                                                  ),
+                                                                );
+                                                              }
+                                                            });
                                                           },
                                                           child: Text(strDelete, style: const TextStyle(color: Colors.red)),
                                                         ),

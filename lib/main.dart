@@ -40,6 +40,10 @@ import 'features/funding_rounds/views/add_investment_view.dart';
 import 'features/funding_rounds/views/edit_investment_view.dart';
 import 'features/funding_rounds/views/investment_details_view.dart';
 import 'features/dashboard/controllers/dashboard_controller.dart';
+import 'features/fundraising_posts/controllers/fundraising_posts_controller.dart';
+import 'features/fundraising_posts/views/fundraising_posts_view.dart';
+import 'features/fundraising_posts/views/edit_fundraising_post_view.dart';
+import 'features/fundraising_posts/views/fundraising_post_details_view.dart';
 import 'features/revisions/controllers/revisions_controller.dart';
 import 'features/settings/controllers/settings_controller.dart';
 import 'features/settings/views/settings_view.dart';
@@ -64,6 +68,7 @@ class InvesTrackAdminApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PackagesController()),
         ChangeNotifierProvider(create: (_) => FoundersController()),
         ChangeNotifierProvider(create: (_) => InvestmentsController()),
+        ChangeNotifierProvider(create: (_) => FundraisingPostsController()),
         ChangeNotifierProvider(create: (_) => SettingsController()),
       ],
       child: Consumer<SettingsController>(
@@ -95,11 +100,13 @@ final GoRouter _router = GoRouter(
       routes: [
         GoRoute(
           path: '/dashboard',
-          pageBuilder: (context, state) => const NoTransitionPage(child: DashboardView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: DashboardView()),
         ),
         GoRoute(
           path: '/companies',
-          pageBuilder: (context, state) => const NoTransitionPage(child: CompaniesView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: CompaniesView()),
         ),
         GoRoute(
           path: '/companies/add',
@@ -117,7 +124,8 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/investors',
-          pageBuilder: (context, state) => const NoTransitionPage(child: InvestorsView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: InvestorsView()),
         ),
         GoRoute(
           path: '/investors/add',
@@ -135,7 +143,8 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/members',
-          pageBuilder: (context, state) => const NoTransitionPage(child: MembersView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: MembersView()),
         ),
         GoRoute(
           path: '/members/view/:id',
@@ -149,7 +158,8 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/packages',
-          pageBuilder: (context, state) => const NoTransitionPage(child: PackagesView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: PackagesView()),
         ),
         GoRoute(
           path: '/packages/add',
@@ -162,7 +172,8 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/founders',
-          pageBuilder: (context, state) => const NoTransitionPage(child: FoundersView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: FoundersView()),
         ),
         GoRoute(
           path: '/founders/add',
@@ -170,15 +181,18 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/founders/edit/:id',
-          builder: (context, state) => EditFounderView(founderId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              EditFounderView(founderId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/founders/view/:id',
-          builder: (context, state) => FounderDetailsView(founderId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              FounderDetailsView(founderId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/investments',
-          pageBuilder: (context, state) => const NoTransitionPage(child: InvestmentsView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: InvestmentsView()),
         ),
         GoRoute(
           path: '/investments/add',
@@ -186,11 +200,28 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/investments/edit/:id',
-          builder: (context, state) => EditInvestmentView(investmentId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              EditInvestmentView(investmentId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/investments/view/:id',
-          builder: (context, state) => InvestmentDetailsView(investmentId: state.pathParameters['id']!),
+          builder: (context, state) =>
+              InvestmentDetailsView(investmentId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/raises',
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: FundraisingPostsView()),
+        ),
+        GoRoute(
+          path: '/raises/view/:slug',
+          builder: (context, state) =>
+              FundraisingPostDetailsView(slug: state.pathParameters['slug']!),
+        ),
+        GoRoute(
+          path: '/raises/edit/:id',
+          builder: (context, state) =>
+              EditFundraisingPostView(id: state.pathParameters['id']!),
         ),
         GoRoute(
           path: '/packages/edit/:id',
@@ -199,11 +230,13 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: '/moderations',
-          pageBuilder: (context, state) => const NoTransitionPage(child: ModerationsView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: ModerationsView()),
         ),
         GoRoute(
           path: '/settings',
-          pageBuilder: (context, state) => const NoTransitionPage(child: SettingsView()),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: SettingsView()),
         ),
       ],
     ),

@@ -105,13 +105,14 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                 _buildNavItem(context, 'Founders'.tr(context), Icons.people_outline, Icons.people, 2, selectedIndex, '/founders'),
                 _buildNavItem(context, 'Investors'.tr(context), Icons.attach_money_outlined, Icons.attach_money, 3, selectedIndex, '/investors'),
                 _buildNavItem(context, 'Investments'.tr(context), Icons.trending_up_outlined, Icons.trending_up, 4, selectedIndex, '/investments'),
-                _buildNavItem(context, 'Members'.tr(context), Icons.person_outline, Icons.person, 5, selectedIndex, '/members'),
-                _buildNavItem(context, 'Packages'.tr(context), Icons.card_membership_outlined, Icons.card_membership, 6, selectedIndex, '/packages'),
-                _buildNavItem(context, 'Moderation'.tr(context), Icons.gavel_outlined, Icons.gavel, 7, selectedIndex, '/moderations'),
+                _buildNavItem(context, 'Fundraising'.tr(context), Icons.campaign_outlined, Icons.campaign, 5, selectedIndex, '/raises'),
+                _buildNavItem(context, 'Members'.tr(context), Icons.person_outline, Icons.person, 6, selectedIndex, '/members'),
+                _buildNavItem(context, 'Packages'.tr(context), Icons.card_membership_outlined, Icons.card_membership, 7, selectedIndex, '/packages'),
+                _buildNavItem(context, 'Moderation'.tr(context), Icons.gavel_outlined, Icons.gavel, 8, selectedIndex, '/moderations'),
                 
                 const Spacer(),
                 
-                _buildNavItem(context, 'Settings'.tr(context), Icons.settings_outlined, Icons.settings, 8, selectedIndex, '/settings'),
+                _buildNavItem(context, 'Settings'.tr(context), Icons.settings_outlined, Icons.settings, 9, selectedIndex, '/settings'),
                 
                 // Profile & Logout Area
                 const Divider(color: AppColors.border, height: 1),
@@ -269,10 +270,11 @@ class _MainLayoutViewState extends State<MainLayoutView> {
     if (location.startsWith('/founders')) return 2;
     if (location.startsWith('/investors')) return 3;
     if (location.startsWith('/investments')) return 4;
-    if (location.startsWith('/members')) return 5;
-    if (location.startsWith('/packages')) return 6;
-    if (location.startsWith('/moderations')) return 7;
-    if (location.startsWith('/settings')) return 8;
+    if (location.startsWith('/raises')) return 5;
+    if (location.startsWith('/members')) return 6;
+    if (location.startsWith('/packages')) return 7;
+    if (location.startsWith('/moderation')) return 8;
+    if (location.startsWith('/settings')) return 9;
     return 0;
   }
 }

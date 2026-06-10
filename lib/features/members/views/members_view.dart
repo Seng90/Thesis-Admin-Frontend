@@ -135,14 +135,30 @@ class _MembersViewState extends State<MembersView> {
                                   return DataRow(
                                     cells: [
                                       DataCell(
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                        Row(
                                           children: [
-                                            Text(member.username, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                            Text(member.email, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                            if (member.avatarUrl != null && member.avatarUrl!.isNotEmpty)
+                                              CircleAvatar(
+                                                backgroundImage: NetworkImage(member.avatarUrl!),
+                                                radius: 16,
+                                              )
+                                            else
+                                              const CircleAvatar(
+                                                backgroundColor: AppColors.primary,
+                                                radius: 16,
+                                                child: Icon(Icons.person, color: Colors.white, size: 20),
+                                              ),
+                                            const SizedBox(width: 12),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(member.username, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                                Text(member.email, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                              ],
+                                            ),
                                           ],
-                                        )
+                                        ),
                                       ),
                                       DataCell(
                                         Chip(

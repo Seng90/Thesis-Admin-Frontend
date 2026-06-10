@@ -5,6 +5,10 @@ class DashboardSummary {
   final double totalFundingYTD;
   final double fundingChangePct;
   final int totalInvestors;
+  final int totalCompanies;
+  final int totalMembers;
+  final int newMembersThisMonth;
+  final double monthlySubscriptionRevenue;
 
   DashboardSummary({
     required this.newCompaniesThisMonth,
@@ -13,6 +17,10 @@ class DashboardSummary {
     required this.totalFundingYTD,
     required this.fundingChangePct,
     required this.totalInvestors,
+    required this.totalCompanies,
+    required this.totalMembers,
+    required this.newMembersThisMonth,
+    required this.monthlySubscriptionRevenue,
   });
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
@@ -23,6 +31,10 @@ class DashboardSummary {
       totalFundingYTD: (json['totalInvestmentsVolume'] ?? 0).toDouble(),
       fundingChangePct: 0.0, // Needs API support in the future
       totalInvestors: json['totalInvestors'] ?? 0,
+      totalCompanies: json['totalCompanies'] ?? 0,
+      totalMembers: json['totalMembers'] ?? 0,
+      newMembersThisMonth: json['newMembersThisMonth'] ?? 0,
+      monthlySubscriptionRevenue: (json['monthlySubscriptionRevenue'] ?? 0).toDouble(),
     );
   }
 }
