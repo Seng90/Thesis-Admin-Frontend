@@ -13,14 +13,16 @@ class AddFounderView extends StatefulWidget {
 
 class _AddFounderViewState extends State<AddFounderView> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _nameEnController = TextEditingController();
+  final _nameLaController = TextEditingController();
   final _bioController = TextEditingController();
   final _linkedinController = TextEditingController();
   bool _isSaving = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _nameEnController.dispose();
+    _nameLaController.dispose();
     _bioController.dispose();
     _linkedinController.dispose();
     super.dispose();
@@ -34,7 +36,8 @@ class _AddFounderViewState extends State<AddFounderView> {
     final revisionsController = Provider.of<RevisionsController>(context, listen: false);
     
     Map<String, dynamic> proposedChanges = {
-      'name': _nameController.text.trim(),
+      'name_en': _nameEnController.text.trim(),
+      'name_la': _nameLaController.text.trim(),
     };
     
     if (_bioController.text.trim().isNotEmpty) {
@@ -90,8 +93,14 @@ class _AddFounderViewState extends State<AddFounderView> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Founder Name *'),
+                        controller: _nameLaController,
+                        decoration: const InputDecoration(labelText: 'Founder Name (Lao) *'),
+                        validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _nameEnController,
+                        decoration: const InputDecoration(labelText: 'Founder Name (English) *'),
                         validator: (v) => v!.trim().isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),

@@ -44,7 +44,22 @@ class _EditInvestorViewState extends State<EditInvestorView> {
       _websiteController = TextEditingController(text: _existingInvestor?.websiteUrl ?? '');
       _contactController = TextEditingController(text: _existingInvestor?.contactInfo ?? '');
       _logoUrlController = TextEditingController(text: _existingInvestor?.logoUrl ?? '');
-      _type = _existingInvestor?.type ?? 'Venture Capital';
+      
+      String initialType = _existingInvestor?.type ?? 'VC';
+      // Normalize common long-form type names from legacy databases or inputs
+      if (initialType == 'Venture Capital') {
+        initialType = 'VC';
+      } else if (initialType == 'Angel Investor') {
+        initialType = 'Angel';
+      } else if (initialType == 'Private Equity') {
+        initialType = 'PE';
+      }
+      
+      const allowedTypes = ['VC', 'Angel', 'PE', 'Corporate', 'Accelerator', 'Syndicate', 'Other'];
+      if (!allowedTypes.contains(initialType)) {
+        initialType = 'Other';
+      }
+      _type = initialType;
       
       _isInit = true;
     }
@@ -135,7 +150,7 @@ class _EditInvestorViewState extends State<EditInvestorView> {
                       DropdownButtonFormField<String>(
                         initialValue: _type,
                         decoration: const InputDecoration(labelText: 'Type'),
-                        items: ['Venture Capital', 'Angel Investor', 'Private Equity'].map((String val) {
+                        items: ['VC', 'Angel', 'PE', 'Corporate', 'Accelerator', 'Syndicate', 'Other'].map((String val) {
                           return DropdownMenuItem(
                             value: val,
                             child: Text(val),

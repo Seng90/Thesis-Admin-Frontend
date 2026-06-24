@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/founders/controllers/founders_controller.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
 
 class FoundersView extends StatefulWidget {
   const FoundersView({super.key});
@@ -49,7 +50,7 @@ class _FoundersViewState extends State<FoundersView> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
         child: Consumer<FoundersController>(
           builder: (context, controller, child) {
             if (controller.isLoading) {
@@ -99,7 +100,8 @@ class _FoundersViewState extends State<FoundersView> {
             final filtered = controller.founders.where((f) {
               if (_searchQuery.isEmpty) return true;
               final q = _searchQuery.toLowerCase();
-              return f.name.toLowerCase().contains(q) ||
+              return f.nameEn.toLowerCase().contains(q) ||
+                  f.nameLa.toLowerCase().contains(q) ||
                   (f.bio ?? '').toLowerCase().contains(q);
             }).toList();
 
@@ -149,6 +151,7 @@ class _FoundersViewState extends State<FoundersView> {
                                       showCheckboxColumn: false,
                                       columns: const [
                                 DataColumn(label: Text('NAME', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                DataColumn(label: Text('ROLE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
                                 DataColumn(label: Text('BIO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
                                 DataColumn(label: Text('LINKEDIN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
                                 DataColumn(label: Text('ACTIONS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
@@ -160,15 +163,17 @@ class _FoundersViewState extends State<FoundersView> {
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          CircleAvatar(
-                                            radius: 16,
-                                            child: Text(founder.name.isNotEmpty ? founder.name[0].toUpperCase() : '?'),
+                                          CustomLogoWidget(
+                                            imageUrl: null,
+                                            fallbackName: founder.nameEn,
+                                            size: 32,
                                           ),
                                           const SizedBox(width: 8),
-                                          Text(founder.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                                          Text('${founder.nameLa} | ${founder.nameEn}', style: const TextStyle(fontWeight: FontWeight.w500)),
                                         ],
                                       ),
                                     ),
+                                    DataCell(Text(founder.role ?? 'N/A', style: const TextStyle(color: AppColors.textSecondary))),
                                     DataCell(Text(
                                       (founder.bio ?? 'N/A').length > 40
                                           ? '${(founder.bio ?? 'N/A').substring(0, 40)}...'
@@ -189,7 +194,7 @@ class _FoundersViewState extends State<FoundersView> {
                                               context: context,
                                               builder: (ctx) => AlertDialog(
                                                 title: const Text('Delete Founder'),
-                                                content: Text('Are you sure you want to delete "${founder.name}"?'),
+                                                content: Text('Are you sure you want to delete "${founder.nameEn}"?'),
                                                 actions: [
                                                   TextButton(
                                                     onPressed: () => Navigator.pop(ctx),

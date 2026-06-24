@@ -18,7 +18,8 @@ class EditFounderView extends StatefulWidget {
 class _EditFounderViewState extends State<EditFounderView> {
   final _formKey = GlobalKey<FormState>();
   
-  late TextEditingController _nameController;
+  late TextEditingController _nameEnController;
+  late TextEditingController _nameLaController;
   late TextEditingController _bioController;
   late TextEditingController _linkedinController;
   
@@ -37,7 +38,8 @@ class _EditFounderViewState extends State<EditFounderView> {
         _existingFounder = null;
       }
       
-      _nameController = TextEditingController(text: _existingFounder?.name ?? '');
+      _nameEnController = TextEditingController(text: _existingFounder?.nameEn ?? '');
+      _nameLaController = TextEditingController(text: _existingFounder?.nameLa ?? '');
       _bioController = TextEditingController(text: _existingFounder?.bio ?? '');
       _linkedinController = TextEditingController(text: _existingFounder?.linkedinUrl ?? '');
       
@@ -47,7 +49,8 @@ class _EditFounderViewState extends State<EditFounderView> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _nameEnController.dispose();
+    _nameLaController.dispose();
     _bioController.dispose();
     _linkedinController.dispose();
     super.dispose();
@@ -61,8 +64,11 @@ class _EditFounderViewState extends State<EditFounderView> {
     final revController = Provider.of<RevisionsController>(context, listen: false);
     
     final proposedChanges = <String, dynamic>{};
-    if (_nameController.text.trim() != _existingFounder?.name) {
-      proposedChanges['name'] = _nameController.text.trim();
+    if (_nameEnController.text.trim() != _existingFounder?.nameEn) {
+      proposedChanges['name_en'] = _nameEnController.text.trim();
+    }
+    if (_nameLaController.text.trim() != _existingFounder?.nameLa) {
+      proposedChanges['name_la'] = _nameLaController.text.trim();
     }
     if (_bioController.text.trim() != _existingFounder?.bio) {
       proposedChanges['bio'] = _bioController.text.trim();
@@ -138,12 +144,21 @@ class _EditFounderViewState extends State<EditFounderView> {
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
-                        controller: _nameController,
+                        controller: _nameLaController,
                         decoration: const InputDecoration(
-                          labelText: 'Founder Name *',
+                          labelText: 'Founder Name (Lao) *',
                           prefixIcon: Icon(Icons.person),
                         ),
-                        validator: (v) => v!.trim().isEmpty ? 'Founder name is required' : null,
+                        validator: (v) => v!.trim().isEmpty ? 'Lao name is required' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _nameEnController,
+                        decoration: const InputDecoration(
+                          labelText: 'Founder Name (English) *',
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        validator: (v) => v!.trim().isEmpty ? 'English name is required' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(

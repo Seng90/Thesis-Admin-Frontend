@@ -17,6 +17,7 @@ class _PackagesViewState extends State<PackagesView> {
   final ScrollController _verticalScroll = ScrollController();
   final ScrollController _horizontalScroll = ScrollController();
   String _searchQuery = '';
+  bool _isUSD = true;
 
   @override
   void dispose() {
@@ -53,7 +54,7 @@ class _PackagesViewState extends State<PackagesView> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
         child: Consumer<PackagesController>(
           builder: (context, controller, child) {
             if (controller.isLoading) {
@@ -82,6 +83,21 @@ class _PackagesViewState extends State<PackagesView> {
                           });
                         },
                       ),
+                    ),
+                    const SizedBox(width: 16),
+                    ToggleButtons(
+                      isSelected: [_isUSD, !_isUSD],
+                      borderRadius: BorderRadius.circular(8),
+                      constraints: const BoxConstraints(minHeight: 48),
+                      onPressed: (index) {
+                        setState(() {
+                          _isUSD = index == 0;
+                        });
+                      },
+                      children: const [
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('USD', style: TextStyle(fontWeight: FontWeight.bold))),
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('KIP', style: TextStyle(fontWeight: FontWeight.bold))),
+                      ],
                     ),
                   ],
                 ),
@@ -141,7 +157,7 @@ class _PackagesViewState extends State<PackagesView> {
                                       ),
                                       DataCell(
                                         Text(
-                                          pkg.price == 0 ? 'Free' : '${pkg.price.toStringAsFixed(0)} LAK', 
+                                          pkg.price == 0 ? 'Free' : _isUSD ? '\$${pkg.price.toStringAsFixed(2)}' : '${(pkg.price * 25000).toStringAsFixed(0)} LAK', 
                                           style: const TextStyle(fontWeight: FontWeight.w500)
                                         )
                                       ),

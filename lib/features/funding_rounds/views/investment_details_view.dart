@@ -103,10 +103,10 @@ class _InvestmentDetailsViewState extends State<InvestmentDetailsView> {
                                       ],
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(
-                                      'Investment in ${inv.companyId}',
-                                      style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
-                                    ),
+                                      Text(
+                                        'Investment in ${inv.companyName ?? inv.companyId}',
+                                        style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                                      ),
                                     const SizedBox(height: 24),
                                     Row(
                                       children: [
@@ -129,12 +129,10 @@ class _InvestmentDetailsViewState extends State<InvestmentDetailsView> {
                       ),
                       const SizedBox(height: 24),
                       // Details Cards
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Card(
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isSmallScreen = constraints.maxWidth < 600;
+                          final card1 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -147,20 +145,21 @@ class _InvestmentDetailsViewState extends State<InvestmentDetailsView> {
                                   children: [
                                     const Text('Investment Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                                     const SizedBox(height: 16),
-                                    _buildInfoRow(Icons.business_outlined, 'Company ID', inv.companyId),
+                                    _buildInfoRow(Icons.business_outlined, 'Company', inv.companyName ?? inv.companyId),
                                     const SizedBox(height: 12),
-                                    _buildInfoRow(Icons.person_outline, 'Investor ID', inv.investorId),
+                                    _buildInfoRow(Icons.person_outline, 'Investor', inv.investorDisplayName),
                                     const SizedBox(height: 12),
-                                    _buildInfoRow(Icons.cyclone_outlined, 'Round ID', inv.roundId),
+                                    _buildInfoRow(Icons.cyclone_outlined, 'Funding Round', inv.roundName ?? inv.roundId),
+                                    if (inv.referenceUrl != null && inv.referenceUrl!.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      _buildInfoRow(Icons.link, 'Reference URL', inv.referenceUrl!),
+                                    ],
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            flex: 1,
-                            child: Card(
+                            );
+                            
+                          final card2 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -175,13 +174,28 @@ class _InvestmentDetailsViewState extends State<InvestmentDetailsView> {
                                     const SizedBox(height: 24),
                                     _buildGlanceItem('Date', inv.investDate.toIso8601String().split('T')[0], Icons.calendar_today_outlined),
                                     const Divider(height: 32),
-                                    _buildGlanceItem('Amount', '${inv.amount} ${inv.currency}', Icons.attach_money_outlined),
+                                    _buildGlanceItem('Amount', inv.amount == 0 ? 'Undisclosed' : '${inv.amount} ${inv.currency}', Icons.attach_money_outlined),
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
+                            );
+                            
+                          if (isSmallScreen) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [card1, const SizedBox(height: 24), card2],
+                            );
+                          } else {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 2, child: card1),
+                                const SizedBox(width: 24),
+                                Expanded(flex: 1, child: card2),
+                              ],
+                            );
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -201,12 +215,14 @@ class _InvestmentDetailsViewState extends State<InvestmentDetailsView> {
       children: [
         Icon(icon, size: 20, color: AppColors.textMuted),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            ],
+          ),
         ),
       ],
     );
@@ -224,13 +240,15 @@ class _InvestmentDetailsViewState extends State<InvestmentDetailsView> {
           child: Icon(icon, size: 20, color: AppColors.primary),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            ],
+          ),
         ),
       ],
     );

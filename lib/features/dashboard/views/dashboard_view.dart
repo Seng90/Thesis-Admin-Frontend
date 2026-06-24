@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/widgets/admin_header.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
 import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
 import 'package:investrack_admin/features/members/controllers/members_controller.dart';
 import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
@@ -20,6 +22,16 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
+  final ScrollController _horizontalScrollCtrl = ScrollController();
+  final ScrollController _verticalScrollCtrl = ScrollController();
+
+  @override
+  void dispose() {
+    _horizontalScrollCtrl.dispose();
+    _verticalScrollCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -76,11 +88,23 @@ class _DashboardViewState extends State<DashboardView> {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: Scrollbar(
+              thumbVisibility: true,
+              controller: _horizontalScrollCtrl,
+              child: SingleChildScrollView(
+                controller: _horizontalScrollCtrl,
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: 1350,
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    controller: _verticalScrollCtrl,
+                    child: SingleChildScrollView(
+                      controller: _verticalScrollCtrl,
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
             // Stats Row
             Consumer4<CompaniesController, MembersController, InvestorsController, DashboardController>(
               builder: (context, companiesCtrl, membersCtrl, investorsCtrl, dashboardCtrl, child) {
@@ -88,52 +112,50 @@ class _DashboardViewState extends State<DashboardView> {
                 if (dashboardCtrl.isLoadingSummary) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                return Row(
+                return Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
                   children: [
-                    _buildStatCard(
+                    SizedBox(width: 250, child: _buildStatCard(
                       'Companies',
                       (sum?.totalCompanies ?? companiesCtrl.companies.length).toString(),
                       '+${sum?.newCompaniesThisMonth ?? 0} this month',
                       true,
                       '${sum?.companiesAwaitingReview ?? 0} awaiting review',
                       LucideIcons.building2,
-                    ),
-                    const SizedBox(width: 16),
-                    _buildStatCard(
+                    )),
+                    SizedBox(width: 250, child: _buildStatCard(
                       'Founders & people',
                       (sum?.totalMembers ?? membersCtrl.members.length).toString(),
                       '+${sum?.newMembersThisMonth ?? 0} this month',
                       true,
                       'Total registered users',
                       LucideIcons.users,
-                    ),
-                    const SizedBox(width: 16),
-                    _buildStatCard(
+                    )),
+                    SizedBox(width: 250, child: _buildStatCard(
                       'Active investors',
                       (sum?.totalInvestors ?? investorsCtrl.investors.length).toString(),
                       '+0',
                       true,
                       'across multiple countries',
                       LucideIcons.wallet,
-                    ),
-                    const SizedBox(width: 16),
-                    _buildStatCard(
+                    )),
+                    SizedBox(width: 250, child: _buildStatCard(
                       'Funding tracked (YTD)',
                       '\$${((sum?.totalFundingYTD ?? 0) / 1000000).toStringAsFixed(1)}M',
                       '${(sum?.fundingChangePct ?? 0) >= 0 ? '+' : ''}${(sum?.fundingChangePct ?? 0).toStringAsFixed(1)}%',
                       (sum?.fundingChangePct ?? 0) >= 0,
                       'vs. same period last year',
                       LucideIcons.trendingUp,
-                    ),
-                    const SizedBox(width: 16),
-                    _buildStatCard(
+                    )),
+                    SizedBox(width: 250, child: _buildStatCard(
                       'Subscription Revenue',
                       '\$${sum?.monthlySubscriptionRevenue.toStringAsFixed(2) ?? '0.00'}',
                       'This month',
                       true,
                       'Monthly recurring',
                       LucideIcons.banknote,
-                    ),
+                    )),
                   ],
                 );
               },
@@ -144,95 +166,137 @@ class _DashboardViewState extends State<DashboardView> {
             // Charts Row
             Consumer<DashboardController>(
               builder: (context, dashboardCtrl, child) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                return Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
                   children: [
-                    Expanded(
-                      flex: 2,
+                    SizedBox(
+                      width: 600,
                       child: _buildChartCardWithActions(
                         'Funding deployed in Laos',
                         '${dashboardCtrl.currentFundingPeriod} · USD millions',
                         _FundingAreaChart(history: dashboardCtrl.fundingHistory, isLoading: dashboardCtrl.isLoadingFunding),
                         Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: ['1D', '1W', '2W', '1M', '3M', '6M'].map((period) {
-                            final isSelected = dashboardCtrl.currentFundingPeriod == period;
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 4.0),
-                              child: ChoiceChip(
-                                label: Text(period),
-                                labelStyle: TextStyle(
-                                  fontSize: 10,
-                                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                ),
-                                selectedColor: AppColors.primary,
-                                backgroundColor: AppColors.background,
-                                selected: isSelected,
-                                onSelected: (val) {
-                                  if (val) dashboardCtrl.loadFundingHistory(period);
-                                },
+                        mainAxisSize: MainAxisSize.min,
+                        children: ['1D', '1W', '2W', '1M', '3M', '6M'].map((period) {
+                          final isSelected = dashboardCtrl.currentFundingPeriod == period;
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 4.0),
+                            child: ChoiceChip(
+                              label: Text(period),
+                              labelStyle: TextStyle(
+                                fontSize: 10,
+                                color: isSelected ? Colors.white : AppColors.textPrimary,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                               ),
-                            );
-                          }).toList(),
-                        )
+                              selectedColor: AppColors.primary,
+                              backgroundColor: AppColors.background,
+                              selected: isSelected,
+                              onSelected: (val) {
+                                if (val) dashboardCtrl.loadFundingHistory(period);
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 1,
-                      child: _buildChartCard(
-                        'Sectors',
-                        'Share of tracked companies',
-                        _SectorBarChart(sectors: dashboardCtrl.sectors, isLoading: dashboardCtrl.isLoadingSectors),
-                      ),
+                  ),
+                  SizedBox(
+                    width: 350,
+                    child: _buildChartCard(
+                      'Sectors',
+                      'Share of tracked companies',
+                      _SectorBarChart(sectors: dashboardCtrl.sectors, isLoading: dashboardCtrl.isLoadingSectors),
                     ),
-                  ],
-                );
+                  ),
+                ],
+              );
               }
             ),
 
             const SizedBox(height: 24),
 
             // Lists Row
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
               children: [
-                Expanded(
-                  flex: 2,
+                SizedBox(
+                  width: 600,
                   child: _buildListCard(
                     'Recently updated companies',
                     'Last edits across the dataset',
                     const _RecentCompaniesList(),
+                    onViewAll: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => Dialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Container(
+                            width: 600,
+                            constraints: const BoxConstraints(maxHeight: 600),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(24.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('Recently Updated Companies', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                      IconButton(
+                                        icon: const Icon(LucideIcons.x, size: 20),
+                                        onPressed: () => Navigator.pop(context),
+                                        splashRadius: 24,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Divider(height: 1, color: AppColors.border),
+                                const Flexible(
+                                  child: SingleChildScrollView(
+                                    child: _RecentCompaniesList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 1,
+                SizedBox(
+                  width: 350,
                   child: Consumer<RevisionsController>(
                     builder: (context, revCtrl, child) {
                       return _buildListCard(
                         'Moderation queue',
                         '${revCtrl.pendingRevisions.length} items awaiting review',
                         _ModerationQueueList(controller: revCtrl),
+                        onViewAll: () => context.push('/moderations'),
                       );
                     }
                   ),
                 ),
               ],
-            )
-          ],
-        ),
-      ),
-      ),
-      ],
-      ),
+            ),
+              ],
+            ), // End of Column
+          ), // End of SingleChildScrollView(vertical)
+        ), // End of Scrollbar(vertical)
+      ), // End of SizedBox
+    ), // End of SingleChildScrollView(horizontal)
+  ), // End of Scrollbar(horizontal)
+), // End of Expanded
+],
+),
     );
   }
 
   Widget _buildStatCard(String label, String value, String delta, bool positive, String hint, IconData icon) {
-    return Expanded(
-      child: Card(
+    return Card(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -274,8 +338,7 @@ class _DashboardViewState extends State<DashboardView> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildChartCardWithActions(String title, String subtitle, Widget chart, Widget action) {
@@ -325,7 +388,7 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildListCard(String title, String subtitle, Widget list) {
+  Widget _buildListCard(String title, String subtitle, Widget list, {VoidCallback? onViewAll}) {
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,12 +406,13 @@ class _DashboardViewState extends State<DashboardView> {
                     Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   ],
                 ),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Text('View all', style: TextStyle(fontSize: 12)),
-                  label: const Icon(LucideIcons.arrowRight, size: 14),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.textPrimary),
-                ),
+                if (onViewAll != null)
+                  TextButton.icon(
+                    onPressed: onViewAll,
+                    icon: const Text('View all', style: TextStyle(fontSize: 12)),
+                    label: const Icon(LucideIcons.arrowRight, size: 14),
+                    style: TextButton.styleFrom(foregroundColor: AppColors.textPrimary),
+                  ),
               ],
             ),
           ),
@@ -398,9 +462,13 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
   @override
   Widget build(BuildContext context) {
     if (widget.isLoading) return const Center(child: CircularProgressIndicator());
-    if (widget.history.isEmpty) return const Center(child: Text('No funding data'));
 
-    final history = widget.history;
+    // Provide a dummy history if empty so the chart still renders an empty grid
+    final history = widget.history.isEmpty 
+        ? List.generate(5, (index) => FundingHistoryItem(
+            date: DateTime.now().subtract(Duration(days: 4 - index)).toString().split(' ')[0], 
+            totalAmount: 0))
+        : widget.history;
     final maxAmount = history.map((e) => e.totalAmount).reduce((a, b) => a > b ? a : b);
     
     final defaultMinX = 0.0;
@@ -598,20 +666,25 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
   }
 }
 
-class _SectorBarChart extends StatelessWidget {
+class _SectorBarChart extends StatefulWidget {
   final List<SectorStat> sectors;
   final bool isLoading;
   const _SectorBarChart({required this.sectors, this.isLoading = false});
 
   @override
+  State<_SectorBarChart> createState() => _SectorBarChartState();
+}
+
+class _SectorBarChartState extends State<_SectorBarChart> {
+  int touchedIndex = -1;
+
+  @override
   Widget build(BuildContext context) {
-    if (isLoading) return const Center(child: CircularProgressIndicator());
-    if (sectors.isEmpty) return const Center(child: Text('No sector data'));
+    if (widget.isLoading) return const Center(child: CircularProgressIndicator());
+    if (widget.sectors.isEmpty) return const Center(child: Text('No sector data'));
 
-    final maxCount = sectors.map((e) => e.count).reduce((a, b) => a > b ? a : b);
-    if (maxCount == 0) return const Center(child: Text('No companies tracked'));
-
-    final total = sectors.fold<int>(0, (sum, item) => sum + item.count);
+    final total = widget.sectors.fold<int>(0, (sum, item) => sum + item.count);
+    if (total == 0) return const Center(child: Text('No companies tracked'));
 
     final colors = [
       AppColors.primary,
@@ -626,96 +699,97 @@ class _SectorBarChart extends StatelessWidget {
       AppColors.textSecondary,
     ];
 
-    // Sort sectors by count descending for a cleaner look
-    final sorted = List<SectorStat>.from(sectors)
+    // Sort sectors by count descending
+    final sorted = List<SectorStat>.from(widget.sectors)
       ..sort((a, b) => b.count.compareTo(a.count));
 
     List<SectorStat> displaySectors = sorted;
     if (sorted.length > 6) {
-      final top5 = sorted.take(5).toList();
-      final otherCount = sorted.skip(5).fold<int>(0, (sum, item) => sum + item.count);
-      displaySectors = [...top5, SectorStat(industry: 'Other', count: otherCount)];
+      final top6 = sorted.take(6).toList();
+      final otherCount = sorted.skip(6).fold<int>(0, (sum, item) => sum + item.count);
+      if (otherCount > 0) {
+        displaySectors = [...top6, SectorStat(industry: 'Other', count: otherCount)];
+      }
     }
 
-    final displayMaxCount = displaySectors.map((e) => e.count).reduce((a, b) => a > b ? a : b);
-
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: displaySectors.asMap().entries.map((entry) {
-          final index = entry.key;
-          final sector = entry.value;
-          final color = colors[index % colors.length];
-          final pct = (sector.count / total * 100);
-          final fraction = sector.count / displayMaxCount; // for bar width
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: PieChart(
+              PieChartData(
+                pieTouchData: PieTouchData(
+                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                    setState(() {
+                      if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
+                        touchedIndex = -1;
+                        return;
+                      }
+                      touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                    });
+                  },
+                ),
+                borderData: FlBorderData(show: false),
+                sectionsSpace: 2,
+                centerSpaceRadius: 30,
+                sections: displaySectors.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final sector = entry.value;
+                  final isTouched = i == touchedIndex;
+                  final pct = (sector.count / total * 100);
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: Row(
-              children: [
-                // Sector name (left label)
-                SizedBox(
-                  width: 90,
-                  child: Text(
-                    sector.industry,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
+                  return PieChartSectionData(
+                    color: colors[i % colors.length],
+                    value: sector.count.toDouble(),
+                    title: pct >= 3 ? '${pct.toStringAsFixed(0)}%' : '',
+                    radius: isTouched ? 50.0 : 40.0,
+                    titleStyle: TextStyle(
+                      fontSize: isTouched ? 14.0 : 10.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Bar
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Stack(
-                        children: [
-                          // Background track
-                          Container(
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                          // Filled bar
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 600),
-                            curve: Curves.easeOutCubic,
-                            height: 24,
-                            width: constraints.maxWidth * fraction,
-                            decoration: BoxDecoration(
-                              color: color,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Count + percentage (right label)
-                SizedBox(
-                  width: 65,
-                  child: Text(
-                    '${sector.count}  ${pct.toStringAsFixed(0)}%',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-              ],
+                  );
+                }).toList(),
+              ),
             ),
-          );
-        }).toList(),
+          ),
+          Expanded(
+            flex: 2,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: displaySectors.asMap().entries.map((entry) {
+                final i = entry.key;
+                final sector = entry.value;
+                final color = colors[i % colors.length];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                  child: Row(
+                    children: [
+                      Container(width: 12, height: 12, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          sector.industry,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: i == touchedIndex ? FontWeight.bold : FontWeight.w500,
+                            color: i == touchedIndex ? AppColors.textPrimary : AppColors.textSecondary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -738,18 +812,15 @@ class _RecentCompaniesList extends StatelessWidget {
           separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.border),
           itemBuilder: (context, index) {
             final item = controller.recentCompanies[index];
-            final logoInitial = item.name.isNotEmpty ? item.name.substring(0, 1).toUpperCase() : '?';
             
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: AppColors.primaryLight,
-                    backgroundImage: item.logoUrl != null ? NetworkImage(item.logoUrl!) : null,
-                    child: item.logoUrl == null 
-                        ? Text(logoInitial, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12))
-                        : null,
+                  CustomLogoWidget(
+                    imageUrl: item.logoUrl,
+                    fallbackName: item.name,
+                    size: 40,
                   ),
                   const SizedBox(width: 16),
                   Expanded(

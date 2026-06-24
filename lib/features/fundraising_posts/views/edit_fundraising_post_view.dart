@@ -5,8 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import '../controllers/fundraising_posts_controller.dart';
+import '../models/fundraising_post_model.dart';
+import '../../revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/widgets/desktop_text_field.dart';
+import 'widgets/post_comments_section.dart';
 
 class EditFundraisingPostView extends StatefulWidget {
   final String id;
@@ -29,12 +32,13 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
   late TextEditingController _websiteUrlCtrl;
   late TextEditingController _deadlineCtrl;
   
-  String? _coverUrl;
   String _status = 'Active';
   bool _isUploading = false;
   late TextEditingController _adminFeedbackCtrl;
+  late TextEditingController _contentCtrl;
+  late TextEditingController _coverUrlCtrl;
   
-  late quill.QuillController _quillController;
+  FundraisingPost? _originalPost;
 
   @override
   void initState() {
@@ -49,8 +53,8 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
     _websiteUrlCtrl = TextEditingController();
     _deadlineCtrl = TextEditingController();
     _adminFeedbackCtrl = TextEditingController();
-    
-    _quillController = quill.QuillController.basic();
+    _contentCtrl = TextEditingController();
+    _coverUrlCtrl = TextEditingController();
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
@@ -59,7 +63,8 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
 
   void _loadData() {
     final ctrl = context.read<FundraisingPostsController>();
-    final post = ctrl.posts.firstWhere((p) => p.id == widget.id);
+    _originalPost = ctrl.posts.firstWhere((p) => p.id == widget.id);
+    final post = _originalPost!;
     
     _titleCtrl.text = post.title;
     _excerptCtrl.text = post.excerpt;
@@ -70,21 +75,22 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
     _pitchDeckUrlCtrl.text = post.pitchDeckUrl ?? '';
     _websiteUrlCtrl.text = post.websiteUrl ?? '';
     _deadlineCtrl.text = post.deadline.toIso8601String().split('T').first;
-    _coverUrl = post.coverUrl;
+    _coverUrlCtrl.text = post.coverUrl ?? '';
     _status = post.status;
     _adminFeedbackCtrl.text = post.adminFeedback ?? '';
     
     try {
       if (post.content.isNotEmpty) {
-        final doc = quill.Document.fromJson(jsonDecode(post.content));
-        _quillController = quill.QuillController(
-          document: doc,
-          selection: const TextSelection.collapsed(offset: 0),
-        );
+        final decoded = jsonDecode(post.content);
+        if (decoded is List) {
+          final doc = quill.Document.fromJson(decoded);
+          _contentCtrl.text = doc.toPlainText();
+        } else {
+          _contentCtrl.text = post.content;
+        }
       }
-    } catch (e) {
-      // If it fails to parse as JSON (maybe it's plain text), just insert text
-      _quillController.document.insert(0, post.content);
+    } catch (_) {
+      _contentCtrl.text = post.content;
     }
     setState(() {});
   }
@@ -101,69 +107,127 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
     _websiteUrlCtrl.dispose();
     _deadlineCtrl.dispose();
     _adminFeedbackCtrl.dispose();
-    _quillController.dispose();
+    _contentCtrl.dispose();
+    _coverUrlCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _pickAndUploadImage() async {
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      final bytes = await image.readAsBytes();
-      setState(() { _isUploading = true; });
-      if (!mounted) return;
-      final ctrl = context.read<FundraisingPostsController>();
-      final url = await ctrl.uploadCoverImage(bytes, image.name);
-      if (url != null) {
-        setState(() { _coverUrl = url; });
-      } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to upload image')));
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        setState(() { _isUploading = true; });
+        if (!mounted) return;
+        final ctrl = context.read<FundraisingPostsController>();
+        final url = await ctrl.uploadCoverImage(bytes, image.name);
+        if (url != null) {
+          setState(() { _coverUrlCtrl.text = url; });
+        } else {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to upload image')));
+        }
+        setState(() { _isUploading = false; });
       }
-      setState(() { _isUploading = false; });
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
     }
   }
 
-  void _save() async {
+  Map<String, dynamic> _getFormData() {
+    return {
+      'title': _titleCtrl.text,
+      'excerpt': _excerptCtrl.text,
+      'content': _contentCtrl.text,
+      'round_type': _roundTypeCtrl.text,
+      'target_amount_usd': double.tryParse(_targetAmountCtrl.text) ?? 0,
+      'min_ticket_usd': double.tryParse(_minTicketCtrl.text) ?? 0,
+      'contact_email': _contactEmailCtrl.text,
+      'pitch_deck_url': _pitchDeckUrlCtrl.text,
+      'website_url': _websiteUrlCtrl.text,
+      'deadline': DateTime.tryParse('${_deadlineCtrl.text}T00:00:00Z')?.toIso8601String() ?? DateTime.now().toUtc().toIso8601String(),
+      'cover_url': _coverUrlCtrl.text,
+    };
+  }
+
+  bool get _hasChanges {
+    if (_originalPost == null) return false;
+    final currentDeadline = DateTime.tryParse(_deadlineCtrl.text);
+    final isDeadlineChanged = currentDeadline != null &&
+        (_originalPost!.deadline.year != currentDeadline.year ||
+         _originalPost!.deadline.month != currentDeadline.month ||
+         _originalPost!.deadline.day != currentDeadline.day);
+
+    return _titleCtrl.text != _originalPost!.title ||
+           _excerptCtrl.text != _originalPost!.excerpt ||
+           _contentCtrl.text != _originalPost!.content ||
+           _roundTypeCtrl.text != _originalPost!.roundType ||
+           _coverUrlCtrl.text != (_originalPost!.coverUrl ?? '') ||
+           _websiteUrlCtrl.text != (_originalPost!.websiteUrl ?? '') ||
+           _pitchDeckUrlCtrl.text != (_originalPost!.pitchDeckUrl ?? '') ||
+           _contactEmailCtrl.text != (_originalPost!.contactEmail ?? '') ||
+           (double.tryParse(_targetAmountCtrl.text) ?? 0) != _originalPost!.targetAmountUsd ||
+           (double.tryParse(_minTicketCtrl.text) ?? 0) != (_originalPost!.minTicketUsd ?? 0) ||
+           isDeadlineChanged ||
+           _status != _originalPost!.status ||
+           _adminFeedbackCtrl.text != (_originalPost!.adminFeedback ?? '');
+  }
+
+  void _proposeEditToModeration() async {
+    if (!_hasChanges) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No changes detected.')));
+      return;
+    }
     if (_formKey.currentState!.validate()) {
       final ctrl = context.read<FundraisingPostsController>();
+      final revCtrl = context.read<RevisionsController>();
       
-      final contentJson = jsonEncode(_quillController.document.toDelta().toJson());
-      
-      final data = {
-        'title': _titleCtrl.text,
-        'excerpt': _excerptCtrl.text,
-        'content': contentJson,
-        'roundType': _roundTypeCtrl.text,
-        'targetAmountUsd': double.tryParse(_targetAmountCtrl.text) ?? 0,
-        'minTicketUsd': double.tryParse(_minTicketCtrl.text) ?? 0,
-        'contactEmail': _contactEmailCtrl.text,
-        'pitchDeckUrl': _pitchDeckUrlCtrl.text,
-        'websiteUrl': _websiteUrlCtrl.text,
-        'deadline': DateTime.tryParse(_deadlineCtrl.text)?.toIso8601String() ?? DateTime.now().toIso8601String(),
-        'coverUrl': _coverUrl,
-      };
+      final data = _getFormData();
+      data['status'] = _status;
+      if (_status == 'Hidden') {
+        data['admin_feedback'] = _adminFeedbackCtrl.text;
+      }
 
-      final success = await ctrl.updatePost(widget.id, data);
+      final success = await ctrl.requestUpdatePost(revCtrl, widget.id, data);
       
       if (!success || !mounted) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ctrl.errorMessage ?? 'Failed to update post')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(revCtrl.errorMessage ?? 'Failed to propose edit to moderation')));
         }
         return;
       }
 
-      final post = ctrl.posts.firstWhere((p) => p.id == widget.id);
-      bool statusSuccess = true;
-      if (post.status != _status || (_status == 'Hidden' && post.adminFeedback != _adminFeedbackCtrl.text)) {
-        statusSuccess = await ctrl.updatePostStatus(widget.id, _status, adminFeedback: _status == 'Hidden' ? _adminFeedbackCtrl.text : null);
-      }
-
-      if (statusSuccess && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post updated successfully')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Edit proposed to Moderation Queue!')));
         context.pop();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ctrl.errorMessage ?? 'Failed to update post status')));
       }
+    }
+  }
+
+  void _sendFeedbackToFounder() async {
+    if (!_hasChanges && _status == 'Hidden') {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No changes detected.')));
+      return;
+    }
+    if (_adminFeedbackCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter Admin Feedback first (Status will be set to Hidden).')));
+      return;
+    }
+
+    final ctrl = context.read<FundraisingPostsController>();
+    
+    final success = await ctrl.updatePostStatus(widget.id, 'Hidden', adminFeedback: _adminFeedbackCtrl.text.trim());
+    
+    if (!success || !mounted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ctrl.errorMessage ?? 'Failed to send feedback')));
+      }
+      return;
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Feedback sent! Post is now Hidden.')));
+      context.pop();
     }
   }
 
@@ -196,35 +260,51 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                       ),
                       const SizedBox(height: 16),
                       // Cover Image
-                      const Text('Cover Image', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                      const Text('Cover Image URL', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
                       const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: _pickAndUploadImage,
-                        child: Container(
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: DesktopTextFormField(
+                              controller: _coverUrlCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'Image URL (or upload)',
+                                prefixIcon: Icon(Icons.link),
+                              ),
+                              onChanged: (val) => setState(() {}),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            height: 48,
+                            child: ElevatedButton.icon(
+                              onPressed: _isUploading ? null : _pickAndUploadImage,
+                              icon: _isUploading 
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
+                                  : const Icon(Icons.upload),
+                              label: const Text('Upload'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_coverUrlCtrl.text.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Container(
                           width: double.infinity,
                           height: 200,
                           decoration: BoxDecoration(
                             color: AppColors.background,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: AppColors.border),
-                            image: _coverUrl != null && _coverUrl!.isNotEmpty
-                                ? DecorationImage(image: NetworkImage(_coverUrl!), fit: BoxFit.cover)
-                                : null,
+                            image: DecorationImage(
+                              image: NetworkImage(_coverUrlCtrl.text),
+                              fit: BoxFit.cover,
+                              onError: (e, s) {},
+                            ),
                           ),
-                          child: _isUploading
-                              ? const Center(child: CircularProgressIndicator())
-                              : (_coverUrl == null || _coverUrl!.isEmpty)
-                                  ? Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: const [
-                                        Icon(Icons.cloud_upload, size: 48, color: AppColors.textMuted),
-                                        SizedBox(height: 8),
-                                        Text('Click to upload cover image', style: TextStyle(color: AppColors.textSecondary)),
-                                      ],
-                                    )
-                                  : null,
                         ),
-                      ),
+                      ],
                       const SizedBox(height: 24),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,18 +330,6 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           ),
                         ],
                       ),
-                      if (_status == 'Hidden') ...[
-                        const SizedBox(height: 12),
-                        DesktopTextFormField(
-                          controller: _adminFeedbackCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Admin Feedback (Reason for hiding)',
-                            prefixIcon: Icon(Icons.feedback),
-                            alignLabelWithHint: true,
-                          ),
-                          validator: (v) => _status == 'Hidden' && v!.isEmpty ? 'Feedback is required when hiding a post' : null,
-                        ),
-                      ],
                       const SizedBox(height: 12),
                       DesktopTextFormField(
                         controller: _excerptCtrl,
@@ -270,27 +338,19 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Rich Text Editor
+                      // Content Editor
                       const Text('Content', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
                       const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.border),
-                          borderRadius: BorderRadius.circular(12),
-                          color: Theme.of(context).cardColor,
+                      DesktopTextFormField(
+                        controller: _contentCtrl,
+                        maxLines: 15,
+                        minLines: 8,
+                        keyboardType: TextInputType.multiline,
+                        decoration: const InputDecoration(
+                          hintText: 'Tell investors why they should invest, your traction, and how you will use the funds...',
+                          alignLabelWithHint: true,
                         ),
-                        child: Column(
-                          children: [
-                            Container(
-                              height: 300,
-                              padding: const EdgeInsets.all(16),
-                              child: quill.QuillEditor.basic(
-                                controller: _quillController,
-                                configurations: const quill.QuillEditorConfigurations(),
-                              ),
-                            ),
-                          ],
-                        ),
+                        validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 24),
 
@@ -374,12 +434,84 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                       ),
                       const SizedBox(height: 32),
 
-                      SizedBox(
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          onPressed: _save,
-                          icon: const Icon(Icons.save),
-                          label: const Text('Update Post'),
+                      const Text(
+                        'Manage Comments',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.border),
+                          borderRadius: BorderRadius.circular(12),
+                          color: Theme.of(context).cardColor,
+                        ),
+                        child: PostCommentsSection(postId: widget.id),
+                      ),
+                      const SizedBox(height: 32),
+
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.warning.withValues(alpha: 0.1),
+                          border: Border.all(color: AppColors.warning),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.feedback, color: AppColors.warning),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Feedback / Moderation Action',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.warning.withAlpha(200)),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            DesktopTextFormField(
+                              controller: _adminFeedbackCtrl,
+                              maxLines: 2,
+                              decoration: const InputDecoration(
+                                labelText: 'Admin Feedback (Required for Send Feedback action)',
+                                alignLabelWithHint: true,
+                                filled: true,
+                                fillColor: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 48,
+                                    child: OutlinedButton.icon(
+                                      onPressed: _proposeEditToModeration,
+                                      icon: const Icon(Icons.rate_review),
+                                      label: const Text('Propose Edit to Moderation'),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 48,
+                                    child: ElevatedButton.icon(
+                                      onPressed: _sendFeedbackToFounder,
+                                      icon: const Icon(Icons.send),
+                                      label: const Text('Send Feedback to Founder'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.warning,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],

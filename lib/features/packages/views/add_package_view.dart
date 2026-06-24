@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
@@ -10,29 +11,49 @@ class AddPackageView extends StatefulWidget {
   State<AddPackageView> createState() => _AddPackageViewState();
 }
 
+class FeatureItem {
+  TextEditingController keyController = TextEditingController();
+  TextEditingController valueController = TextEditingController();
+  
+  void dispose() {
+    keyController.dispose();
+    valueController.dispose();
+  }
+}
+
 class _AddPackageViewState extends State<AddPackageView> {
   final _formKey = GlobalKey<FormState>();
   
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
-  final _featuresController = TextEditingController();
+  final List<FeatureItem> _features = [FeatureItem()];
 
   @override
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
-    _featuresController.dispose();
+    for (var f in _features) {
+      f.dispose();
+    }
     super.dispose();
   }
 
   void _saveForm() async {
     if (_formKey.currentState!.validate()) {
       final revisionsController = Provider.of<RevisionsController>(context, listen: false);
+      
+      Map<String, String> featuresMap = {};
+      for (var f in _features) {
+        if (f.keyController.text.isNotEmpty && f.valueController.text.isNotEmpty) {
+          featuresMap[f.keyController.text.trim()] = f.valueController.text.trim();
+        }
+      }
+      final featuresJson = jsonEncode(featuresMap);
           
       Map<String, dynamic> proposedChanges = {
         'name': _nameController.text,
         'price': double.tryParse(_priceController.text) ?? 0,
-        'features': _featuresController.text,
+        'features': featuresJson,
       };
 
       final success = await revisionsController.createRevision(
@@ -87,16 +108,58 @@ class _AddPackageViewState extends State<AddPackageView> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _priceController,
-                        decoration: const InputDecoration(labelText: 'Price (LAK)'),
+                        decoration: const InputDecoration(labelText: 'Price (USD)'),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _featuresController,
-                        decoration: const InputDecoration(labelText: 'Features (comma separated)'),
-                        validator: (v) => v!.isEmpty ? 'Required' : null,
-                        maxLines: 3,
+                      const Text('Features', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ..._features.asMap().entries.map((entry) {
+                        int idx = entry.key;
+                        FeatureItem item = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: item.keyController,
+                                  decoration: const InputDecoration(labelText: 'Feature Name (e.g. Max Investors)', isDense: true),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: item.valueController,
+                                  decoration: const InputDecoration(labelText: 'Value (e.g. Unlimited)', isDense: true),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                onPressed: () {
+                                  if (_features.length > 1) {
+                                    setState(() {
+                                      _features.removeAt(idx);
+                                    });
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _features.add(FeatureItem());
+                            });
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Feature'),
+                        ),
                       ),
                       const SizedBox(height: 32),
                       ElevatedButton(

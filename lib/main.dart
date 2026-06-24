@@ -39,6 +39,7 @@ import 'features/funding_rounds/views/investments_view.dart';
 import 'features/funding_rounds/views/add_investment_view.dart';
 import 'features/funding_rounds/views/edit_investment_view.dart';
 import 'features/funding_rounds/views/investment_details_view.dart';
+import 'features/funding_rounds/views/investment_summary_detail_view.dart';
 import 'features/dashboard/controllers/dashboard_controller.dart';
 import 'features/fundraising_posts/controllers/fundraising_posts_controller.dart';
 import 'features/fundraising_posts/views/fundraising_posts_view.dart';
@@ -189,14 +190,17 @@ final GoRouter _router = GoRouter(
           builder: (context, state) =>
               FounderDetailsView(founderId: state.pathParameters['id']!),
         ),
-        GoRoute(
+        GoRoute(  
           path: '/investments',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: InvestmentsView()),
         ),
         GoRoute(
           path: '/investments/add',
-          builder: (context, state) => const AddInvestmentView(),
+          builder: (context, state) => AddInvestmentView(
+            initialCompanyId: state.uri.queryParameters['companyId'],
+            initialRoundId: state.uri.queryParameters['roundId'],
+          ),
         ),
         GoRoute(
           path: '/investments/edit/:id',
@@ -207,6 +211,12 @@ final GoRouter _router = GoRouter(
           path: '/investments/view/:id',
           builder: (context, state) =>
               InvestmentDetailsView(investmentId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/investments/summary/:idx',
+          builder: (context, state) => InvestmentSummaryDetailView(
+            summaryIndex: int.tryParse(state.pathParameters['idx'] ?? '0') ?? 0,
+          ),
         ),
         GoRoute(
           path: '/raises',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
@@ -15,12 +16,22 @@ class EditPackageView extends StatefulWidget {
   State<EditPackageView> createState() => _EditPackageViewState();
 }
 
+class FeatureItem {
+  TextEditingController keyController = TextEditingController();
+  TextEditingController valueController = TextEditingController();
+  
+  void dispose() {
+    keyController.dispose();
+    valueController.dispose();
+  }
+}
+
 class _EditPackageViewState extends State<EditPackageView> {
   final _formKey = GlobalKey<FormState>();
   
   late TextEditingController _nameController;
   late TextEditingController _priceController;
-  late TextEditingController _featuresController;
+  final List<FeatureItem> _features = [];
   
   bool _isInit = false;
 
@@ -33,7 +44,31 @@ class _EditPackageViewState extends State<EditPackageView> {
       
       _nameController = TextEditingController(text: existingPackage.name);
       _priceController = TextEditingController(text: existingPackage.price.toString());
-      _featuresController = TextEditingController(text: existingPackage.features);
+      
+      try {
+        if (existingPackage.features.isNotEmpty) {
+          final Map<String, dynamic> parsed = jsonDecode(existingPackage.features);
+          parsed.forEach((k, v) {
+            final item = FeatureItem();
+            item.keyController.text = k;
+            item.valueController.text = v.toString();
+            _features.add(item);
+          });
+        }
+      } catch (e) {
+        // If it's not JSON, maybe it was comma separated
+        final parts = existingPackage.features.split(',');
+        for (var part in parts) {
+          if (part.trim().isNotEmpty) {
+            final item = FeatureItem();
+            item.keyController.text = part.trim();
+            _features.add(item);
+          }
+        }
+      }
+      if (_features.isEmpty) {
+        _features.add(FeatureItem());
+      }
       
       _isInit = true;
     }
@@ -43,7 +78,9 @@ class _EditPackageViewState extends State<EditPackageView> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
-    _featuresController.dispose();
+    for (var f in _features) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -61,8 +98,17 @@ class _EditPackageViewState extends State<EditPackageView> {
       if (newPrice != existingPackage.price) {
         changes['price'] = newPrice;
       }
-      if (_featuresController.text != existingPackage.features) {
-        changes['features'] = _featuresController.text;
+      
+      Map<String, String> featuresMap = {};
+      for (var f in _features) {
+        if (f.keyController.text.isNotEmpty && f.valueController.text.isNotEmpty) {
+          featuresMap[f.keyController.text.trim()] = f.valueController.text.trim();
+        }
+      }
+      final newFeaturesJson = jsonEncode(featuresMap);
+      
+      if (newFeaturesJson != existingPackage.features) {
+        changes['features'] = newFeaturesJson;
       }
 
       if (changes.isNotEmpty) {
@@ -116,16 +162,58 @@ class _EditPackageViewState extends State<EditPackageView> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _priceController,
-                        decoration: const InputDecoration(labelText: 'Price (LAK)'),
+                        decoration: const InputDecoration(labelText: 'Price (USD)'),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _featuresController,
-                        decoration: const InputDecoration(labelText: 'Features (comma separated)'),
-                        validator: (v) => v!.isEmpty ? 'Required' : null,
-                        maxLines: 3,
+                      const Text('Features', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ..._features.asMap().entries.map((entry) {
+                        int idx = entry.key;
+                        FeatureItem item = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: item.keyController,
+                                  decoration: const InputDecoration(labelText: 'Feature Name (e.g. Max Investors)', isDense: true),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: item.valueController,
+                                  decoration: const InputDecoration(labelText: 'Value (e.g. Unlimited)', isDense: true),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                onPressed: () {
+                                  if (_features.length > 1) {
+                                    setState(() {
+                                      _features.removeAt(idx);
+                                    });
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _features.add(FeatureItem());
+                            });
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Feature'),
+                        ),
                       ),
                       const SizedBox(height: 32),
                       ElevatedButton(

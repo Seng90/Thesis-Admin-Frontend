@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/fundraising_post_model.dart';
 import '../controllers/fundraising_posts_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
+import '../../revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/localizations.dart';
 
 class FundraisingPostDetailsView extends StatefulWidget {
@@ -142,6 +143,7 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                               image: DecorationImage(
                                 image: NetworkImage(_post!.coverUrl!),
                                 fit: BoxFit.cover,
+                                onError: (e, s) {},
                               ),
                             ),
                           )
@@ -236,6 +238,18 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                                     ),
                                   ),
                                   const SizedBox(width: 12),
+                                  ElevatedButton.icon(
+                                    onPressed: () => _confirmDelete(context, _post!),
+                                    icon: const Icon(Icons.delete_outline, size: 16),
+                                    label: const Text('Delete'),
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                                      foregroundColor: AppColors.error,
+                                      elevation: 0,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
                                   if (_post!.websiteUrl != null && _post!.websiteUrl!.isNotEmpty)
                                     OutlinedButton.icon(
                                       onPressed: () => _launchUrl(_post!.websiteUrl),
@@ -266,12 +280,10 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                 ),
                 const SizedBox(height: 24),
                 // Details Cards
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Card(
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isSmallScreen = constraints.maxWidth < 600;
+                    final card1 = Card(
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -294,12 +306,9 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 24),
-                    Expanded(
-                      flex: 1,
-                      child: Card(
+                      );
+                      
+                    final card2 = Card(
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -324,9 +333,24 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                  ],
+                      );
+                      
+                    if (isSmallScreen) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [card1, const SizedBox(height: 24), card2],
+                      );
+                    } else {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 2, child: card1),
+                          const SizedBox(width: 24),
+                          Expanded(flex: 1, child: card2),
+                        ],
+                      );
+                    }
+                  },
                 ),
               ],
             ),
@@ -359,6 +383,44 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
           ),
         ),
       ],
+    );
+  }
+
+  void _confirmDelete(BuildContext context, FundraisingPost post) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: Text('Are you sure you want to delete "${post.title}"? This will send a request to the Moderation Queue.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final ctrl = context.read<FundraisingPostsController>();
+              final revCtrl = context.read<RevisionsController>();
+              final messenger = ScaffoldMessenger.of(context);
+              final success = await ctrl.requestDeletePost(revCtrl, post.id);
+              if (mounted) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Delete request sent to Moderation Queue' : 'Failed to send delete request: ${ctrl.errorMessage}'),
+                    backgroundColor: success ? AppColors.success : AppColors.error,
+                  ),
+                );
+                if (success) {
+                  context.go('/raises');
+                }
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 }

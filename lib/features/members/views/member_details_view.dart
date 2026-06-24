@@ -5,6 +5,7 @@ import 'package:investrack_admin/features/members/controllers/members_controller
 import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
 
 class MemberDetailsView extends StatefulWidget {
   final String memberId;
@@ -17,6 +18,8 @@ class MemberDetailsView extends StatefulWidget {
 
 class _MemberDetailsViewState extends State<MemberDetailsView> {
   bool _isInit = false;
+  List<Map<String, dynamic>> _managedCompanies = [];
+  bool _isLoadingCompanies = false;
 
   @override
   void didChangeDependencies() {
@@ -28,7 +31,20 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
           controller.loadMembers();
         });
       }
+      _fetchManagedCompanies();
       _isInit = true;
+    }
+  }
+
+  Future<void> _fetchManagedCompanies() async {
+    setState(() => _isLoadingCompanies = true);
+    final controller = Provider.of<MembersController>(context, listen: false);
+    final companies = await controller.getManagedCompanies(widget.memberId);
+    if (mounted) {
+      setState(() {
+        _managedCompanies = companies;
+        _isLoadingCompanies = false;
+      });
     }
   }
 
@@ -100,20 +116,40 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                                           ),
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: isActive ? AppColors.successBg : AppColors.errorBg,
-                                            borderRadius: BorderRadius.circular(20),
-                                          ),
-                                          child: Text(
-                                            member.status.toUpperCase(),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: isActive ? AppColors.success : AppColors.error,
+                                        Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primaryLight,
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                member.role.toUpperCase(),
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppColors.primary,
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: isActive ? AppColors.successBg : AppColors.errorBg,
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                member.status.toUpperCase(),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isActive ? AppColors.success : AppColors.error,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
@@ -144,12 +180,10 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                       ),
                       const SizedBox(height: 24),
                       // Details Cards
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Card(
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isSmallScreen = constraints.maxWidth < 600;
+                          final card1 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -179,12 +213,9 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            flex: 1,
-                            child: Card(
+                            );
+                            
+                          final card2 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -203,9 +234,40 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
+                            );
+                            
+                          if (isSmallScreen) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                card1, 
+                                const SizedBox(height: 24), 
+                                card2,
+                                if (member.role.toLowerCase() == 'founder') ...[
+                                  const SizedBox(height: 24),
+                                  _buildManagedCompaniesCard(),
+                                ],
+                              ],
+                            );
+                          } else {
+                            return Column(
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(flex: 2, child: card1),
+                                    const SizedBox(width: 24),
+                                    Expanded(flex: 1, child: card2),
+                                  ],
+                                ),
+                                if (member.role.toLowerCase() == 'founder') ...[
+                                  const SizedBox(height: 24),
+                                  _buildManagedCompaniesCard(),
+                                ],
+                              ],
+                            );
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -225,14 +287,69 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
       children: [
         Icon(icon, size: 20, color: AppColors.textMuted),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            ],
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildManagedCompaniesCard() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Managed Companies', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 16),
+            if (_isLoadingCompanies)
+              const Center(child: CircularProgressIndicator())
+            else if (_managedCompanies.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: Text('No companies assigned.', style: TextStyle(color: AppColors.textSecondary)),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _managedCompanies.length,
+                separatorBuilder: (context, index) => const Divider(height: 24),
+                itemBuilder: (context, index) {
+                  final company = _managedCompanies[index];
+                  return Row(
+                    children: [
+                      CustomLogoWidget(
+                        imageUrl: company['logo_url'],
+                        fallbackName: company['name'] ?? 'Unknown',
+                        size: 40,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          company['name'] ?? 'Unknown',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -248,13 +365,15 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
           child: Icon(icon, size: 20, color: AppColors.primary),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            ],
+          ),
         ),
       ],
     );

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../models/fundraising_post_model.dart';
 import '../controllers/fundraising_posts_controller.dart';
-import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
 
 class FundraisingPostsView extends StatefulWidget {
   const FundraisingPostsView({super.key});
@@ -43,7 +42,7 @@ class _FundraisingPostsViewState extends State<FundraisingPostsView> {
         title: Text('Fundraising'.tr(context)),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
         child: Consumer<FundraisingPostsController>(
           builder: (context, controller, child) {
             if (controller.isLoading) {
@@ -153,41 +152,37 @@ class _FundraisingPostsViewState extends State<FundraisingPostsView> {
 
                 // Data Table
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      side: const BorderSide(color: AppColors.border),
                     ),
-                    child: Scrollbar(
-                      controller: _verticalScroll,
-                      thumbVisibility: true,
-                      child: Scrollbar(
-                        controller: _horizontalScroll,
-                        thumbVisibility: true,
-                        notificationPredicate: (notif) => notif.depth == 1,
-                        child: SingleChildScrollView(
-                          controller: _verticalScroll,
-                          scrollDirection: Axis.vertical,
-                          child: SingleChildScrollView(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Scrollbar(
                             controller: _horizontalScroll,
-                            scrollDirection: Axis.horizontal,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minWidth: MediaQuery.of(context).size.width - 64,
-                              ),
-                              child: DataTable(
-                                columnSpacing: 16.0,
-                                horizontalMargin: 16.0,
-                                headingRowColor: WidgetStateProperty.all(Theme.of(context).scaffoldBackgroundColor),
-                                dataRowMinHeight: 60,
-                                dataRowMaxHeight: 60,
+                            thumbVisibility: true,
+                            notificationPredicate: (notif) => notif.depth == 1,
+                            child: SingleChildScrollView(
+                              controller: _horizontalScroll,
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                  minWidth: constraints.maxWidth,
+                                ),
+                                child: Scrollbar(
+                                  controller: _verticalScroll,
+                                  thumbVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _verticalScroll,
+                                    scrollDirection: Axis.vertical,
+                                    child: DataTable(
+                                columnSpacing: 24.0,
+                                showCheckboxColumn: false,
                                 columns: const [
                                   DataColumn(label: Text('TITLE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
                                   DataColumn(label: Text('ROUND', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
@@ -201,34 +196,48 @@ class _FundraisingPostsViewState extends State<FundraisingPostsView> {
                                     cells: [
                                       DataCell(
                                         Row(
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            if (post.coverUrl != null && post.coverUrl!.isNotEmpty)
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(6),
-                                                child: Image.network(post.coverUrl!, width: 40, height: 40, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.image, size: 40, color: AppColors.border)),
-                                              )
-                                            else
-                                              Container(
-                                                width: 40, height: 40,
-                                                decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(6)),
-                                                child: const Icon(Icons.campaign, color: AppColors.primary),
-                                              ),
+                                            CustomLogoWidget(
+                                              imageUrl: post.coverUrl,
+                                              fallbackName: post.title,
+                                              size: 32,
+                                            ),
                                             const SizedBox(width: 12),
                                             SizedBox(
                                               width: 140,
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(post.title, style: const TextStyle(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-                                                ],
-                                              ),
+                                              child: Text(post.title, style: const TextStyle(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      DataCell(Text(post.roundType)),
-                                      DataCell(Text(currencyFormatter.format(post.targetAmountUsd))),
+                                      DataCell(
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primaryLight,
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            post.roundType,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.primary,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Text(
+                                          post.targetAmountUsd == 0 ? 'Undisclosed' : currencyFormatter.format(post.targetAmountUsd),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700, 
+                                            fontSize: 14,
+                                            color: post.targetAmountUsd == 0 ? AppColors.textMuted : AppColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
                                       DataCell(Text(dateFormatter.format(post.deadline))),
                                       DataCell(
                                         Container(
@@ -248,36 +257,16 @@ class _FundraisingPostsViewState extends State<FundraisingPostsView> {
                                         ),
                                       ),
                                       DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            PopupMenuButton<String>(
-                                              icon: const Icon(Icons.more_horiz, color: AppColors.textMuted),
-                                              onSelected: (value) {
-                                                if (value == 'view') {
-                                                  context.push('/raises/view/${post.slug}');
-                                                } else if (value == 'edit') {
-                                                  context.push('/raises/edit/${post.id}');
-                                                } else if (value == 'delete') {
-                                                  _confirmDelete(context, post);
-                                                }
-                                              },
-                                              itemBuilder: (context) => [
-                                                const PopupMenuItem(
-                                                  value: 'view',
-                                                  child: Text('View Details'),
-                                                ),
-                                                const PopupMenuItem(
-                                                  value: 'edit',
-                                                  child: Text('Edit Post'),
-                                                ),
-                                                const PopupMenuItem(
-                                                  value: 'delete',
-                                                  child: Text('Delete', style: TextStyle(color: AppColors.error)),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                        ElevatedButton.icon(
+                                          onPressed: () {
+                                            context.push('/raises/view/${post.slug}');
+                                          },
+                                          icon: const Icon(Icons.visibility_outlined, size: 16),
+                                          label: const Text('View Details'),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            textStyle: const TextStyle(fontSize: 12),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -289,47 +278,16 @@ class _FundraisingPostsViewState extends State<FundraisingPostsView> {
                         ),
                       ),
                     ),
-                  ),
+                  );
+                  },
                 ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, FundraisingPost post) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete "${post.title}"? This will send a request to the Moderation Queue.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final ctrl = context.read<FundraisingPostsController>();
-              final revCtrl = context.read<RevisionsController>();
-              final success = await ctrl.requestDeletePost(revCtrl, post.id);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Delete request sent to Moderation Queue' : 'Failed to send delete request: ${ctrl.errorMessage}'),
-                    backgroundColor: success ? AppColors.success : AppColors.error,
-                  ),
-                );
-              }
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  ),
+);
   }
 }

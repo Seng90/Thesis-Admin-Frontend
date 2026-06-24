@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
 
 class InvestorDetailsView extends StatefulWidget {
   final String investorId;
@@ -70,27 +71,10 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryLight,
-                                  borderRadius: BorderRadius.circular(16),
-                                  image: investor.logoUrl != null && investor.logoUrl!.isNotEmpty
-                                      ? DecorationImage(
-                                          image: NetworkImage(investor.logoUrl!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
-                                ),
-                                child: investor.logoUrl == null || investor.logoUrl!.isEmpty
-                                    ? Center(
-                                        child: Text(
-                                          investor.name.substring(0, 1).toUpperCase(),
-                                          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
-                                        ),
-                                      )
-                                    : null,
+                              CustomLogoWidget(
+                                imageUrl: investor.logoUrl,
+                                fallbackName: investor.name,
+                                size: 80,
                               ),
                               const SizedBox(width: 24),
                               Expanded(
@@ -155,12 +139,10 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
                       ),
                       const SizedBox(height: 24),
                       // Details Cards
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Card(
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isSmallScreen = constraints.maxWidth < 600;
+                          final card1 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -181,12 +163,9 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            flex: 1,
-                            child: Card(
+                            );
+                            
+                          final card2 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -207,9 +186,24 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
+                            );
+                            
+                          if (isSmallScreen) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [card1, const SizedBox(height: 24), card2],
+                            );
+                          } else {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 2, child: card1),
+                                const SizedBox(width: 24),
+                                Expanded(flex: 1, child: card2),
+                              ],
+                            );
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -229,12 +223,14 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
       children: [
         Icon(icon, size: 20, color: AppColors.textMuted),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            ],
+          ),
         ),
       ],
     );
@@ -252,13 +248,15 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
           child: Icon(icon, size: 20, color: AppColors.primary),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            ],
+          ),
         ),
       ],
     );

@@ -5,6 +5,7 @@ import '../controllers/companies_controller.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
 
 class CompaniesView extends StatefulWidget {
   const CompaniesView({super.key});
@@ -57,7 +58,7 @@ class _CompaniesViewState extends State<CompaniesView> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
         child: Consumer<CompaniesController>(
           builder: (context, controller, child) {
             if (controller.isLoading) {
@@ -189,12 +190,23 @@ class _CompaniesViewState extends State<CompaniesView> {
                                   return DataRow(
                                     cells: [
                                       DataCell(
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text(company.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                            Text(company.contactEmail, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                            CustomLogoWidget(
+                                              imageUrl: company.logoUrl,
+                                              fallbackName: company.name,
+                                              size: 32,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(company.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                                Text(company.contactEmail, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                              ],
+                                            ),
                                           ],
                                         )
                                       ),

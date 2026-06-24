@@ -142,12 +142,10 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
                       ),
                       const SizedBox(height: 24),
                       // Details Cards
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Card(
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isSmallScreen = constraints.maxWidth < 600;
+                          final card1 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -167,12 +165,9 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            flex: 1,
-                            child: Card(
+                            );
+                            
+                          final card2 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -193,9 +188,24 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
+                            );
+                            
+                          if (isSmallScreen) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [card1, const SizedBox(height: 24), card2],
+                            );
+                          } else {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 2, child: card1),
+                                const SizedBox(width: 24),
+                                Expanded(flex: 1, child: card2),
+                              ],
+                            );
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -221,13 +231,15 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
           child: Icon(icon, size: 20, color: AppColors.primary),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            ],
+          ),
         ),
       ],
     );

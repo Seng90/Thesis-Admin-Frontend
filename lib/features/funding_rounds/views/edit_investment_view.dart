@@ -21,18 +21,25 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _currencyController = TextEditingController();
+  final _referenceUrlController = TextEditingController();
+  final _customInvestorNameController = TextEditingController();
   DateTime? _investDate;
 
   String? _selectedCompanyId;
   String? _selectedInvestorId;
   String? _selectedRoundId;
+  String _selectedStatus = 'Pending';
+  bool _isOtherInvestor = false;
 
   Investment? _existingInvestment;
   bool _isSaving = false;
+  bool _isLoadingData = true;
 
   // Funding rounds loaded from API
   List<Map<String, dynamic>> _fundingRounds = [];
   bool _isLoadingRounds = false;
+
+  static const List<String> _statusOptions = ['Pending', 'Completed', 'Refunded'];
 
   @override
   void initState() {
@@ -73,21 +80,51 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
     }
   }
 
-  void _loadInvestment() {
-    final controller = Provider.of<InvestmentsController>(context, listen: false);
+  Future<void> _loadInvestment() async {
     try {
-      final found = controller.investments.firstWhere((i) => i.id == widget.investmentId);
+      final api = ApiService();
+      final response = await api.client.get('/admin/investments/${widget.investmentId}');
+      final found = Investment.fromJson(response.data);
       setState(() {
         _existingInvestment = found;
         _amountController.text = found.amount.toString();
         _currencyController.text = found.currency;
+        _referenceUrlController.text = found.referenceUrl ?? '';
         _selectedCompanyId = found.companyId;
         _selectedInvestorId = found.investorId;
         _selectedRoundId = found.roundId;
+        _selectedStatus = found.status;
         _investDate = found.investDate;
+        _isOtherInvestor = found.investorId == null;
+        _customInvestorNameController.text = found.customInvestorName ?? '';
+        _isLoadingData = false;
       });
     } catch (e) {
-      // Not found
+      if (!mounted) return;
+      // Fallback: try from controller
+      final controller = Provider.of<InvestmentsController>(context, listen: false);
+      if (controller.investments.isEmpty) {
+        await controller.fetchInvestments();
+      }
+      try {
+        final found = controller.investments.firstWhere((i) => i.id == widget.investmentId);
+        setState(() {
+          _existingInvestment = found;
+          _amountController.text = found.amount.toString();
+          _currencyController.text = found.currency;
+          _referenceUrlController.text = found.referenceUrl ?? '';
+          _selectedCompanyId = found.companyId;
+          _selectedInvestorId = found.investorId;
+          _selectedRoundId = found.roundId;
+          _selectedStatus = found.status;
+          _investDate = found.investDate;
+          _isOtherInvestor = found.investorId == null;
+          _customInvestorNameController.text = found.customInvestorName ?? '';
+          _isLoadingData = false;
+        });
+      } catch (_) {
+        setState(() => _isLoadingData = false);
+      }
     }
   }
 
@@ -95,6 +132,8 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
   void dispose() {
     _amountController.dispose();
     _currencyController.dispose();
+    _referenceUrlController.dispose();
+    _customInvestorNameController.dispose();
     super.dispose();
   }
 
@@ -129,17 +168,40 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
     if (_currencyController.text.trim() != _existingInvestment?.currency) {
       proposedChanges['currency'] = _currencyController.text.trim();
     }
+    if (_referenceUrlController.text.trim() != (_existingInvestment?.referenceUrl ?? '')) {
+      proposedChanges['reference_url'] = _referenceUrlController.text.trim();
+    }
     if (_selectedCompanyId != _existingInvestment?.companyId) {
       proposedChanges['company_id'] = _selectedCompanyId;
-    }
-    if (_selectedInvestorId != _existingInvestment?.investorId) {
-      proposedChanges['investor_id'] = _selectedInvestorId;
     }
     if (_selectedRoundId != _existingInvestment?.roundId) {
       proposedChanges['round_id'] = _selectedRoundId;
     }
+    if (_selectedStatus != _existingInvestment?.status) {
+      proposedChanges['status'] = _selectedStatus;
+    }
     if (_investDate != _existingInvestment?.investDate) {
       proposedChanges['invest_date'] = _investDate!.toIso8601String();
+    }
+
+    // Handle investor changes
+    if (_isOtherInvestor) {
+      if (_existingInvestment?.investorId != null) {
+        proposedChanges['investor_id'] = null;
+      }
+      final customName = _customInvestorNameController.text.trim().isNotEmpty
+          ? _customInvestorNameController.text.trim()
+          : 'Others';
+      if (customName != _existingInvestment?.customInvestorName) {
+        proposedChanges['custom_investor_name'] = customName;
+      }
+    } else {
+      if (_selectedInvestorId != _existingInvestment?.investorId) {
+        proposedChanges['investor_id'] = _selectedInvestorId;
+      }
+      if (_existingInvestment?.customInvestorName != null) {
+        proposedChanges['custom_investor_name'] = null;
+      }
     }
 
     if (proposedChanges.isEmpty) {
@@ -172,10 +234,17 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_existingInvestment == null) {
+    if (_isLoadingData) {
       return Scaffold(
         appBar: AppBar(title: const Text('Edit Investment')),
         body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_existingInvestment == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Edit Investment')),
+        body: const Center(child: Text('Investment not found')),
       );
     }
 
@@ -205,10 +274,10 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 16),
+
                       // Company Dropdown
                       Consumer<CompaniesController>(
                         builder: (context, ctrl, _) {
-                          // Make sure existing value is in the list
                           final companyIds = ctrl.companies.map((c) => c.id).toSet();
                           final currentVal = companyIds.contains(_selectedCompanyId) ? _selectedCompanyId : null;
 
@@ -231,31 +300,59 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      // Investor Dropdown
-                      Consumer<InvestorsController>(
-                        builder: (context, ctrl, _) {
-                          final investorIds = ctrl.investors.map((i) => i.id).toSet();
-                          final currentVal = investorIds.contains(_selectedInvestorId) ? _selectedInvestorId : null;
 
-                          return DropdownButtonFormField<String>(
-                            initialValue: currentVal,
-                            decoration: const InputDecoration(
-                              labelText: 'Investor *',
-                              prefixIcon: Icon(Icons.person),
-                            ),
-                            items: ctrl.investors.map((i) {
-                              return DropdownMenuItem(
-                                value: i.id,
-                                child: Text(i.name, overflow: TextOverflow.ellipsis),
-                              );
-                            }).toList(),
-                            onChanged: (v) => setState(() => _selectedInvestorId = v),
-                            validator: (v) => v == null ? 'Please select an investor' : null,
-                            isExpanded: true,
-                          );
+                      // Investor Toggle
+                      SwitchListTile(
+                        title: const Text('Other / Anonymous Investor'),
+                        subtitle: const Text('Use this for unnamed groups or minor investors'),
+                        value: _isOtherInvestor,
+                        activeThumbColor: AppColors.primary,
+                        contentPadding: EdgeInsets.zero,
+                        onChanged: (v) {
+                          setState(() {
+                            _isOtherInvestor = v;
+                            if (v) _selectedInvestorId = null;
+                          });
                         },
                       ),
+                      const SizedBox(height: 8),
+
+                      // Investor Dropdown OR Custom Name
+                      if (_isOtherInvestor)
+                        TextFormField(
+                          controller: _customInvestorNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Group / Custom Name',
+                            hintText: 'e.g. Friends & Family, Angel Syndicate',
+                            prefixIcon: Icon(Icons.groups),
+                          ),
+                        )
+                      else
+                        Consumer<InvestorsController>(
+                          builder: (context, ctrl, _) {
+                            final investorIds = ctrl.investors.map((i) => i.id).toSet();
+                            final currentVal = investorIds.contains(_selectedInvestorId) ? _selectedInvestorId : null;
+
+                            return DropdownButtonFormField<String>(
+                              initialValue: currentVal,
+                              decoration: const InputDecoration(
+                                labelText: 'Investor *',
+                                prefixIcon: Icon(Icons.person),
+                              ),
+                              items: ctrl.investors.map((i) {
+                                return DropdownMenuItem(
+                                  value: i.id,
+                                  child: Text(i.name, overflow: TextOverflow.ellipsis),
+                                );
+                              }).toList(),
+                              onChanged: (v) => setState(() => _selectedInvestorId = v),
+                              validator: (v) => v == null ? 'Please select an investor' : null,
+                              isExpanded: true,
+                            );
+                          },
+                        ),
                       const SizedBox(height: 16),
+
                       // Funding Round Dropdown
                       _isLoadingRounds
                           ? const LinearProgressIndicator()
@@ -282,12 +379,14 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                                 isExpanded: true,
                               );
                             }),
+
                       const SizedBox(height: 32),
                       const Text(
                         'Financial Details',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 16),
+
                       Row(
                         children: [
                           Expanded(
@@ -313,6 +412,34 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                         ],
                       ),
                       const SizedBox(height: 16),
+
+                      // Status Dropdown
+                      DropdownButtonFormField<String>(
+                        initialValue: _statusOptions.contains(_selectedStatus) ? _selectedStatus : 'Pending',
+                        decoration: const InputDecoration(
+                          labelText: 'Status',
+                          prefixIcon: Icon(Icons.flag_outlined),
+                        ),
+                        items: _statusOptions.map((s) {
+                          return DropdownMenuItem(value: s, child: Text(s));
+                        }).toList(),
+                        onChanged: (v) {
+                          if (v != null) setState(() => _selectedStatus = v);
+                        },
+                        isExpanded: true,
+                      ),
+                      const SizedBox(height: 16),
+
+                      TextFormField(
+                        controller: _referenceUrlController,
+                        decoration: const InputDecoration(
+                          labelText: 'Reference URL (Optional)',
+                          prefixIcon: Icon(Icons.link),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Date Picker
                       InkWell(
                         onTap: _pickDate,
                         child: InputDecorator(
@@ -331,11 +458,12 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                         ),
                       ),
                       const SizedBox(height: 32),
+
                       SizedBox(
                         height: 48,
                         child: ElevatedButton.icon(
                           onPressed: _isSaving ? null : _saveForm,
-                          icon: _isSaving 
+                          icon: _isSaving
                             ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                             : const Icon(Icons.save),
                           label: Text(_isSaving ? 'Updating...' : 'Update Investment'),

@@ -32,7 +32,7 @@ class ApiService {
         onResponse: (response, handler) {
           return handler.next(response);
         },
-        onError: (DioException e, handler) {
+        onError: (DioException e, handler) async {
           String userFriendlyMessage = 'An unexpected error occurred.';
           
           if (e.type == DioExceptionType.connectionTimeout || 
@@ -46,8 +46,49 @@ class ApiService {
             final data = e.response?.data;
             
             if (statusCode == 401) {
+              // Try to refresh token before failing
+              if (e.requestOptions.path != '/auth/refresh' && e.requestOptions.path != '/auth/admin/login') {
+                try {
+                  final prefs = await SharedPreferences.getInstance();
+                  final refreshToken = prefs.getString('refresh_token');
+                  
+                  if (refreshToken != null && refreshToken.isNotEmpty) {
+                    // Create a new Dio instance just for refresh to avoid interceptor loops
+                    final refreshDio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+                    final refreshResponse = await refreshDio.post('/auth/refresh', data: {
+                      'refresh_token': refreshToken,
+                    });
+                    
+                    if (refreshResponse.statusCode == 200 || refreshResponse.statusCode == 201) {
+                      final newAccessToken = refreshResponse.data['access_token'];
+                      final newRefreshToken = refreshResponse.data['refresh_token'];
+                      
+                      await prefs.setString('auth_token', newAccessToken);
+                      await prefs.setString('refresh_token', newRefreshToken);
+                      
+                      // Retry the original request with the new token
+                      final opts = e.requestOptions;
+                      opts.headers['Authorization'] = 'Bearer $newAccessToken';
+                      
+                      final cloneReq = await Dio(BaseOptions(baseUrl: AppConstants.baseUrl)).request(
+                        opts.path,
+                        options: Options(
+                          method: opts.method,
+                          headers: opts.headers,
+                        ),
+                        data: opts.data,
+                        queryParameters: opts.queryParameters,
+                      );
+                      
+                      return handler.resolve(cloneReq);
+                    }
+                  }
+                } catch (_) {
+                  // Refresh failed, proceed to normal 401 handling
+                }
+              }
+              
               userFriendlyMessage = 'Session expired or unauthorized. Please log in again.';
-              // Note: We can emit an event or use a global navigator key here to force logout.
             } else if (statusCode == 403) {
               userFriendlyMessage = 'You do not have permission to perform this action.';
             } else if (statusCode == 404) {

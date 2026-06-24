@@ -100,17 +100,23 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                 const SizedBox(height: 8),
                 
                 // Navigation Links
-                _buildNavItem(context, 'Dashboard'.tr(context), Icons.dashboard_outlined, Icons.dashboard, 0, selectedIndex, '/dashboard'),
-                _buildNavItem(context, 'Companies'.tr(context), Icons.business_outlined, Icons.business, 1, selectedIndex, '/companies'),
-                _buildNavItem(context, 'Founders'.tr(context), Icons.people_outline, Icons.people, 2, selectedIndex, '/founders'),
-                _buildNavItem(context, 'Investors'.tr(context), Icons.attach_money_outlined, Icons.attach_money, 3, selectedIndex, '/investors'),
-                _buildNavItem(context, 'Investments'.tr(context), Icons.trending_up_outlined, Icons.trending_up, 4, selectedIndex, '/investments'),
-                _buildNavItem(context, 'Fundraising'.tr(context), Icons.campaign_outlined, Icons.campaign, 5, selectedIndex, '/raises'),
-                _buildNavItem(context, 'Members'.tr(context), Icons.person_outline, Icons.person, 6, selectedIndex, '/members'),
-                _buildNavItem(context, 'Packages'.tr(context), Icons.card_membership_outlined, Icons.card_membership, 7, selectedIndex, '/packages'),
-                _buildNavItem(context, 'Moderation'.tr(context), Icons.gavel_outlined, Icons.gavel, 8, selectedIndex, '/moderations'),
-                
-                const Spacer(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildNavItem(context, 'Dashboard'.tr(context), Icons.dashboard_outlined, Icons.dashboard, 0, selectedIndex, '/dashboard'),
+                        _buildNavItem(context, 'Companies'.tr(context), Icons.business_outlined, Icons.business, 1, selectedIndex, '/companies'),
+                        _buildNavItem(context, 'Founders'.tr(context), Icons.people_outline, Icons.people, 2, selectedIndex, '/founders'),
+                        _buildNavItem(context, 'Investors'.tr(context), Icons.attach_money_outlined, Icons.attach_money, 3, selectedIndex, '/investors'),
+                        _buildNavItem(context, 'Investments'.tr(context), Icons.trending_up_outlined, Icons.trending_up, 4, selectedIndex, '/investments'),
+                        _buildNavItem(context, 'Fundraising'.tr(context), Icons.campaign_outlined, Icons.campaign, 5, selectedIndex, '/raises'),
+                        _buildNavItem(context, 'Members'.tr(context), Icons.person_outline, Icons.person, 6, selectedIndex, '/members'),
+                        _buildNavItem(context, 'Packages'.tr(context), Icons.card_membership_outlined, Icons.card_membership, 7, selectedIndex, '/packages'),
+                        _buildNavItem(context, 'Moderation'.tr(context), Icons.gavel_outlined, Icons.gavel, 8, selectedIndex, '/moderations'),
+                      ],
+                    ),
+                  ),
+                ),
                 
                 _buildNavItem(context, 'Settings'.tr(context), Icons.settings_outlined, Icons.settings, 9, selectedIndex, '/settings'),
                 

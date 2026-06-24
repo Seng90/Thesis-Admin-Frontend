@@ -21,9 +21,27 @@ class _AddCompanyViewState extends State<AddCompanyView> {
   final _emailController = TextEditingController();
   final _logoUrlController = TextEditingController();
   final _websiteUrlController = TextEditingController();
+
+  // New fields
+  final _regNumberController = TextEditingController();
+  final _taxIdController = TextEditingController();
+  final _facebookUrlController = TextEditingController();
+  final _linkedinUrlController = TextEditingController();
+  final _headquartersController = TextEditingController();
+  final _branchCountController = TextEditingController();
+  final _keyProductsInputController = TextEditingController();
+  final _keyPartnersInputController = TextEditingController();
+
   String _status = 'Pending';
+  String _operatingStatus = 'Active';
+  String? _employeeCount;
   DateTime? _foundedDate;
   bool _isSaving = false;
+  final List<String> _keyProducts = [];
+  final List<String> _keyPartners = [];
+
+  static const List<String> _employeeCountOptions = ['1-10', '11-50', '51-200', '200+'];
+  static const List<String> _operatingStatusOptions = ['Active', 'Acquired', 'Closed'];
 
   @override
   void dispose() {
@@ -34,6 +52,14 @@ class _AddCompanyViewState extends State<AddCompanyView> {
     _emailController.dispose();
     _logoUrlController.dispose();
     _websiteUrlController.dispose();
+    _regNumberController.dispose();
+    _taxIdController.dispose();
+    _facebookUrlController.dispose();
+    _linkedinUrlController.dispose();
+    _headquartersController.dispose();
+    _branchCountController.dispose();
+    _keyProductsInputController.dispose();
+    _keyPartnersInputController.dispose();
     super.dispose();
   }
 
@@ -65,6 +91,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
       'location': _locationController.text.trim(),
       'contact_email': _emailController.text.trim(),
       'status': _status,
+      'operating_status': _operatingStatus,
     };
     
     if (_logoUrlController.text.trim().isNotEmpty) {
@@ -75,6 +102,34 @@ class _AddCompanyViewState extends State<AddCompanyView> {
     }
     if (_foundedDate != null) {
       proposedChanges['founded_date'] = _foundedDate!.toIso8601String();
+    }
+    // New fields
+    if (_regNumberController.text.trim().isNotEmpty) {
+      proposedChanges['registration_number'] = _regNumberController.text.trim();
+    }
+    if (_taxIdController.text.trim().isNotEmpty) {
+      proposedChanges['tax_id'] = _taxIdController.text.trim();
+    }
+    if (_facebookUrlController.text.trim().isNotEmpty) {
+      proposedChanges['facebook_url'] = _facebookUrlController.text.trim();
+    }
+    if (_linkedinUrlController.text.trim().isNotEmpty) {
+      proposedChanges['linkedin_url'] = _linkedinUrlController.text.trim();
+    }
+    if (_headquartersController.text.trim().isNotEmpty) {
+      proposedChanges['headquarters_address'] = _headquartersController.text.trim();
+    }
+    if (_branchCountController.text.trim().isNotEmpty) {
+      proposedChanges['branch_count'] = int.tryParse(_branchCountController.text.trim()) ?? 0;
+    }
+    if (_employeeCount != null) {
+      proposedChanges['employee_count'] = _employeeCount;
+    }
+    if (_keyProducts.isNotEmpty) {
+      proposedChanges['key_products'] = _keyProducts;
+    }
+    if (_keyPartners.isNotEmpty) {
+      proposedChanges['key_partners'] = _keyPartners;
     }
 
     final success = await revisionsController.createRevision(
@@ -97,6 +152,53 @@ class _AddCompanyViewState extends State<AddCompanyView> {
         context.pop();
       }
     }
+  }
+
+  Widget _buildTagInput({
+    required String label,
+    required String hint,
+    required IconData icon,
+    required TextEditingController controller,
+    required List<String> tags,
+    required VoidCallback onAdd,
+    required void Function(int) onRemove,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: label,
+            hintText: hint,
+            prefixIcon: Icon(icon),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+              onPressed: onAdd,
+              tooltip: 'Add tag',
+            ),
+          ),
+          onSubmitted: (_) => onAdd(),
+        ),
+        if (tags.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: tags.asMap().entries.map((entry) {
+              return Chip(
+                label: Text(entry.value, style: const TextStyle(fontSize: 12)),
+                deleteIcon: const Icon(Icons.close, size: 16),
+                onDeleted: () => onRemove(entry.key),
+                backgroundColor: AppColors.primaryLight,
+                side: BorderSide.none,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              );
+            }).toList(),
+          ),
+        ],
+      ],
+    );
   }
 
   @override
@@ -122,6 +224,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // ── Section 1: Basic Info ──
                       const Text(
                         'Company Information',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
@@ -187,12 +290,144 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) => v!.trim().isEmpty || !v.contains('@') ? 'Enter a valid email' : null,
                       ),
-                      const SizedBox(height: 16),
+
+                      // ── Section 2: Legal & Tax ──
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Divider(),
+                      ),
                       const Text(
-                        'Additional Details',
+                        'Legal & Tax Information',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _regNumberController,
+                              decoration: InputDecoration(
+                                labelText: 'Registration Number',
+                                hintText: 'e.g. REG-001234',
+                                prefixIcon: const Icon(Icons.assignment),
+                                suffixIcon: PopupMenuButton<String>(
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  tooltip: 'Select predefined value',
+                                  onSelected: (val) {
+                                    _regNumberController.text = val;
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'Not Available',
+                                      child: Text('Not Available'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _taxIdController,
+                              decoration: InputDecoration(
+                                labelText: 'Tax ID',
+                                hintText: 'e.g. TAX-56789',
+                                prefixIcon: const Icon(Icons.receipt_long),
+                                suffixIcon: PopupMenuButton<String>(
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  tooltip: 'Select predefined value',
+                                  onSelected: (val) {
+                                    _taxIdController.text = val;
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'Not Available',
+                                      child: Text('Not Available'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // ── Section 3: Organization Size ──
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Divider(),
+                      ),
+                      const Text(
+                        'Organization Details',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              initialValue: _employeeCount,
+                              decoration: const InputDecoration(
+                                labelText: 'Employee Count',
+                                prefixIcon: Icon(Icons.people),
+                              ),
+                              items: _employeeCountOptions.map((s) {
+                                return DropdownMenuItem(value: s, child: Text(s));
+                              }).toList(),
+                              onChanged: (v) => setState(() => _employeeCount = v),
+                              isExpanded: true,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _branchCountController,
+                              decoration: const InputDecoration(
+                                labelText: 'Branch Count',
+                                hintText: 'e.g. 3',
+                                prefixIcon: Icon(Icons.store),
+                              ),
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _headquartersController,
+                        decoration: const InputDecoration(
+                          labelText: 'Headquarters Address',
+                          hintText: 'e.g. 123 Samsenthai Road, Vientiane',
+                          prefixIcon: Icon(Icons.location_city),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: _operatingStatus,
+                        decoration: const InputDecoration(
+                          labelText: 'Operating Status',
+                          prefixIcon: Icon(Icons.power_settings_new),
+                        ),
+                        items: _operatingStatusOptions.map((s) {
+                          return DropdownMenuItem(value: s, child: Text(s));
+                        }).toList(),
+                        onChanged: (v) {
+                          if (v != null) setState(() => _operatingStatus = v);
+                        },
+                        isExpanded: true,
+                      ),
+
+                      // ── Section 4: Social Media ──
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Divider(),
+                      ),
+                      const Text(
+                        'Web & Social Media',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           Expanded(
@@ -217,6 +452,88 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _facebookUrlController,
+                              decoration: const InputDecoration(
+                                labelText: 'Facebook URL',
+                                hintText: 'https://facebook.com/...',
+                                prefixIcon: Icon(Icons.facebook),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _linkedinUrlController,
+                              decoration: const InputDecoration(
+                                labelText: 'LinkedIn URL',
+                                hintText: 'https://linkedin.com/...',
+                                prefixIcon: Icon(Icons.work),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // ── Section 5: Business Highlights ──
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Divider(),
+                      ),
+                      const Text(
+                        'Business Highlights',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTagInput(
+                        label: 'Key Products',
+                        hint: 'Type product name & press Enter...',
+                        icon: Icons.inventory_2,
+                        controller: _keyProductsInputController,
+                        tags: _keyProducts,
+                        onAdd: () {
+                          final text = _keyProductsInputController.text.trim();
+                          if (text.isNotEmpty && !_keyProducts.contains(text)) {
+                            setState(() {
+                              _keyProducts.add(text);
+                              _keyProductsInputController.clear();
+                            });
+                          }
+                        },
+                        onRemove: (i) => setState(() => _keyProducts.removeAt(i)),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTagInput(
+                        label: 'Key Partners',
+                        hint: 'Type partner name & press Enter...',
+                        icon: Icons.handshake,
+                        controller: _keyPartnersInputController,
+                        tags: _keyPartners,
+                        onAdd: () {
+                          final text = _keyPartnersInputController.text.trim();
+                          if (text.isNotEmpty && !_keyPartners.contains(text)) {
+                            setState(() {
+                              _keyPartners.add(text);
+                              _keyPartnersInputController.clear();
+                            });
+                          }
+                        },
+                        onRemove: (i) => setState(() => _keyPartners.removeAt(i)),
+                      ),
+
+                      // ── Section 6: Status & Date ──
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Divider(),
+                      ),
+                      const Text(
+                        'Status & Date',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 16),
                       Row(

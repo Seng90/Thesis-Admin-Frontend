@@ -16,7 +16,7 @@ class _AddInvestorViewState extends State<AddInvestorView> {
   final _nameController = TextEditingController();
   final _websiteController = TextEditingController();
   final _contactController = TextEditingController();
-  String _type = 'Venture Capital';
+  String _type = 'VC';
 
   @override
   void dispose() {
@@ -95,7 +95,7 @@ class _AddInvestorViewState extends State<AddInvestorView> {
                       DropdownButtonFormField<String>(
                         initialValue: _type,
                         decoration: const InputDecoration(labelText: 'Type'),
-                        items: ['Venture Capital', 'Angel Investor', 'Private Equity'].map((String val) {
+                        items: ['VC', 'Angel', 'PE', 'Corporate', 'Accelerator', 'Syndicate', 'Other'].map((String val) {
                           return DropdownMenuItem(
                             value: val,
                             child: Text(val),

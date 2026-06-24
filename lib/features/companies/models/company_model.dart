@@ -11,6 +11,16 @@ class Company {
   final String? logoUrl;
   final String? websiteUrl;
   final String? approvedBy;
+  final String? registrationNumber;
+  final String? taxId;
+  final String? facebookUrl;
+  final String? linkedinUrl;
+  final String? headquartersAddress;
+  final int? branchCount;
+  final String? employeeCount;
+  final String operatingStatus;
+  final List<String> keyProducts;
+  final List<String> keyPartners;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -27,6 +37,16 @@ class Company {
     this.logoUrl,
     this.websiteUrl,
     this.approvedBy,
+    this.registrationNumber,
+    this.taxId,
+    this.facebookUrl,
+    this.linkedinUrl,
+    this.headquartersAddress,
+    this.branchCount,
+    this.employeeCount,
+    this.operatingStatus = 'Active',
+    this.keyProducts = const [],
+    this.keyPartners = const [],
     this.createdAt,
     this.updatedAt,
   });
@@ -45,6 +65,16 @@ class Company {
       logoUrl: json['logo_url'],
       websiteUrl: json['website_url'],
       approvedBy: json['approved_by'],
+      registrationNumber: json['registration_number'],
+      taxId: json['tax_id'],
+      facebookUrl: json['facebook_url'],
+      linkedinUrl: json['linkedin_url'],
+      headquartersAddress: json['headquarters_address'],
+      branchCount: json['branch_count'],
+      employeeCount: json['employee_count'],
+      operatingStatus: json['operating_status'] ?? 'Active',
+      keyProducts: List<String>.from(json['key_products'] ?? []),
+      keyPartners: List<String>.from(json['key_partners'] ?? []),
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
       updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
     );
@@ -64,6 +94,16 @@ class Company {
       'logo_url': logoUrl,
       'website_url': websiteUrl,
       'approved_by': approvedBy,
+      'registration_number': registrationNumber,
+      'tax_id': taxId,
+      'facebook_url': facebookUrl,
+      'linkedin_url': linkedinUrl,
+      'headquarters_address': headquartersAddress,
+      'branch_count': branchCount,
+      'employee_count': employeeCount,
+      'operating_status': operatingStatus,
+      'key_products': keyProducts,
+      'key_partners': keyPartners,
     };
   }
 }

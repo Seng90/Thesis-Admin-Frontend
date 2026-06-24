@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -39,7 +41,7 @@ class _ModerationsViewState extends State<ModerationsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -91,6 +93,7 @@ class _ModerationsViewState extends State<ModerationsView> {
                     _buildTab('Packages'),
                     _buildTab('Founders'),
                     _buildTab('Investments'),
+                    _buildTab('Fundraising Posts'),
                   ],
                 ),
               ),
@@ -113,12 +116,14 @@ class _ModerationsViewState extends State<ModerationsView> {
                   // Filter logic based on tab
                   var filteredList = controller.pendingRevisions.where((r) {
                     if (_selectedTab == 'All') return true;
-                    // For specific categories like Companies, Investors, Members, Packages, Founders
-                    // we remove the 's' at the end to match the singular entityType and compare case-insensitively.
-                    String tabSingular = _selectedTab.endsWith('ies') 
-                        ? 'company' 
-                        : _selectedTab.substring(0, _selectedTab.length - 1).toLowerCase();
-                    return r.entityType.toLowerCase() == tabSingular;
+                    
+                    String expectedType = r.entityType.toLowerCase();
+                    if (_selectedTab == 'Companies') return expectedType == 'company';
+                    if (_selectedTab == 'Fundraising Posts') return expectedType == 'fundraisingpost';
+                    
+                    // Default generic plural to singular mapping
+                    String tabSingular = _selectedTab.substring(0, _selectedTab.length - 1).toLowerCase();
+                    return expectedType == tabSingular;
                   }).toList();
 
                   if (filteredList.isEmpty) {
@@ -318,8 +323,14 @@ class _ModerationsViewState extends State<ModerationsView> {
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('Proposed Changes Details'),
-                      content: SingleChildScrollView(
-                        child: Text(changes.toString()),
+                      content: ConstrainedBox(
+                        constraints: const BoxConstraints(minWidth: 400),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            const JsonEncoder.withIndent('  ').convert(changes),
+                            style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                          ),
+                        ),
                       ),
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),

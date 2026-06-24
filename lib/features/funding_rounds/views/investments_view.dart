@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/funding_rounds/controllers/investments_controller.dart';
-import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
 
 class InvestmentsView extends StatefulWidget {
   const InvestmentsView({super.key});
@@ -21,7 +21,7 @@ class _InvestmentsViewState extends State<InvestmentsView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<InvestmentsController>(context, listen: false).fetchInvestments();
+      Provider.of<InvestmentsController>(context, listen: false).fetchSummaries();
     });
   }
 
@@ -31,6 +31,7 @@ class _InvestmentsViewState extends State<InvestmentsView> {
     _horizontalScroll.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +50,7 @@ class _InvestmentsViewState extends State<InvestmentsView> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
         child: Consumer<InvestmentsController>(
           builder: (context, controller, child) {
             if (controller.isLoading) {
@@ -66,7 +67,7 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                     Text(controller.errorMessage!, style: const TextStyle(color: AppColors.textSecondary)),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
-                      onPressed: () => controller.fetchInvestments(),
+                      onPressed: () => controller.fetchSummaries(),
                       icon: const Icon(Icons.refresh),
                       label: const Text('Retry'),
                     ),
@@ -75,7 +76,7 @@ class _InvestmentsViewState extends State<InvestmentsView> {
               );
             }
 
-            if (controller.investments.isEmpty) {
+            if (controller.summaries.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -96,13 +97,12 @@ class _InvestmentsViewState extends State<InvestmentsView> {
               );
             }
 
-            final filtered = controller.investments.where((inv) {
+            final filtered = controller.summaries.where((s) {
               if (_searchQuery.isEmpty) return true;
               final q = _searchQuery.toLowerCase();
-              return inv.currency.toLowerCase().contains(q) ||
-                  inv.amount.toString().contains(q) ||
-                  inv.companyId.toLowerCase().contains(q) ||
-                  inv.investorId.toLowerCase().contains(q);
+              return s.companyName.toLowerCase().contains(q) ||
+                  s.roundName.toLowerCase().contains(q) ||
+                  s.totalRaised.toString().contains(q);
             }).toList();
 
             return Column(
@@ -113,7 +113,7 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                   width: 300,
                   child: TextField(
                     decoration: InputDecoration(
-                      hintText: 'Search investments...',
+                      hintText: 'Search by company or round...',
                       prefixIcon: const Icon(Icons.search, size: 20),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -150,92 +150,116 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                                       columnSpacing: 24.0,
                                       showCheckboxColumn: false,
                                       columns: const [
-                                DataColumn(label: Text('AMOUNT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                DataColumn(label: Text('CURRENCY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                DataColumn(label: Text('COMPANY ID', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                DataColumn(label: Text('INVESTOR ID', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                DataColumn(label: Text('ACTIONS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                              ],
-                              rows: filtered.map((inv) {
-                                return DataRow(
-                                  cells: [
-                                    DataCell(Text('\$${inv.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600))),
-                                    DataCell(Text(inv.currency)),
-                                    DataCell(Text(inv.investDate.toString().split(' ')[0])),
-                                    DataCell(Text(inv.companyId.length > 8 ? '${inv.companyId.substring(0, 8)}...' : inv.companyId, style: const TextStyle(fontFamily: 'monospace', fontSize: 12))),
-                                    DataCell(Text(inv.investorId.length > 8 ? '${inv.investorId.substring(0, 8)}...' : inv.investorId, style: const TextStyle(fontFamily: 'monospace', fontSize: 12))),
-                                    DataCell(
-                                      PopupMenuButton<String>(
-                                        icon: const Icon(Icons.more_horiz, color: AppColors.textMuted),
-                                        onSelected: (value) {
-                                          if (value == 'view') {
-                                            context.push('/investments/view/${inv.id}');
-                                          } else if (value == 'edit') {
-                                            context.push('/investments/edit/${inv.id}');
-                                          } else if (value == 'delete') {
-                                            showDialog(
-                                              context: context,
-                                              builder: (ctx) => AlertDialog(
-                                                title: const Text('Delete Investment'),
-                                                content: Text('Are you sure you want to delete this investment of \$${inv.amount}?'),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () => Navigator.pop(ctx),
-                                                    child: const Text('Cancel'),
+                                        DataColumn(label: Text('COMPANY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                        DataColumn(label: Text('ROUND', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                        DataColumn(label: Text('TOTAL RAISED', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                        DataColumn(label: Text('INVESTORS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                        DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                        DataColumn(label: Text('ACTIONS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                      ],
+                                      rows: filtered.asMap().entries.map((entry) {
+                                        final idx = entry.key;
+                                        final summary = entry.value;
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  CustomLogoWidget(
+                                                    imageUrl: summary.companyLogoUrl,
+                                                    fallbackName: summary.companyName,
+                                                    size: 32,
                                                   ),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(ctx);
-                                                      final revController = Provider.of<RevisionsController>(context, listen: false);
-                                                      revController.createRevision(
-                                                        entityType: 'Investment',
-                                                        entityId: inv.id,
-                                                        proposedChanges: {'_action': 'delete'},
-                                                      ).then((success) {
-                                                        if (context.mounted) {
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(success ? 'Delete request submitted for review!' : (revController.errorMessage ?? 'Failed to submit.')),
-                                                              backgroundColor: success ? AppColors.success : AppColors.error,
-                                                            ),
-                                                          );
-                                                        }
-                                                      });
-                                                    },
-                                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Text(summary.companyName, style: const TextStyle(fontWeight: FontWeight.w600)),
                                                 ],
                                               ),
-                                            );
-                                          }
-                                        },
-                                        itemBuilder: (context) => [
-                                          const PopupMenuItem(value: 'view', child: Text('View Details')),
-                                          const PopupMenuItem(value: 'edit', child: Text('Edit Investment')),
-                                          const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
-                                        ],
-                                      ),
+                                            ),
+                                            DataCell(
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primaryLight,
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  summary.roundName,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                summary.totalRaised == 0 ? 'Undisclosed' : '\$${_formatAmount(summary.totalRaised)}',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w700, 
+                                                  fontSize: 14,
+                                                  color: summary.totalRaised == 0 ? AppColors.textMuted : AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                '${summary.investorCount} investor${summary.investorCount != 1 ? 's' : ''}',
+                                                style: const TextStyle(color: AppColors.textSecondary),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                summary.earliestDate != null
+                                                    ? '${summary.earliestDate!.year}-${summary.earliestDate!.month.toString().padLeft(2, '0')}-${summary.earliestDate!.day.toString().padLeft(2, '0')}'
+                                                    : '-',
+                                                style: const TextStyle(color: AppColors.textSecondary),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              ElevatedButton.icon(
+                                                onPressed: () {
+                                                  context.push('/investments/summary/$idx');
+                                                },
+                                                icon: const Icon(Icons.visibility_outlined, size: 16),
+                                                label: const Text('View Details'),
+                                                style: ElevatedButton.styleFrom(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                                  textStyle: const TextStyle(fontSize: 12),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }).toList(),
                                     ),
-                                  ],
-                                );
-                              }).toList(),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
-                );
-              }
-            ),
-          ),
-        ),
+                ),
               ],
             );
           },
         ),
       ),
     );
+  }
+
+  String _formatAmount(double amount) {
+    if (amount >= 1000000000) {
+      return '${(amount / 1000000000).toStringAsFixed(1)}B';
+    } else if (amount >= 1000000) {
+      return '${(amount / 1000000).toStringAsFixed(1)}M';
+    } else if (amount >= 1000) {
+      return '${(amount / 1000).toStringAsFixed(1)}K';
+    }
+    return amount.toStringAsFixed(2);
   }
 }

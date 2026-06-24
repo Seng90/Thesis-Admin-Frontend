@@ -28,8 +28,12 @@ class AuthController extends ChangeNotifier {
       final data = response.data;
       if (data != null && data['access_token'] != null) {
         final token = data['access_token'];
+        final refreshToken = data['refresh_token'];
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
+        if (refreshToken != null) {
+          await prefs.setString('refresh_token', refreshToken);
+        }
 
         final userData = data['user'];
         _currentAdmin = Admin(
@@ -59,6 +63,7 @@ class AuthController extends ChangeNotifier {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
+    await prefs.remove('refresh_token');
     _currentAdmin = null;
     notifyListeners();
   }

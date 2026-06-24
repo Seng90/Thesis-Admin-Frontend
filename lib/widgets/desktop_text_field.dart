@@ -14,6 +14,8 @@ class DesktopTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final TextSelectionControls? selectionControls;
   final bool autofocus;
+  final int? maxLines;
+  final int? minLines;
 
   const DesktopTextField({
     super.key,
@@ -25,6 +27,8 @@ class DesktopTextField extends StatefulWidget {
     this.keyboardType,
     this.selectionControls,
     this.autofocus = false,
+    this.maxLines = 1,
+    this.minLines,
   });
 
   @override
@@ -207,6 +211,8 @@ class _DesktopTextFieldState extends State<DesktopTextField> {
       onChanged: widget.onChanged,
       selectionControls: widget.selectionControls,
       autofocus: widget.autofocus,
+      maxLines: widget.maxLines,
+      minLines: widget.minLines,
     );
   }
 }
@@ -225,6 +231,8 @@ class DesktopTextFormField extends StatefulWidget {
   final TextInputType? keyboardType;
   final TextSelectionControls? selectionControls;
   final bool autofocus;
+  final int? maxLines;
+  final int? minLines;
 
   const DesktopTextFormField({
     super.key,
@@ -238,6 +246,8 @@ class DesktopTextFormField extends StatefulWidget {
     this.keyboardType,
     this.selectionControls,
     this.autofocus = false,
+    this.maxLines = 1,
+    this.minLines,
   });
 
   @override
@@ -421,6 +431,8 @@ class _DesktopTextFormFieldState extends State<DesktopTextFormField> {
       onSaved: widget.onSaved,
       selectionControls: widget.selectionControls,
       autofocus: widget.autofocus,
+      maxLines: widget.maxLines,
+      minLines: widget.minLines,
     );
   }
 }

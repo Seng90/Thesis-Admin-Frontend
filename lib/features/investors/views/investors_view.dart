@@ -5,6 +5,7 @@ import '../controllers/investors_controller.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
 
 class InvestorsView extends StatefulWidget {
   const InvestorsView({super.key});
@@ -54,7 +55,7 @@ class _InvestorsViewState extends State<InvestorsView> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
         child: Consumer<InvestorsController>(
           builder: (context, controller, child) {
             if (controller.isLoading) {
@@ -87,7 +88,7 @@ class _InvestorsViewState extends State<InvestorsView> {
                     const SizedBox(width: 16),
                     DropdownButton<String>(
                       value: _typeFilter,
-                      items: ['All', 'Angel', 'VC', 'Corporate', 'PE', 'Accelerator'].map((type) {
+                      items: ['All', 'VC', 'Angel', 'PE', 'Corporate', 'Accelerator', 'Syndicate', 'Other'].map((type) {
                         return DropdownMenuItem(value: type, child: Text(type));
                       }).toList(),
                       onChanged: (value) {
@@ -147,12 +148,23 @@ class _InvestorsViewState extends State<InvestorsView> {
                                   return DataRow(
                                     cells: [
                                       DataCell(
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text(investor.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                            Text(investor.contactInfo ?? '', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                            CustomLogoWidget(
+                                              imageUrl: investor.logoUrl,
+                                              fallbackName: investor.name,
+                                              size: 32,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(investor.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                                Text(investor.contactInfo ?? '', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                              ],
+                                            ),
                                           ],
                                         )
                                       ),

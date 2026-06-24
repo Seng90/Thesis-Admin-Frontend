@@ -47,7 +47,7 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
               String founderName = 'this founder';
               try {
                 final founder = controller.founders.firstWhere((f) => f.id == widget.founderId);
-                founderName = founder.name;
+                founderName = founder.nameEn;
               } catch (_) {}
               showDialog(
                 context: context,
@@ -126,7 +126,7 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    founder.name.isNotEmpty ? founder.name.substring(0, 1).toUpperCase() : '?',
+                                    founder.nameEn.isNotEmpty ? founder.nameEn.substring(0, 1).toUpperCase() : '?',
                                     style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
                                   ),
                                 ),
@@ -141,7 +141,7 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            founder.name,
+                                            '${founder.nameLa} | ${founder.nameEn}',
                                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                                           ),
                                         ),
@@ -199,12 +199,10 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                       ),
                       const SizedBox(height: 24),
                       // Details Cards
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Card(
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isSmallScreen = constraints.maxWidth < 600;
+                          final card1 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -228,12 +226,9 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            flex: 1,
-                            child: Card(
+                            );
+                            
+                          final card2 = Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -252,9 +247,24 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
+                            );
+                            
+                          if (isSmallScreen) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [card1, const SizedBox(height: 24), card2],
+                            );
+                          } else {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 2, child: card1),
+                                const SizedBox(width: 24),
+                                Expanded(flex: 1, child: card2),
+                              ],
+                            );
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -274,12 +284,14 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
       children: [
         Icon(icon, size: 20, color: AppColors.textMuted),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            ],
+          ),
         ),
       ],
     );
@@ -297,13 +309,15 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
           child: Icon(icon, size: 20, color: AppColors.primary),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            ],
+          ),
         ),
       ],
     );

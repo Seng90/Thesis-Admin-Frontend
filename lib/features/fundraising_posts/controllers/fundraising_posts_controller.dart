@@ -126,6 +126,44 @@ class FundraisingPostsController extends ChangeNotifier {
     );
   }
 
+  Future<bool> requestUpdatePost(RevisionsController revisionsController, String id, Map<String, dynamic> data) async {
+    return await revisionsController.createRevision(
+      entityType: 'FundraisingPost',
+      entityId: id,
+      proposedChanges: data,
+    );
+  }
+
+  Future<List<dynamic>> getPostComments(String postId) async {
+    try {
+      final response = await _apiService.client.get('/user/fundraising-posts/$postId/comments');
+      return response.data as List<dynamic>;
+    } catch (e) {
+      _errorMessage = 'Failed to load comments: ${_parseError(e)}';
+      return [];
+    }
+  }
+
+  Future<bool> deleteComment(String commentId) async {
+    try {
+      await _apiService.client.delete('/admin/comments/$commentId');
+      return true;
+    } catch (e) {
+      _errorMessage = 'Failed to delete comment: ${_parseError(e)}';
+      return false;
+    }
+  }
+
+  Future<bool> updateComment(String commentId, String newContent) async {
+    try {
+      await _apiService.client.patch('/admin/comments/$commentId', data: {'content': newContent});
+      return true;
+    } catch (e) {
+      _errorMessage = 'Failed to update comment: ${_parseError(e)}';
+      return false;
+    }
+  }
+
   Future<String?> uploadCoverImage(dynamic fileBytes, String fileName) async {
     try {
       final formData = FormData.fromMap({
