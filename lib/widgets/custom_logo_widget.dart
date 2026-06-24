@@ -50,7 +50,9 @@ class CustomLogoWidget extends StatelessWidget {
   }
 
   Widget _buildFallback() {
-    final initial = fallbackName.isNotEmpty ? fallbackName.substring(0, 1).toUpperCase() : '?';
+    final initial = fallbackName.isNotEmpty
+        ? fallbackName.substring(0, 1).toUpperCase()
+        : '?';
     return Center(
       child: Text(
         initial,

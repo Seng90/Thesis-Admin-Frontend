@@ -5,6 +5,7 @@ import 'package:investrack_admin/utils/localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/auth/controllers/auth_controller.dart';
 import 'package:investrack_admin/features/settings/controllers/settings_controller.dart';
+
 class MainLayoutView extends StatefulWidget {
   final Widget child;
 
@@ -21,12 +22,15 @@ class _MainLayoutViewState extends State<MainLayoutView> {
   Widget build(BuildContext context) {
     int selectedIndex = _calculateSelectedIndex(context);
     final theme = Theme.of(context);
-    
+
     // Attempt to get admin info if available
     String adminInitials = 'AD';
     String adminName = 'Admin';
     try {
-      final auth = Provider.of<AuthController>(context, listen: false).currentAdmin;
+      final auth = Provider.of<AuthController>(
+        context,
+        listen: false,
+      ).currentAdmin;
       if (auth != null) {
         adminName = auth.username;
         if (adminName.isNotEmpty) {
@@ -45,7 +49,14 @@ class _MainLayoutViewState extends State<MainLayoutView> {
             width: _isSidebarCollapsed ? 80 : 250,
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
-              border: Border(right: BorderSide(color: theme.brightness == Brightness.dark ? const Color(0xFF334155) : AppColors.border, width: 1)),
+              border: Border(
+                right: BorderSide(
+                  color: theme.brightness == Brightness.dark
+                      ? const Color(0xFF334155)
+                      : AppColors.border,
+                  width: 1,
+                ),
+              ),
             ),
             child: Column(
               children: [
@@ -53,7 +64,9 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                 Padding(
                   padding: EdgeInsets.all(_isSidebarCollapsed ? 16.0 : 24.0),
                   child: Row(
-                    mainAxisAlignment: _isSidebarCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
+                    mainAxisAlignment: _isSidebarCollapsed
+                        ? MainAxisAlignment.center
+                        : MainAxisAlignment.start,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
@@ -61,7 +74,10 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                           color: AppColors.primaryLight,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.insights, color: AppColors.primary),
+                        child: const Icon(
+                          Icons.insights,
+                          color: AppColors.primary,
+                        ),
                       ),
                       if (!_isSidebarCollapsed) ...[
                         const SizedBox(width: 12),
@@ -79,47 +95,136 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                     ],
                   ),
                 ),
-                
+
                 // Toggle Button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Align(
-                    alignment: _isSidebarCollapsed ? Alignment.center : Alignment.centerRight,
+                    alignment: _isSidebarCollapsed
+                        ? Alignment.center
+                        : Alignment.centerRight,
                     child: IconButton(
-                      icon: Icon(_isSidebarCollapsed ? Icons.chevron_right : Icons.chevron_left, color: AppColors.textSecondary),
+                      icon: Icon(
+                        _isSidebarCollapsed
+                            ? Icons.chevron_right
+                            : Icons.chevron_left,
+                        color: AppColors.textSecondary,
+                      ),
                       onPressed: () {
                         setState(() {
                           _isSidebarCollapsed = !_isSidebarCollapsed;
                         });
                       },
-                      tooltip: _isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar',
+                      tooltip: _isSidebarCollapsed
+                          ? 'Expand Sidebar'
+                          : 'Collapse Sidebar',
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 // Navigation Links
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        _buildNavItem(context, 'Dashboard'.tr(context), Icons.dashboard_outlined, Icons.dashboard, 0, selectedIndex, '/dashboard'),
-                        _buildNavItem(context, 'Companies'.tr(context), Icons.business_outlined, Icons.business, 1, selectedIndex, '/companies'),
-                        _buildNavItem(context, 'Founders'.tr(context), Icons.people_outline, Icons.people, 2, selectedIndex, '/founders'),
-                        _buildNavItem(context, 'Investors'.tr(context), Icons.attach_money_outlined, Icons.attach_money, 3, selectedIndex, '/investors'),
-                        _buildNavItem(context, 'Investments'.tr(context), Icons.trending_up_outlined, Icons.trending_up, 4, selectedIndex, '/investments'),
-                        _buildNavItem(context, 'Fundraising'.tr(context), Icons.campaign_outlined, Icons.campaign, 5, selectedIndex, '/raises'),
-                        _buildNavItem(context, 'Members'.tr(context), Icons.person_outline, Icons.person, 6, selectedIndex, '/members'),
-                        _buildNavItem(context, 'Packages'.tr(context), Icons.card_membership_outlined, Icons.card_membership, 7, selectedIndex, '/packages'),
-                        _buildNavItem(context, 'Moderation'.tr(context), Icons.gavel_outlined, Icons.gavel, 8, selectedIndex, '/moderations'),
+                        _buildNavItem(
+                          context,
+                          'Dashboard'.tr(context),
+                          Icons.dashboard_outlined,
+                          Icons.dashboard,
+                          0,
+                          selectedIndex,
+                          '/dashboard',
+                        ),
+                        _buildNavItem(
+                          context,
+                          'Companies'.tr(context),
+                          Icons.business_outlined,
+                          Icons.business,
+                          1,
+                          selectedIndex,
+                          '/companies',
+                        ),
+                        _buildNavItem(
+                          context,
+                          'Founders'.tr(context),
+                          Icons.people_outline,
+                          Icons.people,
+                          2,
+                          selectedIndex,
+                          '/founders',
+                        ),
+                        _buildNavItem(
+                          context,
+                          'Investors'.tr(context),
+                          Icons.attach_money_outlined,
+                          Icons.attach_money,
+                          3,
+                          selectedIndex,
+                          '/investors',
+                        ),
+                        _buildNavItem(
+                          context,
+                          'Investments'.tr(context),
+                          Icons.trending_up_outlined,
+                          Icons.trending_up,
+                          4,
+                          selectedIndex,
+                          '/investments',
+                        ),
+                        _buildNavItem(
+                          context,
+                          'Fundraising'.tr(context),
+                          Icons.campaign_outlined,
+                          Icons.campaign,
+                          5,
+                          selectedIndex,
+                          '/raises',
+                        ),
+                        _buildNavItem(
+                          context,
+                          'Members'.tr(context),
+                          Icons.person_outline,
+                          Icons.person,
+                          6,
+                          selectedIndex,
+                          '/members',
+                        ),
+                        _buildNavItem(
+                          context,
+                          'Packages'.tr(context),
+                          Icons.card_membership_outlined,
+                          Icons.card_membership,
+                          7,
+                          selectedIndex,
+                          '/packages',
+                        ),
+                        _buildNavItem(
+                          context,
+                          'Moderation'.tr(context),
+                          Icons.gavel_outlined,
+                          Icons.gavel,
+                          8,
+                          selectedIndex,
+                          '/moderations',
+                        ),
                       ],
                     ),
                   ),
                 ),
-                
-                _buildNavItem(context, 'Settings'.tr(context), Icons.settings_outlined, Icons.settings, 9, selectedIndex, '/settings'),
-                
+
+                _buildNavItem(
+                  context,
+                  'Settings'.tr(context),
+                  Icons.settings_outlined,
+                  Icons.settings,
+                  9,
+                  selectedIndex,
+                  '/settings',
+                ),
+
                 // Profile & Logout Area
                 const Divider(color: AppColors.border, height: 1),
                 Padding(
@@ -129,21 +234,39 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                           children: [
                             CircleAvatar(
                               backgroundColor: AppColors.primaryLight,
-                              child: Text(adminInitials, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                              child: Text(
+                                adminInitials,
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Consumer<SettingsController>(
                               builder: (context, settings, child) {
                                 return IconButton(
-                                  icon: Icon(settings.isDarkMode ? Icons.light_mode : Icons.dark_mode, color: AppColors.textSecondary, size: 20),
-                                  onPressed: () => settings.toggleDarkMode(!settings.isDarkMode),
+                                  icon: Icon(
+                                    settings.isDarkMode
+                                        ? Icons.light_mode
+                                        : Icons.dark_mode,
+                                    color: AppColors.textSecondary,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => settings.toggleDarkMode(
+                                    !settings.isDarkMode,
+                                  ),
                                   tooltip: 'Toggle Theme',
                                 );
-                              }
+                              },
                             ),
                             const SizedBox(height: 16),
                             IconButton(
-                              icon: const Icon(Icons.logout, color: AppColors.error, size: 20),
+                              icon: const Icon(
+                                Icons.logout,
+                                color: AppColors.error,
+                                size: 20,
+                              ),
                               onPressed: () => _showLogoutDialog(context),
                               tooltip: 'Logout'.tr(context),
                             ),
@@ -153,29 +276,58 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                           children: [
                             CircleAvatar(
                               backgroundColor: AppColors.primaryLight,
-                              child: Text(adminInitials, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                              child: Text(
+                                adminInitials,
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(adminName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  const Text('Admin', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                  Text(
+                                    adminName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'Admin',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                             Consumer<SettingsController>(
                               builder: (context, settings, child) {
                                 return IconButton(
-                                  icon: Icon(settings.isDarkMode ? Icons.light_mode : Icons.dark_mode, color: AppColors.textSecondary, size: 20),
-                                  onPressed: () => settings.toggleDarkMode(!settings.isDarkMode),
+                                  icon: Icon(
+                                    settings.isDarkMode
+                                        ? Icons.light_mode
+                                        : Icons.dark_mode,
+                                    color: AppColors.textSecondary,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => settings.toggleDarkMode(
+                                    !settings.isDarkMode,
+                                  ),
                                   tooltip: 'Toggle Theme',
                                 );
-                              }
+                              },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.logout, color: AppColors.error, size: 20),
+                              icon: const Icon(
+                                Icons.logout,
+                                color: AppColors.error,
+                                size: 20,
+                              ),
                               onPressed: () => _showLogoutDialog(context),
                               tooltip: 'Logout'.tr(context),
                             ),
@@ -186,9 +338,7 @@ class _MainLayoutViewState extends State<MainLayoutView> {
             ),
           ),
           // Main content area
-          Expanded(
-            child: widget.child,
-          ),
+          Expanded(child: widget.child),
         ],
       ),
     );
@@ -210,24 +360,40 @@ class _MainLayoutViewState extends State<MainLayoutView> {
               Navigator.pop(ctx);
               context.go('/login');
             },
-            child: Text('Logout'.tr(context), style: const TextStyle(color: Colors.red)),
+            child: Text(
+              'Logout'.tr(context),
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(BuildContext context, String title, IconData icon, IconData activeIcon, int index, int selectedIndex, String route) {
+  Widget _buildNavItem(
+    BuildContext context,
+    String title,
+    IconData icon,
+    IconData activeIcon,
+    int index,
+    int selectedIndex,
+    String route,
+  ) {
     final isSelected = index == selectedIndex;
-    
+
     Widget navContent = Container(
-      padding: EdgeInsets.symmetric(horizontal: _isSidebarCollapsed ? 0 : 16.0, vertical: 12.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: _isSidebarCollapsed ? 0 : 16.0,
+        vertical: 12.0,
+      ),
       decoration: BoxDecoration(
         color: isSelected ? AppColors.primaryLight : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
-        mainAxisAlignment: _isSidebarCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
+        mainAxisAlignment: _isSidebarCollapsed
+            ? MainAxisAlignment.center
+            : MainAxisAlignment.start,
         children: [
           Icon(
             isSelected ? activeIcon : icon,
@@ -240,7 +406,9 @@ class _MainLayoutViewState extends State<MainLayoutView> {
               child: Text(
                 title,
                 style: TextStyle(
-                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
                 overflow: TextOverflow.ellipsis,

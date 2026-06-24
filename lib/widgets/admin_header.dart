@@ -21,8 +21,14 @@ class AdminHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
       decoration: BoxDecoration(
-        color: theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor,
-        border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF334155) : AppColors.border, width: 1)),
+        color:
+            theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor,
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF334155) : AppColors.border,
+            width: 1,
+          ),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -48,7 +54,9 @@ class AdminHeader extends StatelessWidget {
                     subtitle!,
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? Colors.grey[400] : AppColors.textSecondary,
+                      color: isDark
+                          ? Colors.grey[400]
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],

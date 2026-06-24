@@ -15,7 +15,8 @@ class InvestmentSummary {
 
   String get companyName => company['name'] ?? 'Unknown Company';
   String get companyId => company['id'] ?? '';
-  String get roundName => round['round_name'] ?? round['name'] ?? 'Unknown Round';
+  String get roundName =>
+      round['round_name'] ?? round['name'] ?? 'Unknown Round';
   String get roundId => round['id'] ?? '';
   String get companyIndustry => company['industry'] ?? '';
   String get companyLogoUrl => company['logo_url'] ?? '';
@@ -29,7 +30,9 @@ class InvestmentSummary {
   /// The earliest invest date in this group
   DateTime? get earliestDate {
     if (investments.isEmpty) return null;
-    return investments.map((i) => i.investDate).reduce((a, b) => a.isBefore(b) ? a : b);
+    return investments
+        .map((i) => i.investDate)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
   }
 
   /// Number of unique investors (including "Others")
@@ -41,7 +44,9 @@ class InvestmentSummary {
       company: Map<String, dynamic>.from(json['company'] ?? {}),
       round: Map<String, dynamic>.from(json['round'] ?? {}),
       totalRaised: double.tryParse(json['total_raised'].toString()) ?? 0,
-      investments: investmentsData.map((e) => Investment.fromJson(Map<String, dynamic>.from(e))).toList(),
+      investments: investmentsData
+          .map((e) => Investment.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
     );
   }
 }

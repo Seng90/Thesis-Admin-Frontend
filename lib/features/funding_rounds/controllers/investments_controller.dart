@@ -6,7 +6,7 @@ import '../models/investment_summary_model.dart';
 
 class InvestmentsController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   List<Investment> _investments = [];
   List<InvestmentSummary> _summaries = [];
   bool _isLoading = false;
@@ -46,9 +46,13 @@ class InvestmentsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/investments/summary');
+      final response = await _apiService.client.get(
+        '/admin/investments/summary',
+      );
       final List<dynamic> data = response.data;
-      _summaries = data.map((json) => InvestmentSummary.fromJson(json)).toList();
+      _summaries = data
+          .map((json) => InvestmentSummary.fromJson(json))
+          .toList();
     } catch (e) {
       if (e is DioException && e.error != null) {
         _errorMessage = e.error.toString();

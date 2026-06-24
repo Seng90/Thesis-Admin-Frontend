@@ -4,7 +4,7 @@ import 'package:investrack_admin/services/api_service.dart';
 
 class MembersController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   List<Member> _members = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -36,9 +36,10 @@ class MembersController extends ChangeNotifier {
 
   Future<void> blockMember(String id) async {
     try {
-      await _apiService.client.patch('/admin/members/$id', data: {
-        'status': 'Blocked',
-      });
+      await _apiService.client.patch(
+        '/admin/members/$id',
+        data: {'status': 'Blocked'},
+      );
       final index = _members.indexWhere((m) => m.id == id);
       if (index != -1) {
         final old = _members[index];
@@ -69,9 +70,10 @@ class MembersController extends ChangeNotifier {
 
   Future<bool> changeRole(String id, String newRole) async {
     try {
-      await _apiService.client.patch('/admin/members/$id/role', data: {
-        'role': newRole,
-      });
+      await _apiService.client.patch(
+        '/admin/members/$id/role',
+        data: {'role': newRole},
+      );
       final index = _members.indexWhere((m) => m.id == id);
       if (index != -1) {
         final old = _members[index];
@@ -110,7 +112,10 @@ class MembersController extends ChangeNotifier {
       final data = updatedMember.toJson()
         ..remove('id')
         ..remove('created_at');
-      await _apiService.client.patch('/admin/members/${updatedMember.id}', data: data);
+      await _apiService.client.patch(
+        '/admin/members/${updatedMember.id}',
+        data: data,
+      );
       final index = _members.indexWhere((m) => m.id == updatedMember.id);
       if (index != -1) {
         _members[index] = updatedMember;
@@ -127,9 +132,13 @@ class MembersController extends ChangeNotifier {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getManagedCompanies(String memberId) async {
+  Future<List<Map<String, dynamic>>> getManagedCompanies(
+    String memberId,
+  ) async {
     try {
-      final response = await _apiService.client.get('/admin/members/$memberId/companies');
+      final response = await _apiService.client.get(
+        '/admin/members/$memberId/companies',
+      );
       final List<dynamic> data = response.data;
       return data.map((json) => json as Map<String, dynamic>).toList();
     } catch (e) {

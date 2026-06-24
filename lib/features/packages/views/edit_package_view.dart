@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
+import '../controllers/packages_controller.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/localizations.dart';
-
 
 class EditPackageView extends StatefulWidget {
   final String packageId;
@@ -17,59 +16,74 @@ class EditPackageView extends StatefulWidget {
 }
 
 class FeatureItem {
-  TextEditingController keyController = TextEditingController();
-  TextEditingController valueController = TextEditingController();
-  
+  TextEditingController controller = TextEditingController();
+
   void dispose() {
-    keyController.dispose();
-    valueController.dispose();
+    controller.dispose();
   }
 }
 
 class _EditPackageViewState extends State<EditPackageView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _priceController;
   final List<FeatureItem> _features = [];
-  
+
   bool _isInit = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<PackagesController>(context, listen: false);
-      final existingPackage = controller.packages.firstWhere((p) => p.id == widget.packageId);
-      
+      final controller = Provider.of<PackagesController>(
+        context,
+        listen: false,
+      );
+      final existingPackage = controller.packages.firstWhere(
+        (p) => p.id == widget.packageId,
+      );
+
       _nameController = TextEditingController(text: existingPackage.name);
-      _priceController = TextEditingController(text: existingPackage.price.toString());
-      
+      _priceController = TextEditingController(
+        text: existingPackage.price.toString(),
+      );
+
       try {
         if (existingPackage.features.isNotEmpty) {
-          final Map<String, dynamic> parsed = jsonDecode(existingPackage.features);
-          parsed.forEach((k, v) {
+          final List<dynamic> parsed = jsonDecode(existingPackage.features);
+          for (var itemValue in parsed) {
             final item = FeatureItem();
-            item.keyController.text = k;
-            item.valueController.text = v.toString();
+            item.controller.text = itemValue.toString();
             _features.add(item);
-          });
+          }
         }
       } catch (e) {
-        // If it's not JSON, maybe it was comma separated
-        final parts = existingPackage.features.split(',');
-        for (var part in parts) {
-          if (part.trim().isNotEmpty) {
+        // If it's not JSON array, maybe it was object or comma separated
+        try {
+          final Map<String, dynamic> parsedMap = jsonDecode(
+            existingPackage.features,
+          );
+          parsedMap.forEach((k, v) {
             final item = FeatureItem();
-            item.keyController.text = part.trim();
+            item.controller.text = "$k: $v";
             _features.add(item);
+          });
+        } catch (e2) {
+          final parts = existingPackage.features.split(',');
+          for (var part in parts) {
+            if (part.trim().isNotEmpty) {
+              final item = FeatureItem();
+              item.controller.text = part.trim();
+              _features.add(item);
+            }
           }
         }
       }
       if (_features.isEmpty) {
         _features.add(FeatureItem());
       }
-      
+
       _isInit = true;
     }
   }
@@ -84,13 +98,18 @@ class _EditPackageViewState extends State<EditPackageView> {
     super.dispose();
   }
 
-  void _saveForm() {
+  void _saveForm() async {
     if (_formKey.currentState!.validate()) {
-      final controller = Provider.of<PackagesController>(context, listen: false);
-      final existingPackage = controller.packages.firstWhere((p) => p.id == widget.packageId);
-          
+      final controller = Provider.of<PackagesController>(
+        context,
+        listen: false,
+      );
+      final existingPackage = controller.packages.firstWhere(
+        (p) => p.id == widget.packageId,
+      );
+
       Map<String, dynamic> changes = {};
-      
+
       if (_nameController.text != existingPackage.name) {
         changes['name'] = _nameController.text;
       }
@@ -98,21 +117,24 @@ class _EditPackageViewState extends State<EditPackageView> {
       if (newPrice != existingPackage.price) {
         changes['price'] = newPrice;
       }
-      
-      Map<String, String> featuresMap = {};
+
+      List<String> featuresArray = [];
       for (var f in _features) {
-        if (f.keyController.text.isNotEmpty && f.valueController.text.isNotEmpty) {
-          featuresMap[f.keyController.text.trim()] = f.valueController.text.trim();
+        if (f.controller.text.trim().isNotEmpty) {
+          featuresArray.add(f.controller.text.trim());
         }
       }
-      final newFeaturesJson = jsonEncode(featuresMap);
-      
+      final newFeaturesJson = jsonEncode(featuresArray);
+
       if (newFeaturesJson != existingPackage.features) {
         changes['features'] = newFeaturesJson;
       }
 
       if (changes.isNotEmpty) {
-        final revisionsController = Provider.of<RevisionsController>(context, listen: false);
+        final revisionsController = Provider.of<RevisionsController>(
+          context,
+          listen: false,
+        );
         revisionsController.createRevision(
           entityType: 'Package',
           entityId: widget.packageId,
@@ -156,18 +178,25 @@ class _EditPackageViewState extends State<EditPackageView> {
                     children: [
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Package Name (e.g. Premium)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Package Name (e.g. Premium)',
+                        ),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _priceController,
-                        decoration: const InputDecoration(labelText: 'Price (USD)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Price (USD)',
+                        ),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
-                      const Text('Features', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Features',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 8),
                       ..._features.asMap().entries.map((entry) {
                         int idx = entry.key;
@@ -178,19 +207,19 @@ class _EditPackageViewState extends State<EditPackageView> {
                             children: [
                               Expanded(
                                 child: TextFormField(
-                                  controller: item.keyController,
-                                  decoration: const InputDecoration(labelText: 'Feature Name (e.g. Max Investors)', isDense: true),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: item.valueController,
-                                  decoration: const InputDecoration(labelText: 'Value (e.g. Unlimited)', isDense: true),
+                                  controller: item.controller,
+                                  decoration: const InputDecoration(
+                                    labelText:
+                                        'Feature (e.g. Max 10 Investors)',
+                                    isDense: true,
+                                  ),
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.remove_circle,
+                                  color: Colors.red,
+                                ),
                                 onPressed: () {
                                   if (_features.length > 1) {
                                     setState(() {

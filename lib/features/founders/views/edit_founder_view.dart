@@ -17,12 +17,12 @@ class EditFounderView extends StatefulWidget {
 
 class _EditFounderViewState extends State<EditFounderView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameEnController;
   late TextEditingController _nameLaController;
   late TextEditingController _bioController;
   late TextEditingController _linkedinController;
-  
+
   Founder? _existingFounder;
   bool _isSaving = false;
   bool _isInit = false;
@@ -31,18 +31,29 @@ class _EditFounderViewState extends State<EditFounderView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<FoundersController>(context, listen: false);
+      final controller = Provider.of<FoundersController>(
+        context,
+        listen: false,
+      );
       try {
-        _existingFounder = controller.founders.firstWhere((f) => f.id == widget.founderId);
+        _existingFounder = controller.founders.firstWhere(
+          (f) => f.id == widget.founderId,
+        );
       } catch (_) {
         _existingFounder = null;
       }
-      
-      _nameEnController = TextEditingController(text: _existingFounder?.nameEn ?? '');
-      _nameLaController = TextEditingController(text: _existingFounder?.nameLa ?? '');
+
+      _nameEnController = TextEditingController(
+        text: _existingFounder?.nameEn ?? '',
+      );
+      _nameLaController = TextEditingController(
+        text: _existingFounder?.nameLa ?? '',
+      );
       _bioController = TextEditingController(text: _existingFounder?.bio ?? '');
-      _linkedinController = TextEditingController(text: _existingFounder?.linkedinUrl ?? '');
-      
+      _linkedinController = TextEditingController(
+        text: _existingFounder?.linkedinUrl ?? '',
+      );
+
       _isInit = true;
     }
   }
@@ -58,11 +69,14 @@ class _EditFounderViewState extends State<EditFounderView> {
 
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isSaving = true);
-    
-    final revController = Provider.of<RevisionsController>(context, listen: false);
-    
+
+    final revController = Provider.of<RevisionsController>(
+      context,
+      listen: false,
+    );
+
     final proposedChanges = <String, dynamic>{};
     if (_nameEnController.text.trim() != _existingFounder?.nameEn) {
       proposedChanges['name_en'] = _nameEnController.text.trim();
@@ -79,9 +93,9 @@ class _EditFounderViewState extends State<EditFounderView> {
 
     if (proposedChanges.isEmpty) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No changes made.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No changes made.')));
       context.pop();
       return;
     }
@@ -91,17 +105,25 @@ class _EditFounderViewState extends State<EditFounderView> {
       entityId: widget.founderId,
       proposedChanges: proposedChanges,
     );
-    
+
     if (mounted) {
       setState(() => _isSaving = false);
-      
+
       if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(revController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(
+              revController.errorMessage ?? 'Failed to submit revision',
+            ),
+            backgroundColor: AppColors.error,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Edit submitted for review!'), backgroundColor: AppColors.success),
+          const SnackBar(
+            content: Text('Edit submitted for review!'),
+            backgroundColor: AppColors.success,
+          ),
         );
         context.pop();
       }
@@ -140,7 +162,11 @@ class _EditFounderViewState extends State<EditFounderView> {
                     children: [
                       const Text(
                         'Founder Information',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -149,7 +175,8 @@ class _EditFounderViewState extends State<EditFounderView> {
                           labelText: 'Founder Name (Lao) *',
                           prefixIcon: Icon(Icons.person),
                         ),
-                        validator: (v) => v!.trim().isEmpty ? 'Lao name is required' : null,
+                        validator: (v) =>
+                            v!.trim().isEmpty ? 'Lao name is required' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -158,7 +185,9 @@ class _EditFounderViewState extends State<EditFounderView> {
                           labelText: 'Founder Name (English) *',
                           prefixIcon: Icon(Icons.person),
                         ),
-                        validator: (v) => v!.trim().isEmpty ? 'English name is required' : null,
+                        validator: (v) => v!.trim().isEmpty
+                            ? 'English name is required'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -173,7 +202,11 @@ class _EditFounderViewState extends State<EditFounderView> {
                       const SizedBox(height: 16),
                       const Text(
                         'Additional Details',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -188,10 +221,19 @@ class _EditFounderViewState extends State<EditFounderView> {
                         height: 48,
                         child: ElevatedButton.icon(
                           onPressed: _isSaving ? null : _saveForm,
-                          icon: _isSaving 
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Icon(Icons.save),
-                          label: Text(_isSaving ? 'Updating...' : 'Update Founder'),
+                          icon: _isSaving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.save),
+                          label: Text(
+                            _isSaving ? 'Updating...' : 'Update Founder',
+                          ),
                         ),
                       ),
                     ],

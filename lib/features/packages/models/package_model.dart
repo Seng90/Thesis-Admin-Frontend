@@ -24,8 +24,12 @@ class Package {
       price: double.tryParse(json['price'].toString()) ?? 0.0,
       features: json['features'] ?? '',
       purchaseCount: json['purchase_count'] ?? 0,
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
     );
   }
 

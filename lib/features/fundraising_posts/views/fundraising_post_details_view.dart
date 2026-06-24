@@ -17,10 +17,12 @@ class FundraisingPostDetailsView extends StatefulWidget {
   const FundraisingPostDetailsView({super.key, required this.slug});
 
   @override
-  State<FundraisingPostDetailsView> createState() => _FundraisingPostDetailsViewState();
+  State<FundraisingPostDetailsView> createState() =>
+      _FundraisingPostDetailsViewState();
 }
 
-class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView> {
+class _FundraisingPostDetailsViewState
+    extends State<FundraisingPostDetailsView> {
   FundraisingPost? _post;
   quill.QuillController? _quillController;
   bool _isLoading = true;
@@ -36,12 +38,12 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
   Future<void> _loadPost() async {
     final ctrl = context.read<FundraisingPostsController>();
     final post = await ctrl.getPostBySlug(widget.slug);
-    
+
     if (mounted) {
       setState(() {
         _post = post;
         _isLoading = false;
-        
+
         if (post != null && post.content.isNotEmpty) {
           try {
             final doc = quill.Document.fromJson(jsonDecode(post.content));
@@ -68,7 +70,9 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
       await launchUrl(url);
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not launch URL')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Could not launch URL')));
       }
     }
   }
@@ -91,7 +95,10 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
             children: [
               const Icon(Icons.error_outline, size: 64, color: AppColors.error),
               const SizedBox(height: 16),
-              const Text('Could not find the requested fundraising post.', style: TextStyle(fontSize: 18, color: AppColors.textSecondary)),
+              const Text(
+                'Could not find the requested fundraising post.',
+                style: TextStyle(fontSize: 18, color: AppColors.textSecondary),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => context.go('/raises'),
@@ -103,7 +110,10 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
       );
     }
 
-    final currencyFormatter = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
+    final currencyFormatter = NumberFormat.currency(
+      symbol: '\$',
+      decimalDigits: 0,
+    );
     final dateFormatter = DateFormat('MMMM dd, yyyy');
 
     return Scaffold(
@@ -134,7 +144,8 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (_post!.coverUrl != null && _post!.coverUrl!.isNotEmpty)
+                        if (_post!.coverUrl != null &&
+                            _post!.coverUrl!.isNotEmpty)
                           Container(
                             width: 80,
                             height: 80,
@@ -158,7 +169,11 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                             child: Center(
                               child: Text(
                                 _post!.title.substring(0, 1).toUpperCase(),
-                                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
                           ),
@@ -168,18 +183,30 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       _post!.title,
-                                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: _post!.status == 'Active' ? AppColors.successBg : (_post!.status == 'Hidden' ? AppColors.warningBg : AppColors.textMuted.withValues(alpha: 0.1)),
+                                      color: _post!.status == 'Active'
+                                          ? AppColors.successBg
+                                          : (_post!.status == 'Hidden'
+                                                ? AppColors.warningBg
+                                                : AppColors.textMuted
+                                                      .withValues(alpha: 0.1)),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -187,7 +214,11 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: _post!.status == 'Active' ? AppColors.success : (_post!.status == 'Hidden' ? AppColors.warning : AppColors.textMuted),
+                                        color: _post!.status == 'Active'
+                                            ? AppColors.success
+                                            : (_post!.status == 'Hidden'
+                                                  ? AppColors.warning
+                                                  : AppColors.textMuted),
                                       ),
                                     ),
                                   ),
@@ -196,29 +227,56 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                               const SizedBox(height: 8),
                               Text(
                                 _post!.excerpt,
-                                style: const TextStyle(fontSize: 16, color: AppColors.textSecondary, fontStyle: FontStyle.italic),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
-                              if (_post!.status == 'Hidden' && _post!.adminFeedback != null && _post!.adminFeedback!.isNotEmpty) ...[
+                              if (_post!.status == 'Hidden' &&
+                                  _post!.adminFeedback != null &&
+                                  _post!.adminFeedback!.isNotEmpty) ...[
                                 const SizedBox(height: 16),
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: AppColors.warningBg,
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.5)),
+                                    border: Border.all(
+                                      color: AppColors.warning.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                    ),
                                   ),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(Icons.info_outline, color: AppColors.warning, size: 20),
+                                      const Icon(
+                                        Icons.info_outline,
+                                        color: AppColors.warning,
+                                        size: 20,
+                                      ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            const Text('Admin Feedback (Hidden Reason)', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.warning)),
+                                            const Text(
+                                              'Admin Feedback (Hidden Reason)',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.warning,
+                                              ),
+                                            ),
                                             const SizedBox(height: 4),
-                                            Text(_post!.adminFeedback!, style: const TextStyle(color: AppColors.textPrimary)),
+                                            Text(
+                                              _post!.adminFeedback!,
+                                              style: const TextStyle(
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -230,43 +288,72 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                               Row(
                                 children: [
                                   ElevatedButton.icon(
-                                    onPressed: () => context.push('/raises/edit/${_post!.id}'),
+                                    onPressed: () => context.push(
+                                      '/raises/edit/${_post!.id}',
+                                    ),
                                     icon: const Icon(Icons.edit, size: 16),
                                     label: const Text('Edit Post'),
                                     style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
                                   ElevatedButton.icon(
-                                    onPressed: () => _confirmDelete(context, _post!),
-                                    icon: const Icon(Icons.delete_outline, size: 16),
+                                    onPressed: () =>
+                                        _confirmDelete(context, _post!),
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      size: 16,
+                                    ),
                                     label: const Text('Delete'),
                                     style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                      backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      backgroundColor: AppColors.error
+                                          .withValues(alpha: 0.1),
                                       foregroundColor: AppColors.error,
                                       elevation: 0,
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  if (_post!.websiteUrl != null && _post!.websiteUrl!.isNotEmpty)
+                                  if (_post!.websiteUrl != null &&
+                                      _post!.websiteUrl!.isNotEmpty)
                                     OutlinedButton.icon(
-                                      onPressed: () => _launchUrl(_post!.websiteUrl),
-                                      icon: const Icon(Icons.open_in_new, size: 16),
+                                      onPressed: () =>
+                                          _launchUrl(_post!.websiteUrl),
+                                      icon: const Icon(
+                                        Icons.open_in_new,
+                                        size: 16,
+                                      ),
                                       label: const Text('Website'),
                                       style: OutlinedButton.styleFrom(
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   const SizedBox(width: 12),
-                                  if (_post!.pitchDeckUrl != null && _post!.pitchDeckUrl!.isNotEmpty)
+                                  if (_post!.pitchDeckUrl != null &&
+                                      _post!.pitchDeckUrl!.isNotEmpty)
                                     OutlinedButton.icon(
-                                      onPressed: () => _launchUrl(_post!.pitchDeckUrl),
-                                      icon: const Icon(Icons.picture_as_pdf, size: 16),
+                                      onPressed: () =>
+                                          _launchUrl(_post!.pitchDeckUrl),
+                                      icon: const Icon(
+                                        Icons.picture_as_pdf,
+                                        size: 16,
+                                      ),
                                       label: const Text('Pitch Deck'),
                                       style: OutlinedButton.styleFrom(
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                 ],
@@ -284,57 +371,93 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
                   builder: (context, constraints) {
                     final isSmallScreen = constraints.maxWidth < 600;
                     final card1 = Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: const BorderSide(color: AppColors.border),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: AppColors.border),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Pitch Details',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            if (_quillController != null)
+                              quill.QuillEditor.basic(
+                                controller: _quillController!,
+                                configurations:
+                                    const quill.QuillEditorConfigurations(),
+                              )
+                            else
+                              const Text(
+                                'No content available.',
+                                style: TextStyle(color: AppColors.textMuted),
+                              ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Pitch Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 16),
-                              if (_quillController != null)
-                                quill.QuillEditor.basic(
-                                  controller: _quillController!,
-                                  configurations: const quill.QuillEditorConfigurations(),
-                                )
-                              else
-                                const Text('No content available.', style: TextStyle(color: AppColors.textMuted)),
-                            ],
-                          ),
-                        ),
-                      );
-                      
+                      ),
+                    );
+
                     final card2 = Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: const BorderSide(color: AppColors.border),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: AppColors.border),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Round Information',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            _buildGlanceItem(
+                              'Round Type',
+                              _post!.roundType,
+                              Icons.category_outlined,
+                            ),
+                            const Divider(height: 32),
+                            _buildGlanceItem(
+                              'Target',
+                              currencyFormatter.format(_post!.targetAmountUsd),
+                              Icons.attach_money_outlined,
+                            ),
+                            const Divider(height: 32),
+                            _buildGlanceItem(
+                              'Min Ticket',
+                              currencyFormatter.format(_post!.minTicketUsd),
+                              Icons.local_activity_outlined,
+                            ),
+                            const Divider(height: 32),
+                            _buildGlanceItem(
+                              'Deadline',
+                              dateFormatter.format(_post!.deadline),
+                              Icons.calendar_today_outlined,
+                            ),
+                            const Divider(height: 32),
+                            _buildGlanceItem(
+                              'Email',
+                              _post!.contactEmail,
+                              Icons.email_outlined,
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Round Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 24),
-                              _buildGlanceItem('Round Type', _post!.roundType, Icons.category_outlined),
-                              const Divider(height: 32),
-                              _buildGlanceItem('Target', currencyFormatter.format(_post!.targetAmountUsd), Icons.attach_money_outlined),
-                              const Divider(height: 32),
-                              _buildGlanceItem('Min Ticket', currencyFormatter.format(_post!.minTicketUsd), Icons.local_activity_outlined),
-                              const Divider(height: 32),
-                              _buildGlanceItem('Deadline', dateFormatter.format(_post!.deadline), Icons.calendar_today_outlined),
-                              const Divider(height: 32),
-                              _buildGlanceItem('Email', _post!.contactEmail, Icons.email_outlined),
-                            ],
-                          ),
-                        ),
-                      );
-                      
+                      ),
+                    );
+
                     if (isSmallScreen) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -376,9 +499,21 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
@@ -391,14 +526,19 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete "${post.title}"? This will send a request to the Moderation Queue.'),
+        content: Text(
+          'Are you sure you want to delete "${post.title}"? This will send a request to the Moderation Queue.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () async {
               Navigator.pop(ctx);
               final ctrl = context.read<FundraisingPostsController>();
@@ -408,12 +548,20 @@ class _FundraisingPostDetailsViewState extends State<FundraisingPostDetailsView>
               if (mounted) {
                 messenger.showSnackBar(
                   SnackBar(
-                    content: Text(success ? 'Delete request sent to Moderation Queue' : 'Failed to send delete request: ${ctrl.errorMessage}'),
-                    backgroundColor: success ? AppColors.success : AppColors.error,
+                    content: Text(
+                      success
+                          ? 'Delete request sent to Moderation Queue'
+                          : 'Failed to send delete request: ${ctrl.errorMessage}',
+                    ),
+                    backgroundColor: success
+                        ? AppColors.success
+                        : AppColors.error,
                   ),
                 );
                 if (success) {
-                  context.go('/raises');
+                  if (context.mounted) {
+                    context.go('/raises');
+                  }
                 }
               }
             },

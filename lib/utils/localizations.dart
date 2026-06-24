@@ -83,13 +83,22 @@ class AppLocalizations {
       'View Details': 'ເບິ່ງລາຍລະອຽດ',
       'Approve': 'ອະນຸມັດ',
       'Block': 'ບລັອກ',
-    }
+    },
   };
 
-  static String translate(BuildContext context, String key, {bool listen = true}) {
+  static String translate(
+    BuildContext context,
+    String key, {
+    bool listen = true,
+  }) {
     try {
-      final lang = Provider.of<SettingsController>(context, listen: listen).languageCode;
-      return _localizedValues[lang]?[key] ?? _localizedValues['en']?[key] ?? key;
+      final lang = Provider.of<SettingsController>(
+        context,
+        listen: listen,
+      ).languageCode;
+      return _localizedValues[lang]?[key] ??
+          _localizedValues['en']?[key] ??
+          key;
     } catch (_) {
       return key;
     }

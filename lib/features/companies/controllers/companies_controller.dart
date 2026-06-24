@@ -4,7 +4,7 @@ import 'package:investrack_admin/services/api_service.dart';
 
 class CompaniesController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   List<Company> _companies = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -36,9 +36,10 @@ class CompaniesController extends ChangeNotifier {
 
   Future<void> updateCompanyStatus(String id, String newStatus) async {
     try {
-      await _apiService.client.patch('/admin/companies/$id', data: {
-        'status': newStatus,
-      });
+      await _apiService.client.patch(
+        '/admin/companies/$id',
+        data: {'status': newStatus},
+      );
       final index = _companies.indexWhere((c) => c.id == id);
       if (index != -1) {
         final old = _companies[index];
@@ -77,7 +78,10 @@ class CompaniesController extends ChangeNotifier {
 
     try {
       final data = company.toJson()..remove('id');
-      final response = await _apiService.client.post('/admin/companies', data: data);
+      final response = await _apiService.client.post(
+        '/admin/companies',
+        data: data,
+      );
       final newCompany = Company.fromJson(response.data);
       _companies.add(newCompany);
     } catch (e) {
@@ -101,7 +105,10 @@ class CompaniesController extends ChangeNotifier {
       final data = updatedCompany.toJson()
         ..remove('id')
         ..remove('approved_by');
-      await _apiService.client.patch('/admin/companies/${updatedCompany.id}', data: data);
+      await _apiService.client.patch(
+        '/admin/companies/${updatedCompany.id}',
+        data: data,
+      );
       final index = _companies.indexWhere((c) => c.id == updatedCompany.id);
       if (index != -1) {
         _companies[index] = updatedCompany;

@@ -8,7 +8,6 @@ import '../../members/controllers/members_controller.dart';
 import '../../packages/controllers/packages_controller.dart';
 import '../../../widgets/desktop_text_field.dart';
 
-
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -52,6 +51,8 @@ class _LoginViewState extends State<LoginView> {
                       labelText: 'Username',
                       border: OutlineInputBorder(),
                     ),
+                    onSubmitted: (_) =>
+                        _performLogin(context, context.read<AuthController>()),
                   ),
                   const SizedBox(height: 16),
                   DesktopTextField(
@@ -61,6 +62,8 @@ class _LoginViewState extends State<LoginView> {
                       labelText: 'Password',
                       border: OutlineInputBorder(),
                     ),
+                    onSubmitted: (_) =>
+                        _performLogin(context, context.read<AuthController>()),
                   ),
                   const SizedBox(height: 24),
                   Consumer<AuthController>(
@@ -68,37 +71,15 @@ class _LoginViewState extends State<LoginView> {
                       return ElevatedButton(
                         onPressed: authController.isLoading
                             ? null
-                            : () async {
-                                final username = _usernameController.text.trim();
-                                final password = _passwordController.text;
-                                
-                                if (username.isEmpty || password.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please enter both username and password')),
-                                  );
-                                  return;
-                                }
-
-                                bool success = await authController.login(username, password);
-                                if (success && context.mounted) {
-                                  // Fetch fresh data after successful login
-                                  Provider.of<CompaniesController>(context, listen: false).loadCompanies();
-                                  Provider.of<InvestorsController>(context, listen: false).loadInvestors();
-                                  Provider.of<MembersController>(context, listen: false).loadMembers();
-                                  Provider.of<PackagesController>(context, listen: false).loadPackages();
-                                  
-                                  context.go('/dashboard');
-                                } else if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(authController.errorMessage ?? 'Login failed')),
-                                  );
-                                }
-                              },
+                            : () => _performLogin(context, authController),
                         child: authController.isLoading
                             ? const SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('Login'),
                       );
@@ -111,5 +92,39 @@ class _LoginViewState extends State<LoginView> {
         ),
       ),
     );
+  }
+
+  Future<void> _performLogin(
+    BuildContext context,
+    AuthController authController,
+  ) async {
+    if (authController.isLoading) return;
+
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text;
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter both username and password'),
+        ),
+      );
+      return;
+    }
+
+    bool success = await authController.login(username, password);
+    if (success && context.mounted) {
+      // Fetch fresh data after successful login
+      Provider.of<CompaniesController>(context, listen: false).loadCompanies();
+      Provider.of<InvestorsController>(context, listen: false).loadInvestors();
+      Provider.of<MembersController>(context, listen: false).loadMembers();
+      Provider.of<PackagesController>(context, listen: false).loadPackages();
+
+      context.go('/dashboard');
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authController.errorMessage ?? 'Login failed')),
+      );
+    }
   }
 }

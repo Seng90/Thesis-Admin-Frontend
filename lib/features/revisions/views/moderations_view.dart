@@ -29,7 +29,10 @@ class _ModerationsViewState extends State<ModerationsView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<RevisionsController>(context, listen: false);
+      final controller = Provider.of<RevisionsController>(
+        context,
+        listen: false,
+      );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         controller.loadPendingRevisions();
       });
@@ -47,36 +50,46 @@ class _ModerationsViewState extends State<ModerationsView> {
           children: [
             const AdminHeader(
               title: 'Moderation Queue',
-              subtitle: 'Review user submissions and edit suggestions before they go live',
+              subtitle:
+                  'Review user submissions and edit suggestions before they go live',
             ),
             const SizedBox(height: 24),
-            
+
             // Alert Box
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.warningBg.withValues(alpha: 0.5),
-                border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AppColors.warning.withValues(alpha: 0.3),
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  const Icon(LucideIcons.alertCircle, color: AppColors.warning, size: 16),
+                  const Icon(
+                    LucideIcons.alertCircle,
+                    color: AppColors.warning,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Consumer<RevisionsController>(
                     builder: (context, controller, child) {
                       return Text(
                         '${controller.pendingRevisions.length} pending submissions',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       );
                     },
                   ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Tabs
             Container(
               decoration: const BoxDecoration(
@@ -98,9 +111,9 @@ class _ModerationsViewState extends State<ModerationsView> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // List
             Expanded(
               child: Consumer<RevisionsController>(
@@ -108,31 +121,42 @@ class _ModerationsViewState extends State<ModerationsView> {
                   if (controller.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  
+
                   if (controller.pendingRevisions.isEmpty) {
-                    return const Center(child: Text('No pending revisions in queue.'));
+                    return const Center(
+                      child: Text('No pending revisions in queue.'),
+                    );
                   }
-                  
+
                   // Filter logic based on tab
                   var filteredList = controller.pendingRevisions.where((r) {
                     if (_selectedTab == 'All') return true;
-                    
+
                     String expectedType = r.entityType.toLowerCase();
-                    if (_selectedTab == 'Companies') return expectedType == 'company';
-                    if (_selectedTab == 'Fundraising Posts') return expectedType == 'fundraisingpost';
-                    
+                    if (_selectedTab == 'Companies') {
+                      return expectedType == 'company';
+                    }
+                    if (_selectedTab == 'Fundraising Posts') {
+                      return expectedType == 'fundraisingpost';
+                    }
+
                     // Default generic plural to singular mapping
-                    String tabSingular = _selectedTab.substring(0, _selectedTab.length - 1).toLowerCase();
+                    String tabSingular = _selectedTab
+                        .substring(0, _selectedTab.length - 1)
+                        .toLowerCase();
                     return expectedType == tabSingular;
                   }).toList();
 
                   if (filteredList.isEmpty) {
-                    return Center(child: Text('No pending revisions match $_selectedTab.'));
+                    return Center(
+                      child: Text('No pending revisions match $_selectedTab.'),
+                    );
                   }
 
                   return ListView.separated(
                     itemCount: filteredList.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final revision = filteredList[index];
                       return _buildRevisionCard(context, controller, revision);
@@ -146,7 +170,7 @@ class _ModerationsViewState extends State<ModerationsView> {
       ),
     );
   }
-  
+
   Widget _buildTab(String title) {
     final isSelected = _selectedTab == title;
     return InkWell(
@@ -177,9 +201,13 @@ class _ModerationsViewState extends State<ModerationsView> {
     );
   }
 
-  Widget _buildRevisionCard(BuildContext context, RevisionsController controller, Revision revision) {
+  Widget _buildRevisionCard(
+    BuildContext context,
+    RevisionsController controller,
+    Revision revision,
+  ) {
     Map<String, dynamic> changes = revision.proposedChanges;
-    
+
     String changeField = 'Data';
     String changeValue = 'Multiple Fields';
     if (changes.isNotEmpty) {
@@ -211,47 +239,75 @@ class _ModerationsViewState extends State<ModerationsView> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.border,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         revision.entityType.toUpperCase(),
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'monospace'),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'monospace',
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.warningBg.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.warning.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: AppColors.warning.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: const Text(
                         'high priority',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.warning, letterSpacing: 0.5),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.warning,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       '${changes.length} field${changes.length > 1 ? 's' : ''} changed',
-                      style: const TextStyle(fontSize: 10, fontFamily: 'monospace', color: AppColors.textSecondary),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontFamily: 'monospace',
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  revision.entityId.isEmpty 
+                  revision.entityId.isEmpty
                       ? 'Create new ${revision.entityType}'
                       : 'Update ${revision.entityType} ID: ${revision.entityId}',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.3),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Submitted by Admin · ${revision.createdAt?.toString().split('.')[0] ?? 'N/A'}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Container(
@@ -267,9 +323,21 @@ class _ModerationsViewState extends State<ModerationsView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Field', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                            const Text(
+                              'Field',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
                             const SizedBox(height: 2),
-                            Text(changeField, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                            Text(
+                              changeField,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -277,7 +345,13 @@ class _ModerationsViewState extends State<ModerationsView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Change', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                            const Text(
+                              'Change',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
                             const SizedBox(height: 2),
                             Row(
                               children: [
@@ -291,11 +365,20 @@ class _ModerationsViewState extends State<ModerationsView> {
                                   ),
                                 ),
                                 const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                  child: Text('→', style: TextStyle(color: AppColors.textMuted)),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 4.0,
+                                  ),
+                                  child: Text(
+                                    '→',
+                                    style: TextStyle(
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
                                 ),
                                 Text(
-                                  changeValue.length > 20 ? '${changeValue.substring(0, 20)}...' : changeValue,
+                                  changeValue.length > 20
+                                      ? '${changeValue.substring(0, 20)}...'
+                                      : changeValue,
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontFamily: 'monospace',
@@ -328,19 +411,30 @@ class _ModerationsViewState extends State<ModerationsView> {
                         child: SingleChildScrollView(
                           child: Text(
                             const JsonEncoder.withIndent('  ').convert(changes),
-                            style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontFamily: 'monospace',
+                            ),
                           ),
                         ),
                       ),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Close'),
+                        ),
                       ],
                     ),
                   );
                 },
                 icon: const Icon(LucideIcons.eye, size: 14),
                 label: const Text('Diff', style: TextStyle(fontSize: 13)),
-                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
               ),
               const SizedBox(width: 6),
               OutlinedButton.icon(
@@ -352,16 +446,29 @@ class _ModerationsViewState extends State<ModerationsView> {
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(success ? 'Revision rejected.' : (controller.errorMessage ?? 'Failed to reject revision.')),
-                        backgroundColor: success ? AppColors.warning : AppColors.error,
+                        content: Text(
+                          success
+                              ? 'Revision rejected.'
+                              : (controller.errorMessage ??
+                                    'Failed to reject revision.'),
+                        ),
+                        backgroundColor: success
+                            ? AppColors.warning
+                            : AppColors.error,
                       ),
                     );
                   }
                 },
                 icon: const Icon(LucideIcons.x, size: 14, color: Colors.red),
-                label: const Text('Reject', style: TextStyle(fontSize: 13, color: Colors.red)),
+                label: const Text(
+                  'Reject',
+                  style: TextStyle(fontSize: 13, color: Colors.red),
+                ),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   side: BorderSide(color: Colors.red.withValues(alpha: 0.3)),
                 ),
               ),
@@ -375,8 +482,15 @@ class _ModerationsViewState extends State<ModerationsView> {
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(success ? 'Revision approved and published!' : (controller.errorMessage ?? 'Failed to approve revision.')),
-                        backgroundColor: success ? AppColors.success : AppColors.error,
+                        content: Text(
+                          success
+                              ? 'Revision approved and published!'
+                              : (controller.errorMessage ??
+                                    'Failed to approve revision.'),
+                        ),
+                        backgroundColor: success
+                            ? AppColors.success
+                            : AppColors.error,
                       ),
                     );
                   }
@@ -384,7 +498,10 @@ class _ModerationsViewState extends State<ModerationsView> {
                 icon: const Icon(LucideIcons.check, size: 14),
                 label: const Text('Approve', style: TextStyle(fontSize: 13)),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
                   elevation: 0,
@@ -396,6 +513,7 @@ class _ModerationsViewState extends State<ModerationsView> {
       ),
     );
   }
+
   void _reloadRelatedController(BuildContext context, String entityType) {
     switch (entityType.toLowerCase()) {
       case 'company':

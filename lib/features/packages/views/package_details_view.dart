@@ -21,7 +21,10 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<PackagesController>(context, listen: false);
+      final controller = Provider.of<PackagesController>(
+        context,
+        listen: false,
+      );
       if (controller.packages.isEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           controller.loadPackages();
@@ -46,10 +49,12 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
           if (controller.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           try {
-            final package = controller.packages.firstWhere((p) => p.id == widget.packageId);
-            
+            final package = controller.packages.firstWhere(
+              (p) => p.id == widget.packageId,
+            );
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
               child: Center(
@@ -80,7 +85,11 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
                                 child: Center(
                                   child: Text(
                                     package.name.substring(0, 1).toUpperCase(),
-                                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -90,19 +99,28 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
                                             package.name,
-                                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                              fontSize: 28,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: AppColors.successBg,
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                           ),
                                           child: Text(
                                             '\$${package.price}',
@@ -118,17 +136,30 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
                                     const SizedBox(height: 8),
                                     Text(
                                       'Premium Package',
-                                      style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: AppColors.textSecondary,
+                                      ),
                                     ),
                                     const SizedBox(height: 24),
                                     Row(
                                       children: [
                                         ElevatedButton.icon(
-                                          onPressed: () => context.push('/packages/edit/${package.id}'),
-                                          icon: const Icon(Icons.edit, size: 16),
-                                          label: Text('Edit Package'.tr(context)),
+                                          onPressed: () => context.push(
+                                            '/packages/edit/${package.id}',
+                                          ),
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            size: 16,
+                                          ),
+                                          label: Text(
+                                            'Edit Package'.tr(context),
+                                          ),
                                           style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -146,54 +177,94 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
                         builder: (context, constraints) {
                           final isSmallScreen = constraints.maxWidth < 600;
                           final card1 = Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: AppColors.border),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Features', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      package.features.isNotEmpty ? package.features : 'No features listed.',
-                                      style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.textSecondary),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Features',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    package.features.isNotEmpty
+                                        ? package.features
+                                        : 'No features listed.',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      height: 1.5,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                            
+                            ),
+                          );
+
                           final card2 = Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: AppColors.border),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'At a Glance',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _buildGlanceItem(
+                                    'Purchases',
+                                    '${package.purchaseCount}',
+                                    Icons.shopping_cart_outlined,
+                                  ),
+                                  const Divider(height: 32),
+                                  _buildGlanceItem(
+                                    'Created',
+                                    package.createdAt?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        'Unknown',
+                                    Icons.access_time_outlined,
+                                  ),
+                                  const Divider(height: 32),
+                                  _buildGlanceItem(
+                                    'Updated',
+                                    package.updatedAt?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        'Unknown',
+                                    Icons.update_outlined,
+                                  ),
+                                ],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('At a Glance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 24),
-                                    _buildGlanceItem('Purchases', '${package.purchaseCount}', Icons.shopping_cart_outlined),
-                                    const Divider(height: 32),
-                                    _buildGlanceItem('Created', package.createdAt?.toString().split(' ')[0] ?? 'Unknown', Icons.access_time_outlined),
-                                    const Divider(height: 32),
-                                    _buildGlanceItem('Updated', package.updatedAt?.toString().split(' ')[0] ?? 'Unknown', Icons.update_outlined),
-                                  ],
-                                ),
-                              ),
-                            );
-                            
+                            ),
+                          );
+
                           if (isSmallScreen) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [card1, const SizedBox(height: 24), card2],
+                              children: [
+                                card1,
+                                const SizedBox(height: 24),
+                                card2,
+                              ],
                             );
                           } else {
                             return Row(
@@ -219,6 +290,7 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
       ),
     );
   }
+
   Widget _buildGlanceItem(String label, String value, IconData icon) {
     return Row(
       children: [
@@ -235,9 +307,21 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),

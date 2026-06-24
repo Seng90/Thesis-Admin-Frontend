@@ -18,13 +18,13 @@ class EditInvestorView extends StatefulWidget {
 
 class _EditInvestorViewState extends State<EditInvestorView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _websiteController;
   late TextEditingController _contactController;
   late TextEditingController _logoUrlController;
   late String _type;
-  
+
   bool _isSaving = false;
   bool _isInit = false;
   Investor? _existingInvestor;
@@ -33,18 +33,31 @@ class _EditInvestorViewState extends State<EditInvestorView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<InvestorsController>(context, listen: false);
+      final controller = Provider.of<InvestorsController>(
+        context,
+        listen: false,
+      );
       try {
-        _existingInvestor = controller.investors.firstWhere((i) => i.id == widget.investorId);
+        _existingInvestor = controller.investors.firstWhere(
+          (i) => i.id == widget.investorId,
+        );
       } catch (_) {
         _existingInvestor = null;
       }
-      
-      _nameController = TextEditingController(text: _existingInvestor?.name ?? '');
-      _websiteController = TextEditingController(text: _existingInvestor?.websiteUrl ?? '');
-      _contactController = TextEditingController(text: _existingInvestor?.contactInfo ?? '');
-      _logoUrlController = TextEditingController(text: _existingInvestor?.logoUrl ?? '');
-      
+
+      _nameController = TextEditingController(
+        text: _existingInvestor?.name ?? '',
+      );
+      _websiteController = TextEditingController(
+        text: _existingInvestor?.websiteUrl ?? '',
+      );
+      _contactController = TextEditingController(
+        text: _existingInvestor?.contactInfo ?? '',
+      );
+      _logoUrlController = TextEditingController(
+        text: _existingInvestor?.logoUrl ?? '',
+      );
+
       String initialType = _existingInvestor?.type ?? 'VC';
       // Normalize common long-form type names from legacy databases or inputs
       if (initialType == 'Venture Capital') {
@@ -54,13 +67,21 @@ class _EditInvestorViewState extends State<EditInvestorView> {
       } else if (initialType == 'Private Equity') {
         initialType = 'PE';
       }
-      
-      const allowedTypes = ['VC', 'Angel', 'PE', 'Corporate', 'Accelerator', 'Syndicate', 'Other'];
+
+      const allowedTypes = [
+        'VC',
+        'Angel',
+        'PE',
+        'Corporate',
+        'Accelerator',
+        'Syndicate',
+        'Other',
+      ];
       if (!allowedTypes.contains(initialType)) {
         initialType = 'Other';
       }
       _type = initialType;
-      
+
       _isInit = true;
     }
   }
@@ -76,22 +97,31 @@ class _EditInvestorViewState extends State<EditInvestorView> {
 
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isSaving = true);
-    
-    final revController = Provider.of<RevisionsController>(context, listen: false);
-    
+
+    final revController = Provider.of<RevisionsController>(
+      context,
+      listen: false,
+    );
+
     final proposedChanges = {
-      if (_nameController.text.trim() != _existingInvestor?.name) 'name': _nameController.text.trim(),
+      if (_nameController.text.trim() != _existingInvestor?.name)
+        'name': _nameController.text.trim(),
       if (_type != _existingInvestor?.type) 'type': _type,
-      if (_logoUrlController.text.trim() != _existingInvestor?.logoUrl) 'logo_url': _logoUrlController.text.trim(),
-      if (_websiteController.text.trim() != _existingInvestor?.websiteUrl) 'website_url': _websiteController.text.trim(),
-      if (_contactController.text.trim() != _existingInvestor?.contactInfo) 'contact_info': _contactController.text.trim(),
+      if (_logoUrlController.text.trim() != _existingInvestor?.logoUrl)
+        'logo_url': _logoUrlController.text.trim(),
+      if (_websiteController.text.trim() != _existingInvestor?.websiteUrl)
+        'website_url': _websiteController.text.trim(),
+      if (_contactController.text.trim() != _existingInvestor?.contactInfo)
+        'contact_info': _contactController.text.trim(),
     };
 
     if (proposedChanges.isEmpty) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No changes made.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No changes made.')));
       context.pop();
       return;
     }
@@ -104,14 +134,22 @@ class _EditInvestorViewState extends State<EditInvestorView> {
 
     if (mounted) {
       setState(() => _isSaving = false);
-      
+
       if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(revController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(
+              revController.errorMessage ?? 'Failed to submit revision',
+            ),
+            backgroundColor: AppColors.error,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Edit submitted for review!'), backgroundColor: AppColors.success),
+          const SnackBar(
+            content: Text('Edit submitted for review!'),
+            backgroundColor: AppColors.success,
+          ),
         );
         context.pop();
       }
@@ -143,19 +181,30 @@ class _EditInvestorViewState extends State<EditInvestorView> {
                     children: [
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Investor Name'),
+                        decoration: const InputDecoration(
+                          labelText: 'Investor Name',
+                        ),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _type,
                         decoration: const InputDecoration(labelText: 'Type'),
-                        items: ['VC', 'Angel', 'PE', 'Corporate', 'Accelerator', 'Syndicate', 'Other'].map((String val) {
-                          return DropdownMenuItem(
-                            value: val,
-                            child: Text(val),
-                          );
-                        }).toList(),
+                        items:
+                            [
+                              'VC',
+                              'Angel',
+                              'PE',
+                              'Corporate',
+                              'Accelerator',
+                              'Syndicate',
+                              'Other',
+                            ].map((String val) {
+                              return DropdownMenuItem(
+                                value: val,
+                                child: Text(val),
+                              );
+                            }).toList(),
                         onChanged: (newVal) {
                           if (newVal != null) {
                             setState(() {
@@ -167,23 +216,36 @@ class _EditInvestorViewState extends State<EditInvestorView> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _logoUrlController,
-                        decoration: const InputDecoration(labelText: 'Logo URL'),
+                        decoration: const InputDecoration(
+                          labelText: 'Logo URL',
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _websiteController,
-                        decoration: const InputDecoration(labelText: 'Website URL (Optional)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Website URL (Optional)',
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _contactController,
-                        decoration: const InputDecoration(labelText: 'Contact Email/Phone'),
+                        decoration: const InputDecoration(
+                          labelText: 'Contact Email/Phone',
+                        ),
                       ),
                       const SizedBox(height: 32),
                       ElevatedButton(
                         onPressed: _isSaving ? null : _saveForm,
-                        child: _isSaving 
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        child: _isSaving
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
                             : Text('Update Investor'.tr(context)),
                       ),
                     ],

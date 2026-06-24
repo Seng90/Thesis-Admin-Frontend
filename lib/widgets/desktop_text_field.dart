@@ -13,6 +13,7 @@ class DesktopTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final TextInputType? keyboardType;
   final TextSelectionControls? selectionControls;
+  final ValueChanged<String>? onSubmitted;
   final bool autofocus;
   final int? maxLines;
   final int? minLines;
@@ -26,6 +27,7 @@ class DesktopTextField extends StatefulWidget {
     this.onChanged,
     this.keyboardType,
     this.selectionControls,
+    this.onSubmitted,
     this.autofocus = false,
     this.maxLines = 1,
     this.minLines,
@@ -39,8 +41,10 @@ class _DesktopTextFieldState extends State<DesktopTextField> {
   FocusNode? _internalFocusNode;
   TextEditingController? _internalController;
 
-  FocusNode get _focusNode => widget.focusNode ?? (_internalFocusNode ??= FocusNode());
-  TextEditingController get _controller => widget.controller ?? (_internalController ??= TextEditingController());
+  FocusNode get _focusNode =>
+      widget.focusNode ?? (_internalFocusNode ??= FocusNode());
+  TextEditingController get _controller =>
+      widget.controller ?? (_internalController ??= TextEditingController());
 
   @override
   void initState() {
@@ -71,7 +75,8 @@ class _DesktopTextFieldState extends State<DesktopTextField> {
     }
 
     final isControlPressed = HardwareKeyboard.instance.isControlPressed;
-    final isMetaPressed = HardwareKeyboard.instance.isMetaPressed; // Command key on macOS
+    final isMetaPressed =
+        HardwareKeyboard.instance.isMetaPressed; // Command key on macOS
     final isShortcutModifier = isControlPressed || isMetaPressed;
 
     // 1. Backspace
@@ -94,7 +99,8 @@ class _DesktopTextFieldState extends State<DesktopTextField> {
       } else {
         final offset = selection.baseOffset;
         if (offset > 0) {
-          final newText = text.substring(0, offset - 1) + text.substring(offset);
+          final newText =
+              text.substring(0, offset - 1) + text.substring(offset);
           _controller.value = TextEditingValue(
             text: newText,
             selection: TextSelection.collapsed(offset: offset - 1),
@@ -125,7 +131,8 @@ class _DesktopTextFieldState extends State<DesktopTextField> {
       } else {
         final offset = selection.baseOffset;
         if (offset < text.length) {
-          final newText = text.substring(0, offset) + text.substring(offset + 1);
+          final newText =
+              text.substring(0, offset) + text.substring(offset + 1);
           _controller.value = TextEditingValue(
             text: newText,
             selection: TextSelection.collapsed(offset: offset),
@@ -150,7 +157,9 @@ class _DesktopTextFieldState extends State<DesktopTextField> {
           final newText = text.replaceRange(start, end, pasteText);
           _controller.value = TextEditingValue(
             text: newText,
-            selection: TextSelection.collapsed(offset: start + pasteText.length),
+            selection: TextSelection.collapsed(
+              offset: start + pasteText.length,
+            ),
           );
           if (widget.onChanged != null) widget.onChanged!(newText);
         }
@@ -209,6 +218,7 @@ class _DesktopTextFieldState extends State<DesktopTextField> {
       obscureText: widget.obscureText,
       keyboardType: widget.keyboardType,
       onChanged: widget.onChanged,
+      onSubmitted: widget.onSubmitted,
       selectionControls: widget.selectionControls,
       autofocus: widget.autofocus,
       maxLines: widget.maxLines,
@@ -230,6 +240,7 @@ class DesktopTextFormField extends StatefulWidget {
   final FormFieldSetter<String>? onSaved;
   final TextInputType? keyboardType;
   final TextSelectionControls? selectionControls;
+  final ValueChanged<String>? onFieldSubmitted;
   final bool autofocus;
   final int? maxLines;
   final int? minLines;
@@ -245,6 +256,7 @@ class DesktopTextFormField extends StatefulWidget {
     this.onSaved,
     this.keyboardType,
     this.selectionControls,
+    this.onFieldSubmitted,
     this.autofocus = false,
     this.maxLines = 1,
     this.minLines,
@@ -258,8 +270,10 @@ class _DesktopTextFormFieldState extends State<DesktopTextFormField> {
   FocusNode? _internalFocusNode;
   TextEditingController? _internalController;
 
-  FocusNode get _focusNode => widget.focusNode ?? (_internalFocusNode ??= FocusNode());
-  TextEditingController get _controller => widget.controller ?? (_internalController ??= TextEditingController());
+  FocusNode get _focusNode =>
+      widget.focusNode ?? (_internalFocusNode ??= FocusNode());
+  TextEditingController get _controller =>
+      widget.controller ?? (_internalController ??= TextEditingController());
 
   @override
   void initState() {
@@ -312,7 +326,8 @@ class _DesktopTextFormFieldState extends State<DesktopTextFormField> {
       } else {
         final offset = selection.baseOffset;
         if (offset > 0) {
-          final newText = text.substring(0, offset - 1) + text.substring(offset);
+          final newText =
+              text.substring(0, offset - 1) + text.substring(offset);
           _controller.value = TextEditingValue(
             text: newText,
             selection: TextSelection.collapsed(offset: offset - 1),
@@ -343,7 +358,8 @@ class _DesktopTextFormFieldState extends State<DesktopTextFormField> {
       } else {
         final offset = selection.baseOffset;
         if (offset < text.length) {
-          final newText = text.substring(0, offset) + text.substring(offset + 1);
+          final newText =
+              text.substring(0, offset) + text.substring(offset + 1);
           _controller.value = TextEditingValue(
             text: newText,
             selection: TextSelection.collapsed(offset: offset),
@@ -368,7 +384,9 @@ class _DesktopTextFormFieldState extends State<DesktopTextFormField> {
           final newText = text.replaceRange(start, end, pasteText);
           _controller.value = TextEditingValue(
             text: newText,
-            selection: TextSelection.collapsed(offset: start + pasteText.length),
+            selection: TextSelection.collapsed(
+              offset: start + pasteText.length,
+            ),
           );
           if (widget.onChanged != null) widget.onChanged!(newText);
         }
@@ -429,6 +447,7 @@ class _DesktopTextFormFieldState extends State<DesktopTextFormField> {
       onChanged: widget.onChanged,
       validator: widget.validator,
       onSaved: widget.onSaved,
+      onFieldSubmitted: widget.onFieldSubmitted,
       selectionControls: widget.selectionControls,
       autofocus: widget.autofocus,
       maxLines: widget.maxLines,

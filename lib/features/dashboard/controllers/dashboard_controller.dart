@@ -4,17 +4,21 @@ import '../models/dashboard_model.dart';
 
 class DashboardController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   DashboardSummary? summary;
   List<SectorStat> sectors = [];
   List<FundingHistoryItem> fundingHistory = [];
   List<RecentCompany> recentCompanies = [];
-  
+  List<TopStartup> topStartups = [];
+  List<PopularPackage> popularPackages = [];
+
   bool isLoadingSummary = false;
   bool isLoadingSectors = false;
   bool isLoadingFunding = false;
   bool isLoadingRecent = false;
-  
+  bool isLoadingTopStartups = false;
+  bool isLoadingPopularPackages = false;
+
   String? errorMessage;
   String currentFundingPeriod = '1M';
 
@@ -25,12 +29,14 @@ class DashboardController extends ChangeNotifier {
   Future<void> loadAll() async {
     errorMessage = null;
     notifyListeners();
-    
+
     await Future.wait([
       loadSummary(),
       loadSectors(),
       loadFundingHistory(currentFundingPeriod),
       loadRecentCompanies(),
+      loadTopStartups(),
+      loadPopularPackages(),
     ]);
   }
 
@@ -54,7 +60,9 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/dashboard/companies-by-sector');
+      final response = await _apiService.client.get(
+        '/admin/dashboard/companies-by-sector',
+      );
       final List<dynamic> data = response.data;
       sectors = data.map((json) => SectorStat.fromJson(json)).toList();
     } catch (e) {
@@ -76,7 +84,9 @@ class DashboardController extends ChangeNotifier {
         queryParameters: {'period': period},
       );
       final List<dynamic> data = response.data;
-      fundingHistory = data.map((json) => FundingHistoryItem.fromJson(json)).toList();
+      fundingHistory = data
+          .map((json) => FundingHistoryItem.fromJson(json))
+          .toList();
     } catch (e) {
       _handleError(e);
     } finally {
@@ -90,13 +100,55 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/dashboard/recent-companies');
+      final response = await _apiService.client.get(
+        '/admin/dashboard/recent-companies',
+      );
       final List<dynamic> data = response.data;
-      recentCompanies = data.map((json) => RecentCompany.fromJson(json)).toList();
+      recentCompanies = data
+          .map((json) => RecentCompany.fromJson(json))
+          .toList();
     } catch (e) {
       _handleError(e);
     } finally {
       isLoadingRecent = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadTopStartups() async {
+    isLoadingTopStartups = true;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.client.get(
+        '/admin/dashboard/top-startups',
+      );
+      final List<dynamic> data = response.data;
+      topStartups = data.map((json) => TopStartup.fromJson(json)).toList();
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      isLoadingTopStartups = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadPopularPackages() async {
+    isLoadingPopularPackages = true;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.client.get(
+        '/admin/dashboard/popular-packages',
+      );
+      final List<dynamic> data = response.data;
+      popularPackages = data
+          .map((json) => PopularPackage.fromJson(json))
+          .toList();
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      isLoadingPopularPackages = false;
       notifyListeners();
     }
   }

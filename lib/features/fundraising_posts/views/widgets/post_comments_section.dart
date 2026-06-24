@@ -41,7 +41,10 @@ class _PostCommentsSectionState extends State<PostCommentsSection> {
         title: const Text('Delete Comment'),
         content: const Text('Are you sure you want to delete this comment?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
@@ -55,12 +58,18 @@ class _PostCommentsSectionState extends State<PostCommentsSection> {
       final success = await ctrl.deleteComment(commentId);
       if (success) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment deleted')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Comment deleted')));
           _loadComments();
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ctrl.errorMessage ?? 'Failed to delete comment')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(ctrl.errorMessage ?? 'Failed to delete comment'),
+            ),
+          );
         }
       }
     }
@@ -79,7 +88,10 @@ class _PostCommentsSectionState extends State<PostCommentsSection> {
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, textController.text),
             child: const Text('Save'),
@@ -88,16 +100,24 @@ class _PostCommentsSectionState extends State<PostCommentsSection> {
       ),
     );
 
-    if (newContent != null && newContent.trim().isNotEmpty && newContent != currentContent) {
+    if (newContent != null &&
+        newContent.trim().isNotEmpty &&
+        newContent != currentContent) {
       final success = await ctrl.updateComment(commentId, newContent.trim());
       if (success) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment updated')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Comment updated')));
           _loadComments();
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ctrl.errorMessage ?? 'Failed to update comment')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(ctrl.errorMessage ?? 'Failed to update comment'),
+            ),
+          );
         }
       }
     }
@@ -112,7 +132,10 @@ class _PostCommentsSectionState extends State<PostCommentsSection> {
     if (_comments.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16.0),
-        child: Text('No comments for this post.', style: TextStyle(color: AppColors.textSecondary)),
+        child: Text(
+          'No comments for this post.',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
       );
     }
 
@@ -127,24 +150,38 @@ class _PostCommentsSectionState extends State<PostCommentsSection> {
         final username = member['username'] ?? 'Unknown User';
         final content = comment['content'] ?? '';
         final commentId = comment['id'];
-        
+
         return ListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(username, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          title: Text(
+            username,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4.0),
-            child: Text(content, style: const TextStyle(color: AppColors.textPrimary)),
+            child: Text(
+              content,
+              style: const TextStyle(color: AppColors.textPrimary),
+            ),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(Icons.edit, size: 20, color: AppColors.primary),
+                icon: const Icon(
+                  Icons.edit,
+                  size: 20,
+                  color: AppColors.primary,
+                ),
                 tooltip: 'Edit Comment',
                 onPressed: () => _editComment(commentId, content),
               ),
               IconButton(
-                icon: const Icon(Icons.delete, size: 20, color: AppColors.error),
+                icon: const Icon(
+                  Icons.delete,
+                  size: 20,
+                  color: AppColors.error,
+                ),
                 tooltip: 'Delete Comment',
                 onPressed: () => _deleteComment(commentId),
               ),

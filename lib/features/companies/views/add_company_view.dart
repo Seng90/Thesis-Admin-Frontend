@@ -13,7 +13,7 @@ class AddCompanyView extends StatefulWidget {
 
 class _AddCompanyViewState extends State<AddCompanyView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
   final _industryController = TextEditingController();
@@ -40,8 +40,17 @@ class _AddCompanyViewState extends State<AddCompanyView> {
   final List<String> _keyProducts = [];
   final List<String> _keyPartners = [];
 
-  static const List<String> _employeeCountOptions = ['1-10', '11-50', '51-200', '200+'];
-  static const List<String> _operatingStatusOptions = ['Active', 'Acquired', 'Closed'];
+  static const List<String> _employeeCountOptions = [
+    '1-10',
+    '11-50',
+    '51-200',
+    '200+',
+  ];
+  static const List<String> _operatingStatusOptions = [
+    'Active',
+    'Acquired',
+    'Closed',
+  ];
 
   @override
   void dispose() {
@@ -79,11 +88,14 @@ class _AddCompanyViewState extends State<AddCompanyView> {
 
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isSaving = true);
-    
-    final revisionsController = Provider.of<RevisionsController>(context, listen: false);
-    
+
+    final revisionsController = Provider.of<RevisionsController>(
+      context,
+      listen: false,
+    );
+
     Map<String, dynamic> proposedChanges = {
       'name': _nameController.text.trim(),
       'description': _descController.text.trim(),
@@ -93,7 +105,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
       'status': _status,
       'operating_status': _operatingStatus,
     };
-    
+
     if (_logoUrlController.text.trim().isNotEmpty) {
       proposedChanges['logo_url'] = _logoUrlController.text.trim();
     }
@@ -117,10 +129,12 @@ class _AddCompanyViewState extends State<AddCompanyView> {
       proposedChanges['linkedin_url'] = _linkedinUrlController.text.trim();
     }
     if (_headquartersController.text.trim().isNotEmpty) {
-      proposedChanges['headquarters_address'] = _headquartersController.text.trim();
+      proposedChanges['headquarters_address'] = _headquartersController.text
+          .trim();
     }
     if (_branchCountController.text.trim().isNotEmpty) {
-      proposedChanges['branch_count'] = int.tryParse(_branchCountController.text.trim()) ?? 0;
+      proposedChanges['branch_count'] =
+          int.tryParse(_branchCountController.text.trim()) ?? 0;
     }
     if (_employeeCount != null) {
       proposedChanges['employee_count'] = _employeeCount;
@@ -137,17 +151,25 @@ class _AddCompanyViewState extends State<AddCompanyView> {
       entityId: null,
       proposedChanges: proposedChanges,
     );
-    
+
     if (mounted) {
       setState(() => _isSaving = false);
-      
+
       if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(revisionsController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(
+              revisionsController.errorMessage ?? 'Failed to submit revision',
+            ),
+            backgroundColor: AppColors.error,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Company creation submitted for review!'), backgroundColor: AppColors.success),
+          const SnackBar(
+            content: Text('Company creation submitted for review!'),
+            backgroundColor: AppColors.success,
+          ),
         );
         context.pop();
       }
@@ -173,7 +195,10 @@ class _AddCompanyViewState extends State<AddCompanyView> {
             hintText: hint,
             prefixIcon: Icon(icon),
             suffixIcon: IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+              icon: const Icon(
+                Icons.add_circle_outline,
+                color: AppColors.primary,
+              ),
               onPressed: onAdd,
               tooltip: 'Add tag',
             ),
@@ -192,7 +217,9 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                 onDeleted: () => onRemove(entry.key),
                 backgroundColor: AppColors.primaryLight,
                 side: BorderSide.none,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               );
             }).toList(),
           ),
@@ -227,7 +254,11 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                       // ── Section 1: Basic Info ──
                       const Text(
                         'Company Information',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -237,7 +268,9 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                           hintText: 'e.g. Lao Digital Solutions',
                           prefixIcon: Icon(Icons.business),
                         ),
-                        validator: (v) => v!.trim().isEmpty ? 'Company name is required' : null,
+                        validator: (v) => v!.trim().isEmpty
+                            ? 'Company name is required'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -249,7 +282,9 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                           prefixIcon: Icon(Icons.description),
                           alignLabelWithHint: true,
                         ),
-                        validator: (v) => v!.trim().isEmpty ? 'Description is required' : null,
+                        validator: (v) => v!.trim().isEmpty
+                            ? 'Description is required'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -262,7 +297,9 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                                 hintText: 'e.g. FinTech',
                                 prefixIcon: Icon(Icons.category),
                               ),
-                              validator: (v) => v!.trim().isEmpty ? 'Industry is required' : null,
+                              validator: (v) => v!.trim().isEmpty
+                                  ? 'Industry is required'
+                                  : null,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -274,7 +311,9 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                                 hintText: 'e.g. Vientiane',
                                 prefixIcon: Icon(Icons.location_on),
                               ),
-                              validator: (v) => v!.trim().isEmpty ? 'Location is required' : null,
+                              validator: (v) => v!.trim().isEmpty
+                                  ? 'Location is required'
+                                  : null,
                             ),
                           ),
                         ],
@@ -288,7 +327,9 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                           prefixIcon: Icon(Icons.email),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        validator: (v) => v!.trim().isEmpty || !v.contains('@') ? 'Enter a valid email' : null,
+                        validator: (v) => v!.trim().isEmpty || !v.contains('@')
+                            ? 'Enter a valid email'
+                            : null,
                       ),
 
                       // ── Section 2: Legal & Tax ──
@@ -298,7 +339,11 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                       ),
                       const Text(
                         'Legal & Tax Information',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -360,7 +405,11 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                       ),
                       const Text(
                         'Organization Details',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -373,9 +422,13 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                                 prefixIcon: Icon(Icons.people),
                               ),
                               items: _employeeCountOptions.map((s) {
-                                return DropdownMenuItem(value: s, child: Text(s));
+                                return DropdownMenuItem(
+                                  value: s,
+                                  child: Text(s),
+                                );
                               }).toList(),
-                              onChanged: (v) => setState(() => _employeeCount = v),
+                              onChanged: (v) =>
+                                  setState(() => _employeeCount = v),
                               isExpanded: true,
                             ),
                           ),
@@ -425,7 +478,11 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                       ),
                       const Text(
                         'Web & Social Media',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -487,7 +544,11 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                       ),
                       const Text(
                         'Business Highlights',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       _buildTagInput(
@@ -505,7 +566,8 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                             });
                           }
                         },
-                        onRemove: (i) => setState(() => _keyProducts.removeAt(i)),
+                        onRemove: (i) =>
+                            setState(() => _keyProducts.removeAt(i)),
                       ),
                       const SizedBox(height: 16),
                       _buildTagInput(
@@ -523,7 +585,8 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                             });
                           }
                         },
-                        onRemove: (i) => setState(() => _keyPartners.removeAt(i)),
+                        onRemove: (i) =>
+                            setState(() => _keyPartners.removeAt(i)),
                       ),
 
                       // ── Section 6: Status & Date ──
@@ -533,7 +596,11 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                       ),
                       const Text(
                         'Status & Date',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -551,7 +618,9 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                                       ? '${_foundedDate!.year}-${_foundedDate!.month.toString().padLeft(2, '0')}-${_foundedDate!.day.toString().padLeft(2, '0')}'
                                       : 'Select a date...',
                                   style: TextStyle(
-                                    color: _foundedDate != null ? AppColors.textPrimary : AppColors.textMuted,
+                                    color: _foundedDate != null
+                                        ? AppColors.textPrimary
+                                        : AppColors.textMuted,
                                   ),
                                 ),
                               ),
@@ -565,7 +634,9 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                                 labelText: 'Status',
                                 prefixIcon: Icon(Icons.flag),
                               ),
-                              items: ['Pending', 'Approved', 'Rejected'].map((String val) {
+                              items: ['Pending', 'Approved', 'Rejected'].map((
+                                String val,
+                              ) {
                                 return DropdownMenuItem(
                                   value: val,
                                   child: Text(val),
@@ -585,9 +656,16 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                         height: 48,
                         child: ElevatedButton.icon(
                           onPressed: _isSaving ? null : _saveForm,
-                          icon: _isSaving 
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Icon(Icons.save),
+                          icon: _isSaving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.save),
                           label: Text(_isSaving ? 'Saving...' : 'Save Company'),
                         ),
                       ),

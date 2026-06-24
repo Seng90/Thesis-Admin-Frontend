@@ -29,9 +29,7 @@ class _SettingsViewState extends State<SettingsView> {
     final admin = authController.currentAdmin;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(32.0),
         child: Center(
@@ -43,7 +41,11 @@ class _SettingsViewState extends State<SettingsView> {
                 // Profile Section
                 const Text(
                   'Admin Profile',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Card(
@@ -55,8 +57,14 @@ class _SettingsViewState extends State<SettingsView> {
                           radius: 36,
                           backgroundColor: AppColors.primaryLight,
                           child: Text(
-                            (admin?.username ?? 'A').substring(0, 1).toUpperCase(),
-                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.primary),
+                            (admin?.username ?? 'A')
+                                .substring(0, 1)
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 24),
@@ -66,24 +74,38 @@ class _SettingsViewState extends State<SettingsView> {
                             children: [
                               Text(
                                 admin?.username ?? 'Unknown Admin',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.primaryLight,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
                                   admin?.role ?? 'Admin',
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'ID: ${admin?.id ?? 'N/A'}',
-                                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                ),
                               ),
                             ],
                           ),
@@ -98,7 +120,11 @@ class _SettingsViewState extends State<SettingsView> {
                 // API Configuration Section
                 const Text(
                   'API Configuration',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Card(
@@ -119,12 +145,19 @@ class _SettingsViewState extends State<SettingsView> {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            const Icon(Icons.info_outline, size: 16, color: AppColors.textMuted),
+                            const Icon(
+                              Icons.info_outline,
+                              size: 16,
+                              color: AppColors.textMuted,
+                            ),
                             const SizedBox(width: 8),
                             const Expanded(
                               child: Text(
                                 'API Swagger Documentation is available at the base URL + /docs',
-                                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                ),
                               ),
                             ),
                           ],
@@ -139,7 +172,11 @@ class _SettingsViewState extends State<SettingsView> {
                 // Preferences Section
                 const Text(
                   'Preferences',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Card(
@@ -147,7 +184,9 @@ class _SettingsViewState extends State<SettingsView> {
                     children: [
                       SwitchListTile(
                         title: const Text('Enable Notifications'),
-                        subtitle: const Text('Receive alerts for new company submissions'),
+                        subtitle: const Text(
+                          'Receive alerts for new company submissions',
+                        ),
                         value: _notificationsEnabled,
                         onChanged: (val) {
                           setState(() {
@@ -155,7 +194,10 @@ class _SettingsViewState extends State<SettingsView> {
                           });
                         },
                         activeThumbColor: AppColors.primary,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
                       ),
                       const Divider(height: 1, indent: 24, endIndent: 24),
                       SwitchListTile(
@@ -166,34 +208,65 @@ class _SettingsViewState extends State<SettingsView> {
                           settingsController.toggleDarkMode(val);
                         },
                         activeThumbColor: AppColors.primary,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
                       ),
                       const Divider(height: 1, indent: 24, endIndent: 24),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Language', style: TextStyle(fontSize: 16)),
+                                const Text(
+                                  'Language',
+                                  style: TextStyle(fontSize: 16),
+                                ),
                                 const SizedBox(height: 4),
-                                Text('Select application language', style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textSecondary)),
+                                Text(
+                                  'Select application language',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall?.color ??
+                                        AppColors.textSecondary,
+                                  ),
+                                ),
                               ],
                             ),
                             DropdownButton<String>(
                               value: settingsController.languageCode,
                               underline: const SizedBox(),
                               items: const [
-                                DropdownMenuItem(value: 'en', child: Text('English')),
-                                DropdownMenuItem(value: 'lo', child: Text('ພາສາລາວ')),
+                                DropdownMenuItem(
+                                  value: 'en',
+                                  child: Text('English'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'lo',
+                                  child: Text('ພາສາລາວ'),
+                                ),
                               ],
                               onChanged: (val) {
                                 if (val != null) {
                                   settingsController.setLanguage(val);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(val == 'lo' ? 'ປ່ຽນເປັນພາສາລາວແລ້ວ (ມີຜົນບາງສ່ວນ)' : 'Language changed to English')),
+                                    SnackBar(
+                                      content: Text(
+                                        val == 'lo'
+                                            ? 'ປ່ຽນເປັນພາສາລາວແລ້ວ (ມີຜົນບາງສ່ວນ)'
+                                            : 'Language changed to English',
+                                      ),
+                                    ),
                                   );
                                 }
                               },
@@ -210,7 +283,11 @@ class _SettingsViewState extends State<SettingsView> {
                 // System Info Section
                 const Text(
                   'System Information',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Card(
@@ -237,7 +314,11 @@ class _SettingsViewState extends State<SettingsView> {
                 // Danger Zone
                 const Text(
                   'Account',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Card(
@@ -249,11 +330,17 @@ class _SettingsViewState extends State<SettingsView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('Logout', style: TextStyle(fontWeight: FontWeight.w600)),
+                              Text(
+                                'Logout',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
                               SizedBox(height: 4),
                               Text(
                                 'Sign out of your admin account and return to the login screen.',
-                                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ],
                           ),
@@ -265,7 +352,9 @@ class _SettingsViewState extends State<SettingsView> {
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 title: const Text('Confirm Logout'),
-                                content: const Text('Are you sure you want to logout?'),
+                                content: const Text(
+                                  'Are you sure you want to logout?',
+                                ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(ctx),
@@ -277,7 +366,10 @@ class _SettingsViewState extends State<SettingsView> {
                                       authController.logout();
                                       context.go('/login');
                                     },
-                                    child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                                    child: const Text(
+                                      'Logout',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -309,7 +401,13 @@ class _SettingsViewState extends State<SettingsView> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(color: AppColors.textSecondary)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
       ],
     );
   }

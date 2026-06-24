@@ -16,12 +16,13 @@ class EditFundraisingPostView extends StatefulWidget {
   const EditFundraisingPostView({super.key, required this.id});
 
   @override
-  State<EditFundraisingPostView> createState() => _EditFundraisingPostViewState();
+  State<EditFundraisingPostView> createState() =>
+      _EditFundraisingPostViewState();
 }
 
 class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _titleCtrl;
   late TextEditingController _excerptCtrl;
   late TextEditingController _roundTypeCtrl;
@@ -31,13 +32,13 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
   late TextEditingController _pitchDeckUrlCtrl;
   late TextEditingController _websiteUrlCtrl;
   late TextEditingController _deadlineCtrl;
-  
+
   String _status = 'Active';
   bool _isUploading = false;
   late TextEditingController _adminFeedbackCtrl;
   late TextEditingController _contentCtrl;
   late TextEditingController _coverUrlCtrl;
-  
+
   FundraisingPost? _originalPost;
 
   @override
@@ -55,7 +56,7 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
     _adminFeedbackCtrl = TextEditingController();
     _contentCtrl = TextEditingController();
     _coverUrlCtrl = TextEditingController();
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -65,7 +66,7 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
     final ctrl = context.read<FundraisingPostsController>();
     _originalPost = ctrl.posts.firstWhere((p) => p.id == widget.id);
     final post = _originalPost!;
-    
+
     _titleCtrl.text = post.title;
     _excerptCtrl.text = post.excerpt;
     _roundTypeCtrl.text = post.roundType;
@@ -78,7 +79,7 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
     _coverUrlCtrl.text = post.coverUrl ?? '';
     _status = post.status;
     _adminFeedbackCtrl.text = post.adminFeedback ?? '';
-    
+
     try {
       if (post.content.isNotEmpty) {
         final decoded = jsonDecode(post.content);
@@ -118,19 +119,33 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
         final bytes = await image.readAsBytes();
-        setState(() { _isUploading = true; });
+        setState(() {
+          _isUploading = true;
+        });
         if (!mounted) return;
         final ctrl = context.read<FundraisingPostsController>();
         final url = await ctrl.uploadCoverImage(bytes, image.name);
         if (url != null) {
-          setState(() { _coverUrlCtrl.text = url; });
+          setState(() {
+            _coverUrlCtrl.text = url;
+          });
         } else {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to upload image')));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Failed to upload image')),
+            );
+          }
         }
-        setState(() { _isUploading = false; });
+        setState(() {
+          _isUploading = false;
+        });
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+      }
     }
   }
 
@@ -145,7 +160,11 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
       'contact_email': _contactEmailCtrl.text,
       'pitch_deck_url': _pitchDeckUrlCtrl.text,
       'website_url': _websiteUrlCtrl.text,
-      'deadline': DateTime.tryParse('${_deadlineCtrl.text}T00:00:00Z')?.toIso8601String() ?? DateTime.now().toUtc().toIso8601String(),
+      'deadline':
+          DateTime.tryParse(
+            '${_deadlineCtrl.text}T00:00:00Z',
+          )?.toIso8601String() ??
+          DateTime.now().toUtc().toIso8601String(),
       'cover_url': _coverUrlCtrl.text,
     };
   }
@@ -153,35 +172,40 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
   bool get _hasChanges {
     if (_originalPost == null) return false;
     final currentDeadline = DateTime.tryParse(_deadlineCtrl.text);
-    final isDeadlineChanged = currentDeadline != null &&
+    final isDeadlineChanged =
+        currentDeadline != null &&
         (_originalPost!.deadline.year != currentDeadline.year ||
-         _originalPost!.deadline.month != currentDeadline.month ||
-         _originalPost!.deadline.day != currentDeadline.day);
+            _originalPost!.deadline.month != currentDeadline.month ||
+            _originalPost!.deadline.day != currentDeadline.day);
 
     return _titleCtrl.text != _originalPost!.title ||
-           _excerptCtrl.text != _originalPost!.excerpt ||
-           _contentCtrl.text != _originalPost!.content ||
-           _roundTypeCtrl.text != _originalPost!.roundType ||
-           _coverUrlCtrl.text != (_originalPost!.coverUrl ?? '') ||
-           _websiteUrlCtrl.text != (_originalPost!.websiteUrl ?? '') ||
-           _pitchDeckUrlCtrl.text != (_originalPost!.pitchDeckUrl ?? '') ||
-           _contactEmailCtrl.text != (_originalPost!.contactEmail ?? '') ||
-           (double.tryParse(_targetAmountCtrl.text) ?? 0) != _originalPost!.targetAmountUsd ||
-           (double.tryParse(_minTicketCtrl.text) ?? 0) != (_originalPost!.minTicketUsd ?? 0) ||
-           isDeadlineChanged ||
-           _status != _originalPost!.status ||
-           _adminFeedbackCtrl.text != (_originalPost!.adminFeedback ?? '');
+        _excerptCtrl.text != _originalPost!.excerpt ||
+        _contentCtrl.text != _originalPost!.content ||
+        _roundTypeCtrl.text != _originalPost!.roundType ||
+        _coverUrlCtrl.text != (_originalPost!.coverUrl ?? '') ||
+        _websiteUrlCtrl.text != (_originalPost!.websiteUrl ?? '') ||
+        _pitchDeckUrlCtrl.text != (_originalPost!.pitchDeckUrl ?? '') ||
+        _contactEmailCtrl.text != _originalPost!.contactEmail ||
+        (double.tryParse(_targetAmountCtrl.text) ?? 0) !=
+            _originalPost!.targetAmountUsd ||
+        (double.tryParse(_minTicketCtrl.text) ?? 0) !=
+            _originalPost!.minTicketUsd ||
+        isDeadlineChanged ||
+        _status != _originalPost!.status ||
+        _adminFeedbackCtrl.text != (_originalPost!.adminFeedback ?? '');
   }
 
   void _proposeEditToModeration() async {
     if (!_hasChanges) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No changes detected.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No changes detected.')));
       return;
     }
     if (_formKey.currentState!.validate()) {
       final ctrl = context.read<FundraisingPostsController>();
       final revCtrl = context.read<RevisionsController>();
-      
+
       final data = _getFormData();
       data['status'] = _status;
       if (_status == 'Hidden') {
@@ -189,16 +213,24 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
       }
 
       final success = await ctrl.requestUpdatePost(revCtrl, widget.id, data);
-      
+
       if (!success || !mounted) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(revCtrl.errorMessage ?? 'Failed to propose edit to moderation')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                revCtrl.errorMessage ?? 'Failed to propose edit to moderation',
+              ),
+            ),
+          );
         }
         return;
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Edit proposed to Moderation Queue!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Edit proposed to Moderation Queue!')),
+        );
         context.pop();
       }
     }
@@ -206,27 +238,45 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
 
   void _sendFeedbackToFounder() async {
     if (!_hasChanges && _status == 'Hidden') {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No changes detected.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No changes detected.')));
       return;
     }
     if (_adminFeedbackCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter Admin Feedback first (Status will be set to Hidden).')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please enter Admin Feedback first (Status will be set to Hidden).',
+          ),
+        ),
+      );
       return;
     }
 
     final ctrl = context.read<FundraisingPostsController>();
-    
-    final success = await ctrl.updatePostStatus(widget.id, 'Hidden', adminFeedback: _adminFeedbackCtrl.text.trim());
-    
+
+    final success = await ctrl.updatePostStatus(
+      widget.id,
+      'Hidden',
+      adminFeedback: _adminFeedbackCtrl.text.trim(),
+    );
+
     if (!success || !mounted) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ctrl.errorMessage ?? 'Failed to send feedback')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ctrl.errorMessage ?? 'Failed to send feedback'),
+          ),
+        );
       }
       return;
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Feedback sent! Post is now Hidden.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Feedback sent! Post is now Hidden.')),
+      );
       context.pop();
     }
   }
@@ -256,11 +306,21 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                     children: [
                       const Text(
                         'Post Information',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       // Cover Image
-                      const Text('Cover Image URL', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                      const Text(
+                        'Cover Image URL',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,9 +339,17 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           SizedBox(
                             height: 48,
                             child: ElevatedButton.icon(
-                              onPressed: _isUploading ? null : _pickAndUploadImage,
-                              icon: _isUploading 
-                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
+                              onPressed: _isUploading
+                                  ? null
+                                  : _pickAndUploadImage,
+                              icon: _isUploading
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
                                   : const Icon(Icons.upload),
                               label: const Text('Upload'),
                             ),
@@ -312,7 +380,10 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           Expanded(
                             child: DesktopTextFormField(
                               controller: _titleCtrl,
-                              decoration: const InputDecoration(labelText: 'Title', prefixIcon: Icon(Icons.title)),
+                              decoration: const InputDecoration(
+                                labelText: 'Title',
+                                prefixIcon: Icon(Icons.title),
+                              ),
                               validator: (v) => v!.isEmpty ? 'Required' : null,
                             ),
                           ),
@@ -324,7 +395,15 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                                 labelText: 'Status',
                                 prefixIcon: Icon(Icons.flag),
                               ),
-                              items: ['Active', 'Expired', 'Cancelled', 'Hidden'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                              items:
+                                  ['Active', 'Expired', 'Cancelled', 'Hidden']
+                                      .map(
+                                        (s) => DropdownMenuItem(
+                                          value: s,
+                                          child: Text(s),
+                                        ),
+                                      )
+                                      .toList(),
                               onChanged: (v) => setState(() => _status = v!),
                             ),
                           ),
@@ -333,13 +412,22 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                       const SizedBox(height: 12),
                       DesktopTextFormField(
                         controller: _excerptCtrl,
-                        decoration: const InputDecoration(labelText: 'Excerpt', prefixIcon: Icon(Icons.short_text)),
+                        decoration: const InputDecoration(
+                          labelText: 'Excerpt',
+                          prefixIcon: Icon(Icons.short_text),
+                        ),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 24),
 
                       // Content Editor
-                      const Text('Content', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                      const Text(
+                        'Content',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       DesktopTextFormField(
                         controller: _contentCtrl,
@@ -347,7 +435,8 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                         minLines: 8,
                         keyboardType: TextInputType.multiline,
                         decoration: const InputDecoration(
-                          hintText: 'Tell investors why they should invest, your traction, and how you will use the funds...',
+                          hintText:
+                              'Tell investors why they should invest, your traction, and how you will use the funds...',
                           alignLabelWithHint: true,
                         ),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
@@ -356,7 +445,11 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
 
                       const Text(
                         'Round Details',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -364,7 +457,10 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           Expanded(
                             child: DesktopTextFormField(
                               controller: _roundTypeCtrl,
-                              decoration: const InputDecoration(labelText: 'Round Type', prefixIcon: Icon(Icons.category)),
+                              decoration: const InputDecoration(
+                                labelText: 'Round Type',
+                                prefixIcon: Icon(Icons.category),
+                              ),
                               validator: (v) => v!.isEmpty ? 'Required' : null,
                             ),
                           ),
@@ -372,7 +468,10 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           Expanded(
                             child: DesktopTextFormField(
                               controller: _targetAmountCtrl,
-                              decoration: const InputDecoration(labelText: 'Target Amount (USD)', prefixIcon: Icon(Icons.attach_money)),
+                              decoration: const InputDecoration(
+                                labelText: 'Target Amount (USD)',
+                                prefixIcon: Icon(Icons.attach_money),
+                              ),
                               keyboardType: TextInputType.number,
                               validator: (v) => v!.isEmpty ? 'Required' : null,
                             ),
@@ -386,7 +485,10 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           Expanded(
                             child: DesktopTextFormField(
                               controller: _minTicketCtrl,
-                              decoration: const InputDecoration(labelText: 'Minimum Ticket (USD)', prefixIcon: Icon(Icons.local_activity)),
+                              decoration: const InputDecoration(
+                                labelText: 'Minimum Ticket (USD)',
+                                prefixIcon: Icon(Icons.local_activity),
+                              ),
                               keyboardType: TextInputType.number,
                               validator: (v) => v!.isEmpty ? 'Required' : null,
                             ),
@@ -395,7 +497,10 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           Expanded(
                             child: DesktopTextFormField(
                               controller: _deadlineCtrl,
-                              decoration: const InputDecoration(labelText: 'Deadline (YYYY-MM-DD)', prefixIcon: Icon(Icons.calendar_today)),
+                              decoration: const InputDecoration(
+                                labelText: 'Deadline (YYYY-MM-DD)',
+                                prefixIcon: Icon(Icons.calendar_today),
+                              ),
                               validator: (v) => v!.isEmpty ? 'Required' : null,
                             ),
                           ),
@@ -405,7 +510,11 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
 
                       const Text(
                         'Contact & Links',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -413,7 +522,10 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           Expanded(
                             child: DesktopTextFormField(
                               controller: _contactEmailCtrl,
-                              decoration: const InputDecoration(labelText: 'Contact Email', prefixIcon: Icon(Icons.email)),
+                              decoration: const InputDecoration(
+                                labelText: 'Contact Email',
+                                prefixIcon: Icon(Icons.email),
+                              ),
                               validator: (v) => v!.isEmpty ? 'Required' : null,
                             ),
                           ),
@@ -421,7 +533,10 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           Expanded(
                             child: DesktopTextFormField(
                               controller: _websiteUrlCtrl,
-                              decoration: const InputDecoration(labelText: 'Website URL', prefixIcon: Icon(Icons.language)),
+                              decoration: const InputDecoration(
+                                labelText: 'Website URL',
+                                prefixIcon: Icon(Icons.language),
+                              ),
                             ),
                           ),
                         ],
@@ -430,13 +545,20 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
 
                       DesktopTextFormField(
                         controller: _pitchDeckUrlCtrl,
-                        decoration: const InputDecoration(labelText: 'Pitch Deck URL', prefixIcon: Icon(Icons.picture_as_pdf)),
+                        decoration: const InputDecoration(
+                          labelText: 'Pitch Deck URL',
+                          prefixIcon: Icon(Icons.picture_as_pdf),
+                        ),
                       ),
                       const SizedBox(height: 32),
 
                       const Text(
                         'Manage Comments',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Container(
@@ -462,11 +584,18 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.feedback, color: AppColors.warning),
+                                const Icon(
+                                  Icons.feedback,
+                                  color: AppColors.warning,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Feedback / Moderation Action',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.warning.withAlpha(200)),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.warning.withAlpha(200),
+                                  ),
                                 ),
                               ],
                             ),
@@ -475,7 +604,8 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                               controller: _adminFeedbackCtrl,
                               maxLines: 2,
                               decoration: const InputDecoration(
-                                labelText: 'Admin Feedback (Required for Send Feedback action)',
+                                labelText:
+                                    'Admin Feedback (Required for Send Feedback action)',
                                 alignLabelWithHint: true,
                                 filled: true,
                                 fillColor: Colors.white,
@@ -490,7 +620,9 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                                     child: OutlinedButton.icon(
                                       onPressed: _proposeEditToModeration,
                                       icon: const Icon(Icons.rate_review),
-                                      label: const Text('Propose Edit to Moderation'),
+                                      label: const Text(
+                                        'Propose Edit to Moderation',
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -501,7 +633,9 @@ class _EditFundraisingPostViewState extends State<EditFundraisingPostView> {
                                     child: ElevatedButton.icon(
                                       onPressed: _sendFeedbackToFounder,
                                       icon: const Icon(Icons.send),
-                                      label: const Text('Send Feedback to Founder'),
+                                      label: const Text(
+                                        'Send Feedback to Founder',
+                                      ),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppColors.warning,
                                         foregroundColor: Colors.white,

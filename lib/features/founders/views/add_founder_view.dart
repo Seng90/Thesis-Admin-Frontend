@@ -30,16 +30,19 @@ class _AddFounderViewState extends State<AddFounderView> {
 
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isSaving = true);
-    
-    final revisionsController = Provider.of<RevisionsController>(context, listen: false);
-    
+
+    final revisionsController = Provider.of<RevisionsController>(
+      context,
+      listen: false,
+    );
+
     Map<String, dynamic> proposedChanges = {
       'name_en': _nameEnController.text.trim(),
       'name_la': _nameLaController.text.trim(),
     };
-    
+
     if (_bioController.text.trim().isNotEmpty) {
       proposedChanges['bio'] = _bioController.text.trim();
     }
@@ -52,17 +55,25 @@ class _AddFounderViewState extends State<AddFounderView> {
       entityId: null,
       proposedChanges: proposedChanges,
     );
-    
+
     if (mounted) {
       setState(() => _isSaving = false);
-      
+
       if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(revisionsController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(
+              revisionsController.errorMessage ?? 'Failed to submit revision',
+            ),
+            backgroundColor: AppColors.error,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Founder creation submitted for review!'), backgroundColor: AppColors.success),
+          const SnackBar(
+            content: Text('Founder creation submitted for review!'),
+            backgroundColor: AppColors.success,
+          ),
         );
         context.pop();
       }
@@ -94,13 +105,17 @@ class _AddFounderViewState extends State<AddFounderView> {
                     children: [
                       TextFormField(
                         controller: _nameLaController,
-                        decoration: const InputDecoration(labelText: 'Founder Name (Lao) *'),
+                        decoration: const InputDecoration(
+                          labelText: 'Founder Name (Lao) *',
+                        ),
                         validator: (v) => v!.trim().isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _nameEnController,
-                        decoration: const InputDecoration(labelText: 'Founder Name (English) *'),
+                        decoration: const InputDecoration(
+                          labelText: 'Founder Name (English) *',
+                        ),
                         validator: (v) => v!.trim().isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
@@ -112,15 +127,24 @@ class _AddFounderViewState extends State<AddFounderView> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _linkedinController,
-                        decoration: const InputDecoration(labelText: 'LinkedIn URL'),
+                        decoration: const InputDecoration(
+                          labelText: 'LinkedIn URL',
+                        ),
                       ),
                       const SizedBox(height: 32),
                       SizedBox(
                         height: 48,
                         child: ElevatedButton(
                           onPressed: _isSaving ? null : _saveForm,
-                          child: _isSaving 
-                              ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          child: _isSaving
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
                               : const Text('Save Founder'),
                         ),
                       ),

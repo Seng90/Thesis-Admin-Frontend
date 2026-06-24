@@ -12,7 +12,9 @@ class InvestmentEntry {
   String? investorId;
   final TextEditingController customNameController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController currencyController = TextEditingController(text: 'USD');
+  final TextEditingController currencyController = TextEditingController(
+    text: 'USD',
+  );
   final TextEditingController referenceUrlController = TextEditingController();
   String status = 'Pending';
 
@@ -52,7 +54,11 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
   List<Map<String, dynamic>> _fundingRounds = [];
   bool _isLoadingRounds = false;
 
-  static const List<String> _statusOptions = ['Pending', 'Completed', 'Refunded'];
+  static const List<String> _statusOptions = [
+    'Pending',
+    'Completed',
+    'Refunded',
+  ];
 
   @override
   void initState() {
@@ -60,15 +66,21 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
     _selectedCompanyId = widget.initialCompanyId;
     _selectedRoundId = widget.initialRoundId;
     _entries.add(InvestmentEntry()); // Add one entry by default
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadDependencies();
     });
   }
 
   Future<void> _loadDependencies() async {
-    final companiesCtrl = Provider.of<CompaniesController>(context, listen: false);
-    final investorsCtrl = Provider.of<InvestorsController>(context, listen: false);
+    final companiesCtrl = Provider.of<CompaniesController>(
+      context,
+      listen: false,
+    );
+    final investorsCtrl = Provider.of<InvestorsController>(
+      context,
+      listen: false,
+    );
 
     if (companiesCtrl.companies.isEmpty) {
       companiesCtrl.loadCompanies();
@@ -144,24 +156,39 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) return;
     if (_investDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an investment date')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an investment date')),
+      );
       return;
     }
     if (_selectedCompanyId == null || _selectedRoundId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select Company and Funding Round')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select Company and Funding Round'),
+        ),
+      );
       return;
     }
 
     // Validate entries
     for (var entry in _entries) {
       if (!entry.isOtherInvestor && entry.investorId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an Investor or choose "Other / Anonymous" for all entries')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Please select an Investor or choose "Other / Anonymous" for all entries',
+            ),
+          ),
+        );
         return;
       }
     }
 
     setState(() => _isSaving = true);
-    final revisionsController = Provider.of<RevisionsController>(context, listen: false);
+    final revisionsController = Provider.of<RevisionsController>(
+      context,
+      listen: false,
+    );
 
     bool allSuccess = true;
     for (var entry in _entries) {
@@ -175,12 +202,14 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
       };
 
       if (entry.referenceUrlController.text.trim().isNotEmpty) {
-        proposedChanges['reference_url'] = entry.referenceUrlController.text.trim();
+        proposedChanges['reference_url'] = entry.referenceUrlController.text
+            .trim();
       }
 
       if (entry.isOtherInvestor) {
         proposedChanges['investor_id'] = null;
-        proposedChanges['custom_investor_name'] = entry.customNameController.text.trim().isNotEmpty
+        proposedChanges['custom_investor_name'] =
+            entry.customNameController.text.trim().isNotEmpty
             ? entry.customNameController.text.trim()
             : 'Others';
       } else {
@@ -202,11 +231,17 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
       setState(() => _isSaving = false);
       if (!allSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Some investments failed to submit.'), backgroundColor: AppColors.error),
+          const SnackBar(
+            content: Text('Some investments failed to submit.'),
+            backgroundColor: AppColors.error,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Investments submitted for review!'), backgroundColor: AppColors.success),
+          const SnackBar(
+            content: Text('Investments submitted for review!'),
+            backgroundColor: AppColors.success,
+          ),
         );
         context.pop();
       }
@@ -229,22 +264,31 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
             children: [
               Text(
                 'Investor #${index + 1}',
-                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
               if (_entries.length > 1)
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.error, size: 20),
+                  icon: const Icon(
+                    Icons.close,
+                    color: AppColors.error,
+                    size: 20,
+                  ),
                   onPressed: () => _removeEntry(index),
                   tooltip: 'Remove Investor',
                 ),
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Investor Toggle
           SwitchListTile(
             title: const Text('Other / Anonymous Investor'),
-            subtitle: const Text('Use this for unnamed groups or minor investors'),
+            subtitle: const Text(
+              'Use this for unnamed groups or minor investors',
+            ),
             value: entry.isOtherInvestor,
             activeThumbColor: AppColors.primary,
             contentPadding: EdgeInsets.zero,
@@ -270,7 +314,10 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
           else
             Consumer<InvestorsController>(
               builder: (context, ctrl, _) {
-                final currentVal = ctrl.investors.map((i) => i.id).contains(entry.investorId) ? entry.investorId : null;
+                final currentVal =
+                    ctrl.investors.map((i) => i.id).contains(entry.investorId)
+                    ? entry.investorId
+                    : null;
                 return DropdownButtonFormField<String>(
                   initialValue: currentVal,
                   decoration: const InputDecoration(
@@ -284,7 +331,8 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                     );
                   }).toList(),
                   onChanged: (v) => setState(() => entry.investorId = v),
-                  validator: (v) => v == null ? 'Please select an investor' : null,
+                  validator: (v) =>
+                      v == null ? 'Please select an investor' : null,
                   isExpanded: true,
                 );
               },
@@ -302,7 +350,8 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                   ),
                   keyboardType: TextInputType.number,
                   validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-                  onChanged: (v) => setState(() {}), // Trigger total recalculation
+                  onChanged: (v) =>
+                      setState(() {}), // Trigger total recalculation
                 ),
               ),
               const SizedBox(width: 12),
@@ -325,11 +374,13 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
               labelText: 'Status',
               prefixIcon: Icon(Icons.flag_outlined),
             ),
-            items: _statusOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+            items: _statusOptions
+                .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                .toList(),
             onChanged: (v) => setState(() => entry.status = v!),
           ),
           const SizedBox(height: 16),
-          
+
           TextFormField(
             controller: entry.referenceUrlController,
             decoration: const InputDecoration(
@@ -344,11 +395,14 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isPreFilled = widget.initialCompanyId != null && widget.initialRoundId != null;
+    final bool isPreFilled =
+        widget.initialCompanyId != null && widget.initialRoundId != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isPreFilled ? 'Add Investor to Round' : 'Add Funding Round'),
+        title: Text(
+          isPreFilled ? 'Add Investor to Round' : 'Add Funding Round',
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -368,15 +422,26 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        isPreFilled ? 'Round Details' : 'New Funding Round Details',
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        isPreFilled
+                            ? 'Round Details'
+                            : 'New Funding Round Details',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 24),
 
                       // Company Dropdown
                       Consumer<CompaniesController>(
                         builder: (context, ctrl, _) {
-                          final currentVal = ctrl.companies.map((c) => c.id).contains(_selectedCompanyId) ? _selectedCompanyId : null;
+                          final currentVal =
+                              ctrl.companies
+                                  .map((c) => c.id)
+                                  .contains(_selectedCompanyId)
+                              ? _selectedCompanyId
+                              : null;
                           return DropdownButtonFormField<String>(
                             initialValue: currentVal,
                             decoration: const InputDecoration(
@@ -386,11 +451,17 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                             items: ctrl.companies.map((c) {
                               return DropdownMenuItem(
                                 value: c.id,
-                                child: Text(c.name, overflow: TextOverflow.ellipsis),
+                                child: Text(
+                                  c.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               );
                             }).toList(),
-                            onChanged: isPreFilled ? null : (v) => setState(() => _selectedCompanyId = v),
-                            validator: (v) => v == null ? 'Please select a company' : null,
+                            onChanged: isPreFilled
+                                ? null
+                                : (v) => setState(() => _selectedCompanyId = v),
+                            validator: (v) =>
+                                v == null ? 'Please select a company' : null,
                             isExpanded: true,
                           );
                         },
@@ -400,27 +471,46 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                       // Funding Round Dropdown
                       _isLoadingRounds
                           ? const LinearProgressIndicator()
-                          : Builder(builder: (context) {
-                              final currentVal = _fundingRounds.map((r) => r['id']?.toString()).contains(_selectedRoundId) ? _selectedRoundId : null;
-                              return DropdownButtonFormField<String>(
-                                initialValue: currentVal,
-                                decoration: const InputDecoration(
-                                  labelText: 'Funding Round *',
-                                  prefixIcon: Icon(Icons.cyclone),
-                                ),
-                                items: _fundingRounds.map((r) {
-                                  final id = r['id']?.toString() ?? '';
-                                  final name = r['round_name'] ?? r['name'] ?? 'Round ${id.substring(0, id.length > 8 ? 8 : id.length)}';
-                                  return DropdownMenuItem(
-                                    value: id,
-                                    child: Text(name.toString(), overflow: TextOverflow.ellipsis),
-                                  );
-                                }).toList(),
-                                onChanged: isPreFilled ? null : (v) => setState(() => _selectedRoundId = v),
-                                validator: (v) => v == null ? 'Please select a funding round' : null,
-                                isExpanded: true,
-                              );
-                            }),
+                          : Builder(
+                              builder: (context) {
+                                final currentVal =
+                                    _fundingRounds
+                                        .map((r) => r['id']?.toString())
+                                        .contains(_selectedRoundId)
+                                    ? _selectedRoundId
+                                    : null;
+                                return DropdownButtonFormField<String>(
+                                  initialValue: currentVal,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Funding Round *',
+                                    prefixIcon: Icon(Icons.cyclone),
+                                  ),
+                                  items: _fundingRounds.map((r) {
+                                    final id = r['id']?.toString() ?? '';
+                                    final name =
+                                        r['round_name'] ??
+                                        r['name'] ??
+                                        'Round ${id.substring(0, id.length > 8 ? 8 : id.length)}';
+                                    return DropdownMenuItem(
+                                      value: id,
+                                      child: Text(
+                                        name.toString(),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: isPreFilled
+                                      ? null
+                                      : (v) => setState(
+                                          () => _selectedRoundId = v,
+                                        ),
+                                  validator: (v) => v == null
+                                      ? 'Please select a funding round'
+                                      : null,
+                                  isExpanded: true,
+                                );
+                              },
+                            ),
                       const SizedBox(height: 16),
 
                       // Date Picker
@@ -436,12 +526,14 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                                 ? '${_investDate!.year}-${_investDate!.month.toString().padLeft(2, '0')}-${_investDate!.day.toString().padLeft(2, '0')}'
                                 : 'Select a date...',
                             style: TextStyle(
-                              color: _investDate != null ? AppColors.textPrimary : AppColors.textMuted,
+                              color: _investDate != null
+                                  ? AppColors.textPrimary
+                                  : AppColors.textMuted,
                             ),
                           ),
                         ),
                       ),
-                      
+
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 32.0),
                         child: Divider(),
@@ -449,7 +541,11 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
 
                       const Text(
                         'Investors Breakdown',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 24),
 
@@ -458,8 +554,10 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _entries.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
-                        itemBuilder: (context, index) => _buildEntryCard(_entries[index], index),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 16),
+                        itemBuilder: (context, index) =>
+                            _buildEntryCard(_entries[index], index),
                       ),
                       const SizedBox(height: 16),
 
@@ -486,11 +584,19 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                           children: [
                             const Text(
                               'Total Raised:',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                             Text(
                               '\$${_calculateTotal().toStringAsFixed(2)}',
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ],
                         ),
@@ -503,10 +609,19 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
                         child: ElevatedButton.icon(
                           onPressed: _isSaving ? null : _saveForm,
                           icon: _isSaving
-                              ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
                               : const Icon(Icons.check_circle_outline),
                           label: Text(
-                            _isSaving ? 'Submitting...' : 'Submit ${_entries.length} Investment${_entries.length > 1 ? 's' : ''}',
+                            _isSaving
+                                ? 'Submitting...'
+                                : 'Submit ${_entries.length} Investment${_entries.length > 1 ? 's' : ''}',
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),

@@ -61,7 +61,9 @@ class _DashboardViewState extends State<DashboardView> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,
                     side: const BorderSide(color: AppColors.border),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -77,12 +79,14 @@ class _DashboardViewState extends State<DashboardView> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.textPrimary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                         elevation: 0,
                       ),
                       child: const Text('Generate report'),
                     );
-                  }
+                  },
                 ),
               ],
             ),
@@ -101,247 +105,399 @@ class _DashboardViewState extends State<DashboardView> {
                     controller: _verticalScrollCtrl,
                     child: SingleChildScrollView(
                       controller: _verticalScrollCtrl,
-                      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32.0,
+                        vertical: 24.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-            // Stats Row
-            Consumer4<CompaniesController, MembersController, InvestorsController, DashboardController>(
-              builder: (context, companiesCtrl, membersCtrl, investorsCtrl, dashboardCtrl, child) {
-                final sum = dashboardCtrl.summary;
-                if (dashboardCtrl.isLoadingSummary) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                return Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: [
-                    SizedBox(width: 250, child: _buildStatCard(
-                      'Companies',
-                      (sum?.totalCompanies ?? companiesCtrl.companies.length).toString(),
-                      '+${sum?.newCompaniesThisMonth ?? 0} this month',
-                      true,
-                      '${sum?.companiesAwaitingReview ?? 0} awaiting review',
-                      LucideIcons.building2,
-                    )),
-                    SizedBox(width: 250, child: _buildStatCard(
-                      'Founders & people',
-                      (sum?.totalMembers ?? membersCtrl.members.length).toString(),
-                      '+${sum?.newMembersThisMonth ?? 0} this month',
-                      true,
-                      'Total registered users',
-                      LucideIcons.users,
-                    )),
-                    SizedBox(width: 250, child: _buildStatCard(
-                      'Active investors',
-                      (sum?.totalInvestors ?? investorsCtrl.investors.length).toString(),
-                      '+0',
-                      true,
-                      'across multiple countries',
-                      LucideIcons.wallet,
-                    )),
-                    SizedBox(width: 250, child: _buildStatCard(
-                      'Funding tracked (YTD)',
-                      '\$${((sum?.totalFundingYTD ?? 0) / 1000000).toStringAsFixed(1)}M',
-                      '${(sum?.fundingChangePct ?? 0) >= 0 ? '+' : ''}${(sum?.fundingChangePct ?? 0).toStringAsFixed(1)}%',
-                      (sum?.fundingChangePct ?? 0) >= 0,
-                      'vs. same period last year',
-                      LucideIcons.trendingUp,
-                    )),
-                    SizedBox(width: 250, child: _buildStatCard(
-                      'Subscription Revenue',
-                      '\$${sum?.monthlySubscriptionRevenue.toStringAsFixed(2) ?? '0.00'}',
-                      'This month',
-                      true,
-                      'Monthly recurring',
-                      LucideIcons.banknote,
-                    )),
-                  ],
-                );
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Charts Row
-            Consumer<DashboardController>(
-              builder: (context, dashboardCtrl, child) {
-                return Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: [
-                    SizedBox(
-                      width: 600,
-                      child: _buildChartCardWithActions(
-                        'Funding deployed in Laos',
-                        '${dashboardCtrl.currentFundingPeriod} · USD millions',
-                        _FundingAreaChart(history: dashboardCtrl.fundingHistory, isLoading: dashboardCtrl.isLoadingFunding),
-                        Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: ['1D', '1W', '2W', '1M', '3M', '6M'].map((period) {
-                          final isSelected = dashboardCtrl.currentFundingPeriod == period;
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 4.0),
-                            child: ChoiceChip(
-                              label: Text(period),
-                              labelStyle: TextStyle(
-                                fontSize: 10,
-                                color: isSelected ? Colors.white : AppColors.textPrimary,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              ),
-                              selectedColor: AppColors.primary,
-                              backgroundColor: AppColors.background,
-                              selected: isSelected,
-                              onSelected: (val) {
-                                if (val) dashboardCtrl.loadFundingHistory(period);
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 350,
-                    child: _buildChartCard(
-                      'Sectors',
-                      'Share of tracked companies',
-                      _SectorBarChart(sectors: dashboardCtrl.sectors, isLoading: dashboardCtrl.isLoadingSectors),
-                    ),
-                  ),
-                ],
-              );
-              }
-            ),
-
-            const SizedBox(height: 24),
-
-            // Lists Row
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                SizedBox(
-                  width: 600,
-                  child: _buildListCard(
-                    'Recently updated companies',
-                    'Last edits across the dataset',
-                    const _RecentCompaniesList(),
-                    onViewAll: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => Dialog(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: Container(
-                            width: 600,
-                            constraints: const BoxConstraints(maxHeight: 600),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(24.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          // Stats Row
+                          Consumer4<
+                            CompaniesController,
+                            MembersController,
+                            InvestorsController,
+                            DashboardController
+                          >(
+                            builder:
+                                (
+                                  context,
+                                  companiesCtrl,
+                                  membersCtrl,
+                                  investorsCtrl,
+                                  dashboardCtrl,
+                                  child,
+                                ) {
+                                  final sum = dashboardCtrl.summary;
+                                  if (dashboardCtrl.isLoadingSummary) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+                                  return Wrap(
+                                    spacing: 16,
+                                    runSpacing: 16,
                                     children: [
-                                      const Text('Recently Updated Companies', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                                      IconButton(
-                                        icon: const Icon(LucideIcons.x, size: 20),
-                                        onPressed: () => Navigator.pop(context),
-                                        splashRadius: 24,
+                                      SizedBox(
+                                        width: 250,
+                                        child: _buildStatCard(
+                                          'Companies',
+                                          (sum?.totalCompanies ??
+                                                  companiesCtrl
+                                                      .companies
+                                                      .length)
+                                              .toString(),
+                                          '+${sum?.newCompaniesThisMonth ?? 0} this month',
+                                          true,
+                                          '${sum?.companiesAwaitingReview ?? 0} awaiting review',
+                                          LucideIcons.building2,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 250,
+                                        child: _buildStatCard(
+                                          'Founders & people',
+                                          (sum?.totalMembers ??
+                                                  membersCtrl.members.length)
+                                              .toString(),
+                                          '+${sum?.newMembersThisMonth ?? 0} this month',
+                                          true,
+                                          'Total registered users',
+                                          LucideIcons.users,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 250,
+                                        child: _buildStatCard(
+                                          'Active investors',
+                                          (sum?.totalInvestors ??
+                                                  investorsCtrl
+                                                      .investors
+                                                      .length)
+                                              .toString(),
+                                          '+0',
+                                          true,
+                                          'across multiple countries',
+                                          LucideIcons.wallet,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 250,
+                                        child: _buildStatCard(
+                                          'Funding tracked (YTD)',
+                                          '\$${((sum?.totalFundingYTD ?? 0) / 1000000).toStringAsFixed(1)}M',
+                                          '${(sum?.fundingChangePct ?? 0) >= 0 ? '+' : ''}${(sum?.fundingChangePct ?? 0).toStringAsFixed(1)}%',
+                                          (sum?.fundingChangePct ?? 0) >= 0,
+                                          'vs. same period last year',
+                                          LucideIcons.trendingUp,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 250,
+                                        child: _buildStatCard(
+                                          'Subscription Revenue',
+                                          '\$${sum?.monthlySubscriptionRevenue.toStringAsFixed(2) ?? '0.00'}',
+                                          'This month',
+                                          true,
+                                          'Monthly recurring',
+                                          LucideIcons.banknote,
+                                        ),
                                       ),
                                     ],
-                                  ),
-                                ),
-                                const Divider(height: 1, color: AppColors.border),
-                                const Flexible(
-                                  child: SingleChildScrollView(
-                                    child: _RecentCompaniesList(),
-                                  ),
-                                ),
-                              ],
-                            ),
+                                  );
+                                },
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(
-                  width: 350,
-                  child: Consumer<RevisionsController>(
-                    builder: (context, revCtrl, child) {
-                      return _buildListCard(
-                        'Moderation queue',
-                        '${revCtrl.pendingRevisions.length} items awaiting review',
-                        _ModerationQueueList(controller: revCtrl),
-                        onViewAll: () => context.push('/moderations'),
-                      );
-                    }
-                  ),
-                ),
-              ],
-            ),
-              ],
-            ), // End of Column
-          ), // End of SingleChildScrollView(vertical)
-        ), // End of Scrollbar(vertical)
-      ), // End of SizedBox
-    ), // End of SingleChildScrollView(horizontal)
-  ), // End of Scrollbar(horizontal)
-), // End of Expanded
-],
-),
+
+                          const SizedBox(height: 24),
+
+                          // Charts Row
+                          Consumer<DashboardController>(
+                            builder: (context, dashboardCtrl, child) {
+                              return Wrap(
+                                spacing: 16,
+                                runSpacing: 16,
+                                children: [
+                                  SizedBox(
+                                    width: 600,
+                                    child: _buildChartCardWithActions(
+                                      'Funding deployed in Laos',
+                                      '${dashboardCtrl.currentFundingPeriod} · USD millions',
+                                      _FundingAreaChart(
+                                        history: dashboardCtrl.fundingHistory,
+                                        isLoading:
+                                            dashboardCtrl.isLoadingFunding,
+                                      ),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children:
+                                            [
+                                              '1D',
+                                              '1W',
+                                              '2W',
+                                              '1M',
+                                              '3M',
+                                              '6M',
+                                            ].map((period) {
+                                              final isSelected =
+                                                  dashboardCtrl
+                                                      .currentFundingPeriod ==
+                                                  period;
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 4.0,
+                                                ),
+                                                child: ChoiceChip(
+                                                  label: Text(period),
+                                                  labelStyle: TextStyle(
+                                                    fontSize: 10,
+                                                    color: isSelected
+                                                        ? Colors.white
+                                                        : AppColors.textPrimary,
+                                                    fontWeight: isSelected
+                                                        ? FontWeight.bold
+                                                        : FontWeight.normal,
+                                                  ),
+                                                  selectedColor:
+                                                      AppColors.primary,
+                                                  backgroundColor:
+                                                      AppColors.background,
+                                                  selected: isSelected,
+                                                  onSelected: (val) {
+                                                    if (val) {
+                                                      dashboardCtrl
+                                                          .loadFundingHistory(
+                                                            period,
+                                                          );
+                                                    }
+                                                  },
+                                                ),
+                                              );
+                                            }).toList(),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 350,
+                                    child: _buildChartCard(
+                                      'Sectors',
+                                      'Share of tracked companies',
+                                      _SectorBarChart(
+                                        sectors: dashboardCtrl.sectors,
+                                        isLoading:
+                                            dashboardCtrl.isLoadingSectors,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Lists Row
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: [
+                              SizedBox(
+                                width: 600,
+                                child: _buildListCard(
+                                  'Recently updated companies',
+                                  'Last edits across the dataset',
+                                  const _RecentCompaniesList(),
+                                  onViewAll: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => Dialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Container(
+                                          width: 600,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 600,
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  24.0,
+                                                ),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    const Text(
+                                                      'Recently Updated Companies',
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        LucideIcons.x,
+                                                        size: 20,
+                                                      ),
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                          ),
+                                                      splashRadius: 24,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const Divider(
+                                                height: 1,
+                                                color: AppColors.border,
+                                              ),
+                                              const Flexible(
+                                                child: SingleChildScrollView(
+                                                  child: _RecentCompaniesList(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(
+                                width: 350,
+                                child: Consumer<RevisionsController>(
+                                  builder: (context, revCtrl, child) {
+                                    return _buildListCard(
+                                      'Moderation queue',
+                                      '${revCtrl.pendingRevisions.length} items awaiting review',
+                                      _ModerationQueueList(controller: revCtrl),
+                                      onViewAll: () =>
+                                          context.push('/moderations'),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(
+                                width: 350,
+                                child: _buildListCard(
+                                  'Most accessed startups',
+                                  'Companies with the most views',
+                                  const _TopStartupsList(),
+                                  onViewAll: null,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 350,
+                                child: _buildListCard(
+                                  'Popular Packages',
+                                  'Most purchased packages',
+                                  const _PopularPackagesList(),
+                                  onViewAll: () => context.push('/packages'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ), // End of Column
+                    ), // End of SingleChildScrollView(vertical)
+                  ), // End of Scrollbar(vertical)
+                ), // End of SizedBox
+              ), // End of SingleChildScrollView(horizontal)
+            ), // End of Scrollbar(horizontal)
+          ), // End of Expanded
+        ],
+      ),
     );
   }
 
-  Widget _buildStatCard(String label, String value, String delta, bool positive, String hint, IconData icon) {
+  Widget _buildStatCard(
+    String label,
+    String value,
+    String delta,
+    bool positive,
+    String hint,
+    IconData icon,
+  ) {
     return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                  Icon(icon, size: 16, color: AppColors.textSecondary),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(value, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1)),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    margin: const EdgeInsets.only(bottom: 6),
-                    decoration: BoxDecoration(
-                      color: positive ? AppColors.successBg : AppColors.errorBg,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      delta,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: positive ? AppColors.success : AppColors.error,
-                      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                Icon(icon, size: 16, color: AppColors.textSecondary),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -1,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  margin: const EdgeInsets.only(bottom: 6),
+                  decoration: BoxDecoration(
+                    color: positive ? AppColors.successBg : AppColors.errorBg,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    delta,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: positive ? AppColors.success : AppColors.error,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(hint, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-            ],
-          ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              hint,
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 
-  Widget _buildChartCardWithActions(String title, String subtitle, Widget chart, Widget action) {
+  Widget _buildChartCardWithActions(
+    String title,
+    String subtitle,
+    Widget chart,
+    Widget action,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -354,9 +510,21 @@ class _DashboardViewState extends State<DashboardView> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
                 action,
@@ -377,9 +545,18 @@ class _DashboardViewState extends State<DashboardView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            ),
             const SizedBox(height: 2),
-            Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: 24),
             SizedBox(height: 250, child: chart),
           ],
@@ -388,7 +565,12 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildListCard(String title, String subtitle, Widget list, {VoidCallback? onViewAll}) {
+  Widget _buildListCard(
+    String title,
+    String subtitle,
+    Widget list, {
+    VoidCallback? onViewAll,
+  }) {
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,17 +583,34 @@ class _DashboardViewState extends State<DashboardView> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
                 if (onViewAll != null)
                   TextButton.icon(
                     onPressed: onViewAll,
-                    icon: const Text('View all', style: TextStyle(fontSize: 12)),
+                    icon: const Text(
+                      'View all',
+                      style: TextStyle(fontSize: 12),
+                    ),
                     label: const Icon(LucideIcons.arrowRight, size: 14),
-                    style: TextButton.styleFrom(foregroundColor: AppColors.textPrimary),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.textPrimary,
+                    ),
                   ),
               ],
             ),
@@ -461,18 +660,31 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLoading) return const Center(child: CircularProgressIndicator());
+    if (widget.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     // Provide a dummy history if empty so the chart still renders an empty grid
-    final history = widget.history.isEmpty 
-        ? List.generate(5, (index) => FundingHistoryItem(
-            date: DateTime.now().subtract(Duration(days: 4 - index)).toString().split(' ')[0], 
-            totalAmount: 0))
+    final history = widget.history.isEmpty
+        ? List.generate(
+            5,
+            (index) => FundingHistoryItem(
+              date: DateTime.now()
+                  .subtract(Duration(days: 4 - index))
+                  .toString()
+                  .split(' ')[0],
+              totalAmount: 0,
+            ),
+          )
         : widget.history;
-    final maxAmount = history.map((e) => e.totalAmount).reduce((a, b) => a > b ? a : b);
-    
+    final maxAmount = history
+        .map((e) => e.totalAmount)
+        .reduce((a, b) => a > b ? a : b);
+
     final defaultMinX = 0.0;
-    final defaultMaxX = history.length > 1 ? (history.length - 1).toDouble() : 1.0;
+    final defaultMaxX = history.length > 1
+        ? (history.length - 1).toDouble()
+        : 1.0;
     final defaultMinY = 0.0;
     final defaultMaxY = maxAmount > 0 ? maxAmount * 1.2 : 5.0;
 
@@ -493,14 +705,14 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
               // Handle Panning
               final dx = details.localFocalPoint.dx - _lastFocalPoint.dx;
               final dy = details.localFocalPoint.dy - _lastFocalPoint.dy;
-              
+
               final xRange = currentMaxX - currentMinX;
               final yRange = currentMaxY - currentMinY;
-              
+
               // Pan sensitivity
               final xDelta = -(dx / context.size!.width) * xRange;
               final yDelta = (dy / context.size!.height) * yRange;
-              
+
               double newMinX = currentMinX + xDelta;
               double newMaxX = currentMaxX + xDelta;
               double newMinY = currentMinY + yDelta;
@@ -510,10 +722,10 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
               if (details.scale != 1.0) {
                 final scaleChange = details.scale / _lastScale;
                 final zoomFactor = 1 / scaleChange;
-                
+
                 final xCenter = (newMinX + newMaxX) / 2;
                 final yCenter = (newMinY + newMaxY) / 2;
-                
+
                 newMinX = xCenter - (xRange * zoomFactor / 2);
                 newMaxX = xCenter + (xRange * zoomFactor / 2);
                 newMinY = yCenter - (yRange * zoomFactor / 2);
@@ -527,7 +739,7 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
                 newMinX = center - 0.25;
                 newMaxX = center + 0.25;
               }
-              
+
               if (newMaxY - newMinY < (defaultMaxY * 0.05)) {
                 // Prevent zooming in too much on Y
                 final center = (newMinY + newMaxY) / 2;
@@ -554,15 +766,26 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
                   touchTooltipData: LineTouchTooltipData(
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
-                        if (spot.x.toInt() < 0 || spot.x.toInt() >= history.length) return null;
+                        if (spot.x.toInt() < 0 ||
+                            spot.x.toInt() >= history.length) {
+                          return null;
+                        }
                         final date = history[spot.x.toInt()].date;
                         return LineTooltipItem(
                           '\$${(spot.y / 1000000).toStringAsFixed(2)}M\n',
-                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                           children: [
                             TextSpan(
                               text: date,
-                              style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.normal),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
+                                fontWeight: FontWeight.normal,
+                              ),
                             ),
                           ],
                         );
@@ -575,24 +798,44 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
                   drawVerticalLine: true,
                   horizontalInterval: defaultMaxY > 0 ? defaultMaxY / 5 : 1,
                   verticalInterval: defaultMaxX > 0 ? defaultMaxX / 5 : 1,
-                  getDrawingHorizontalLine: (value) => const FlLine(color: AppColors.border, strokeWidth: 1, dashArray: [4, 4]),
-                  getDrawingVerticalLine: (value) => const FlLine(color: AppColors.border, strokeWidth: 1, dashArray: [4, 4]),
+                  getDrawingHorizontalLine: (value) => const FlLine(
+                    color: AppColors.border,
+                    strokeWidth: 1,
+                    dashArray: [4, 4],
+                  ),
+                  getDrawingVerticalLine: (value) => const FlLine(
+                    color: AppColors.border,
+                    strokeWidth: 1,
+                    dashArray: [4, 4],
+                  ),
                 ),
                 titlesData: FlTitlesData(
                   show: true,
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
-                      interval: (currentMaxX - currentMinX) / 5 > 0 ? (currentMaxX - currentMinX) / 5 : 1,
+                      interval: (currentMaxX - currentMinX) / 5 > 0
+                          ? (currentMaxX - currentMinX) / 5
+                          : 1,
                       getTitlesWidget: (value, meta) {
                         int index = value.round();
                         if (index >= 0 && index < history.length) {
                           return Padding(
                             padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(history[index].date, style: const TextStyle(color: AppColors.textSecondary, fontSize: 10)),
+                            child: Text(
+                              history[index].date,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 10,
+                              ),
+                            ),
                           );
                         }
                         return const Text('');
@@ -602,22 +845,38 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      interval: (currentMaxY - currentMinY) / 5 > 0 ? (currentMaxY - currentMinY) / 5 : 1,
+                      interval: (currentMaxY - currentMinY) / 5 > 0
+                          ? (currentMaxY - currentMinY) / 5
+                          : 1,
                       reservedSize: 42,
                       getTitlesWidget: (value, meta) {
                         if (value < 0) return const Text('');
-                        if (value == 0) return const Text('\$0', style: TextStyle(color: AppColors.textSecondary, fontSize: 10));
-                        return Text('\$${(value / 1000000).toStringAsFixed(1)}M', style: const TextStyle(color: AppColors.textSecondary, fontSize: 10));
+                        if (value == 0) {
+                          return const Text(
+                            '\$0',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 10,
+                            ),
+                          );
+                        }
+                        return Text(
+                          '\$${(value / 1000000).toStringAsFixed(1)}M',
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 10,
+                          ),
+                        );
                       },
                     ),
                   ),
                 ),
                 borderData: FlBorderData(
-                  show: true, 
+                  show: true,
                   border: const Border(
                     bottom: BorderSide(color: AppColors.border, width: 1),
                     left: BorderSide(color: AppColors.border, width: 1),
-                  )
+                  ),
                 ),
                 minX: currentMinX,
                 maxX: currentMaxX,
@@ -625,13 +884,21 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
                 maxY: currentMaxY,
                 lineBarsData: [
                   LineChartBarData(
-                    spots: history.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.totalAmount)).toList(),
+                    spots: history
+                        .asMap()
+                        .entries
+                        .map(
+                          (e) => FlSpot(e.key.toDouble(), e.value.totalAmount),
+                        )
+                        .toList(),
                     isCurved: true,
                     color: AppColors.primary,
                     barWidth: 2,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
-                      show: history.length == 1 || (currentMaxX - currentMinX) < 10,
+                      show:
+                          history.length == 1 ||
+                          (currentMaxX - currentMinX) < 10,
                     ),
                     belowBarData: BarAreaData(
                       show: true,
@@ -655,7 +922,11 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
             top: 0,
             right: 16,
             child: IconButton(
-              icon: const Icon(LucideIcons.refreshCcw, size: 16, color: AppColors.textSecondary),
+              icon: const Icon(
+                LucideIcons.refreshCcw,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
               tooltip: 'Reset View',
               onPressed: _resetView,
               splashRadius: 20,
@@ -680,8 +951,12 @@ class _SectorBarChartState extends State<_SectorBarChart> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLoading) return const Center(child: CircularProgressIndicator());
-    if (widget.sectors.isEmpty) return const Center(child: Text('No sector data'));
+    if (widget.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (widget.sectors.isEmpty) {
+      return const Center(child: Text('No sector data'));
+    }
 
     final total = widget.sectors.fold<int>(0, (sum, item) => sum + item.count);
     if (total == 0) return const Center(child: Text('No companies tracked'));
@@ -706,9 +981,14 @@ class _SectorBarChartState extends State<_SectorBarChart> {
     List<SectorStat> displaySectors = sorted;
     if (sorted.length > 6) {
       final top6 = sorted.take(6).toList();
-      final otherCount = sorted.skip(6).fold<int>(0, (sum, item) => sum + item.count);
+      final otherCount = sorted
+          .skip(6)
+          .fold<int>(0, (sum, item) => sum + item.count);
       if (otherCount > 0) {
-        displaySectors = [...top6, SectorStat(industry: 'Other', count: otherCount)];
+        displaySectors = [
+          ...top6,
+          SectorStat(industry: 'Other', count: otherCount),
+        ];
       }
     }
 
@@ -723,11 +1003,14 @@ class _SectorBarChartState extends State<_SectorBarChart> {
                 pieTouchData: PieTouchData(
                   touchCallback: (FlTouchEvent event, pieTouchResponse) {
                     setState(() {
-                      if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
+                      if (!event.isInterestedForInteractions ||
+                          pieTouchResponse == null ||
+                          pieTouchResponse.touchedSection == null) {
                         touchedIndex = -1;
                         return;
                       }
-                      touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                      touchedIndex =
+                          pieTouchResponse.touchedSection!.touchedSectionIndex;
                     });
                   },
                 ),
@@ -762,30 +1045,41 @@ class _SectorBarChartState extends State<_SectorBarChart> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: displaySectors.asMap().entries.map((entry) {
-                final i = entry.key;
-                final sector = entry.value;
-                final color = colors[i % colors.length];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0),
-                  child: Row(
-                    children: [
-                      Container(width: 12, height: 12, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          sector.industry,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: i == touchedIndex ? FontWeight.bold : FontWeight.w500,
-                            color: i == touchedIndex ? AppColors.textPrimary : AppColors.textSecondary,
+                  final i = entry.key;
+                  final sector = entry.value;
+                  final color = colors[i % colors.length];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: color,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            sector.industry,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: i == touchedIndex
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: i == touchedIndex
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
             ),
           ),
@@ -802,17 +1096,27 @@ class _RecentCompaniesList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DashboardController>(
       builder: (context, controller, child) {
-        if (controller.isLoadingRecent) return const Center(child: CircularProgressIndicator());
-        if (controller.recentCompanies.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('No recent updates')));
+        if (controller.isLoadingRecent) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (controller.recentCompanies.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text('No recent updates'),
+            ),
+          );
+        }
 
         return ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: controller.recentCompanies.length,
-          separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.border),
+          separatorBuilder: (context, index) =>
+              const Divider(height: 1, color: AppColors.border),
           itemBuilder: (context, index) {
             final item = controller.recentCompanies[index];
-            
+
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
@@ -827,9 +1131,21 @@ class _RecentCompaniesList extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.name, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                        Text(
+                          item.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text('${item.industry} · Updated recently', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                        Text(
+                          '${item.industry} · Updated recently',
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -842,14 +1158,24 @@ class _RecentCompaniesList extends StatelessWidget {
     );
   }
 }
+
 class _ModerationQueueList extends StatelessWidget {
   final RevisionsController controller;
   const _ModerationQueueList({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    if (controller.isLoading) return const Center(child: CircularProgressIndicator());
-    if (controller.pendingRevisions.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('No pending revisions')));
+    if (controller.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (controller.pendingRevisions.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text('No pending revisions'),
+        ),
+      );
+    }
 
     return Column(
       children: [
@@ -857,7 +1183,8 @@ class _ModerationQueueList extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: controller.pendingRevisions.length,
-          separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.border),
+          separatorBuilder: (context, index) =>
+              const Divider(height: 1, color: AppColors.border),
           itemBuilder: (context, index) {
             final rev = controller.pendingRevisions[index];
             return Padding(
@@ -871,22 +1198,43 @@ class _ModerationQueueList extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.background,
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(color: AppColors.border),
                             ),
-                            child: Text(rev.entityType, style: const TextStyle(fontSize: 10, fontFamily: 'monospace', color: AppColors.textSecondary)),
+                            child: Text(
+                              rev.entityType,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontFamily: 'monospace',
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 8),
-                          const Text('PENDING', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.warning)),
+                          const Text(
+                            'PENDING',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.warning,
+                            ),
+                          ),
                         ],
                       ),
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.check, color: AppColors.success, size: 16),
+                            icon: const Icon(
+                              Icons.check,
+                              color: AppColors.success,
+                              size: 16,
+                            ),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             onPressed: () => controller.approveRevision(rev.id),
@@ -894,7 +1242,11 @@ class _ModerationQueueList extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           IconButton(
-                            icon: const Icon(Icons.close, color: AppColors.error, size: 16),
+                            icon: const Icon(
+                              Icons.close,
+                              color: AppColors.error,
+                              size: 16,
+                            ),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             onPressed: () => controller.rejectRevision(rev.id),
@@ -905,9 +1257,21 @@ class _ModerationQueueList extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text('Update to ${rev.entityId}', style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                  Text(
+                    'Update to ${rev.entityId}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('By ${rev.createdBy ?? "Unknown"}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                  Text(
+                    'By ${rev.createdBy ?? "Unknown"}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -923,13 +1287,187 @@ class _ModerationQueueList extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.textPrimary,
                 side: const BorderSide(color: AppColors.border),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
               ),
               child: const Text('Open queue'),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _TopStartupsList extends StatelessWidget {
+  const _TopStartupsList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DashboardController>(
+      builder: (context, controller, child) {
+        if (controller.isLoadingTopStartups) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (controller.topStartups.isEmpty) {
+          return const Center(
+            child: Padding(padding: EdgeInsets.all(24), child: Text('No data')),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.topStartups.length,
+          separatorBuilder: (context, index) =>
+              const Divider(height: 1, color: AppColors.border),
+          itemBuilder: (context, index) {
+            final item = controller.topStartups[index];
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          item.industry,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    '${item.viewCount} views',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _PopularPackagesList extends StatelessWidget {
+  const _PopularPackagesList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DashboardController>(
+      builder: (context, controller, child) {
+        if (controller.isLoadingPopularPackages) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (controller.popularPackages.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text('No popular packages'),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.popularPackages.length,
+          separatorBuilder: (context, index) =>
+              const Divider(height: 1, color: AppColors.border),
+          itemBuilder: (context, index) {
+            final item = controller.popularPackages[index];
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      LucideIcons.package,
+                      size: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '\$${item.price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    '${item.purchaseCount} sold',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.success,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

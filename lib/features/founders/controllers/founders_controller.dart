@@ -5,7 +5,7 @@ import '../models/founder_model.dart';
 
 class FoundersController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   List<Founder> _founders = [];
   bool _isLoading = false;
   String? _errorMessage;

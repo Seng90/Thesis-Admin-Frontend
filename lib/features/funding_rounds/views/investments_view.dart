@@ -21,7 +21,10 @@ class _InvestmentsViewState extends State<InvestmentsView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<InvestmentsController>(context, listen: false).fetchSummaries();
+      Provider.of<InvestmentsController>(
+        context,
+        listen: false,
+      ).fetchSummaries();
     });
   }
 
@@ -31,7 +34,6 @@ class _InvestmentsViewState extends State<InvestmentsView> {
     _horizontalScroll.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +64,16 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: AppColors.error,
+                    ),
                     const SizedBox(height: 16),
-                    Text(controller.errorMessage!, style: const TextStyle(color: AppColors.textSecondary)),
+                    Text(
+                      controller.errorMessage!,
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () => controller.fetchSummaries(),
@@ -81,11 +90,25 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.trending_up, size: 64, color: AppColors.textMuted),
+                    const Icon(
+                      Icons.trending_up,
+                      size: 64,
+                      color: AppColors.textMuted,
+                    ),
                     const SizedBox(height: 16),
-                    const Text('No investments yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    const Text(
+                      'No investments yet',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    const Text('Add your first investment to get started.', style: TextStyle(color: AppColors.textMuted)),
+                    const Text(
+                      'Add your first investment to get started.',
+                      style: TextStyle(color: AppColors.textMuted),
+                    ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                       onPressed: () => context.push('/investments/add'),
@@ -115,8 +138,13 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                     decoration: InputDecoration(
                       hintText: 'Search by company or round...',
                       prefixIcon: const Icon(Icons.search, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
                     ),
                     onChanged: (v) => setState(() => _searchQuery = v),
                   ),
@@ -150,14 +178,64 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                                       columnSpacing: 24.0,
                                       showCheckboxColumn: false,
                                       columns: const [
-                                        DataColumn(label: Text('COMPANY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                        DataColumn(label: Text('ROUND', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                        DataColumn(label: Text('TOTAL RAISED', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                        DataColumn(label: Text('INVESTORS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                        DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                        DataColumn(label: Text('ACTIONS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                        DataColumn(
+                                          label: Text(
+                                            'COMPANY',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataColumn(
+                                          label: Text(
+                                            'ROUND',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataColumn(
+                                          label: Text(
+                                            'TOTAL RAISED',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataColumn(
+                                          label: Text(
+                                            'INVESTORS',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataColumn(
+                                          label: Text(
+                                            'DATE',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        DataColumn(
+                                          label: Text(
+                                            'ACTIONS',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
                                       ],
-                                      rows: filtered.asMap().entries.map((entry) {
+                                      rows: filtered.asMap().entries.map((
+                                        entry,
+                                      ) {
                                         final idx = entry.key;
                                         final summary = entry.value;
                                         return DataRow(
@@ -167,21 +245,34 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   CustomLogoWidget(
-                                                    imageUrl: summary.companyLogoUrl,
-                                                    fallbackName: summary.companyName,
+                                                    imageUrl:
+                                                        summary.companyLogoUrl,
+                                                    fallbackName:
+                                                        summary.companyName,
                                                     size: 32,
                                                   ),
                                                   const SizedBox(width: 12),
-                                                  Text(summary.companyName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                                  Text(
+                                                    summary.companyName,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                             ),
                                             DataCell(
                                               Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4,
+                                                    ),
                                                 decoration: BoxDecoration(
                                                   color: AppColors.primaryLight,
-                                                  borderRadius: BorderRadius.circular(12),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                 ),
                                                 child: Text(
                                                   summary.roundName,
@@ -195,18 +286,26 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                                             ),
                                             DataCell(
                                               Text(
-                                                summary.totalRaised == 0 ? 'Undisclosed' : '\$${_formatAmount(summary.totalRaised)}',
+                                                summary.totalRaised == 0
+                                                    ? 'Undisclosed'
+                                                    : '\$${_formatAmount(summary.totalRaised)}',
                                                 style: TextStyle(
-                                                  fontWeight: FontWeight.w700, 
+                                                  fontWeight: FontWeight.w700,
                                                   fontSize: 14,
-                                                  color: summary.totalRaised == 0 ? AppColors.textMuted : AppColors.textPrimary,
+                                                  color:
+                                                      summary.totalRaised == 0
+                                                      ? AppColors.textMuted
+                                                      : AppColors.textPrimary,
                                                 ),
                                               ),
                                             ),
                                             DataCell(
                                               Text(
                                                 '${summary.investorCount} investor${summary.investorCount != 1 ? 's' : ''}',
-                                                style: const TextStyle(color: AppColors.textSecondary),
+                                                style: const TextStyle(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
                                               ),
                                             ),
                                             DataCell(
@@ -214,19 +313,35 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                                                 summary.earliestDate != null
                                                     ? '${summary.earliestDate!.year}-${summary.earliestDate!.month.toString().padLeft(2, '0')}-${summary.earliestDate!.day.toString().padLeft(2, '0')}'
                                                     : '-',
-                                                style: const TextStyle(color: AppColors.textSecondary),
+                                                style: const TextStyle(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
                                               ),
                                             ),
                                             DataCell(
                                               ElevatedButton.icon(
                                                 onPressed: () {
-                                                  context.push('/investments/summary/$idx');
+                                                  context.push(
+                                                    '/investments/summary/$idx',
+                                                  );
                                                 },
-                                                icon: const Icon(Icons.visibility_outlined, size: 16),
-                                                label: const Text('View Details'),
+                                                icon: const Icon(
+                                                  Icons.visibility_outlined,
+                                                  size: 16,
+                                                ),
+                                                label: const Text(
+                                                  'View Details',
+                                                ),
                                                 style: ElevatedButton.styleFrom(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                                  textStyle: const TextStyle(fontSize: 12),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 8,
+                                                      ),
+                                                  textStyle: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
                                                 ),
                                               ),
                                             ),

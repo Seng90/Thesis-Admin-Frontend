@@ -27,8 +27,16 @@ class Founder {
       role: json['role'],
       bio: json['bio'],
       linkedinUrl: json['linkedin_url'] ?? json['linkedinUrl'],
-      createdAt: DateTime.parse(json['created_at'] ?? json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updated_at'] ?? json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['created_at'] ??
+            json['createdAt'] ??
+            DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updated_at'] ??
+            json['updatedAt'] ??
+            DateTime.now().toIso8601String(),
+      ),
     );
   }
 

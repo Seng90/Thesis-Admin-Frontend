@@ -22,7 +22,10 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<InvestorsController>(context, listen: false);
+      final controller = Provider.of<InvestorsController>(
+        context,
+        listen: false,
+      );
       if (controller.investors.isEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           controller.loadInvestors();
@@ -47,10 +50,12 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
           if (controller.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           try {
-            final investor = controller.investors.firstWhere((c) => c.id == widget.investorId);
-            
+            final investor = controller.investors.firstWhere(
+              (c) => c.id == widget.investorId,
+            );
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
               child: Center(
@@ -82,19 +87,28 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
                                             investor.name,
-                                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                              fontSize: 28,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: AppColors.primaryLight,
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                           ),
                                           child: Text(
                                             investor.type.toUpperCase(),
@@ -111,21 +125,39 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
                                     Row(
                                       children: [
                                         ElevatedButton.icon(
-                                          onPressed: () => context.push('/investors/edit/${investor.id}'),
-                                          icon: const Icon(Icons.edit, size: 16),
-                                          label: Text('Edit Investor'.tr(context)),
+                                          onPressed: () => context.push(
+                                            '/investors/edit/${investor.id}',
+                                          ),
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            size: 16,
+                                          ),
+                                          label: Text(
+                                            'Edit Investor'.tr(context),
+                                          ),
                                           style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        if (investor.websiteUrl != null && investor.websiteUrl!.isNotEmpty)
+                                        if (investor.websiteUrl != null &&
+                                            investor.websiteUrl!.isNotEmpty)
                                           OutlinedButton.icon(
-                                            onPressed: () {}, // would launch URL
-                                            icon: const Icon(Icons.open_in_new, size: 16),
+                                            onPressed:
+                                                () {}, // would launch URL
+                                            icon: const Icon(
+                                              Icons.open_in_new,
+                                              size: 16,
+                                            ),
                                             label: const Text('Website'),
                                             style: OutlinedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
                                             ),
                                           ),
                                       ],
@@ -143,55 +175,92 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
                         builder: (context, constraints) {
                           final isSmallScreen = constraints.maxWidth < 600;
                           final card1 = Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: AppColors.border),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Contact Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 16),
-                                    _buildInfoRow(
-                                      Icons.contact_mail_outlined, 
-                                      'Contact Info', 
-                                      investor.contactInfo != null && investor.contactInfo!.isNotEmpty ? investor.contactInfo! : 'N/A'
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Contact Information',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildInfoRow(
+                                    Icons.contact_mail_outlined,
+                                    'Contact Info',
+                                    investor.contactInfo != null &&
+                                            investor.contactInfo!.isNotEmpty
+                                        ? investor.contactInfo!
+                                        : 'N/A',
+                                  ),
+                                ],
                               ),
-                            );
-                            
+                            ),
+                          );
+
                           final card2 = Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: AppColors.border),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'At a Glance',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _buildGlanceItem(
+                                    'Type',
+                                    investor.type,
+                                    Icons.category_outlined,
+                                  ),
+                                  const Divider(height: 32),
+                                  _buildGlanceItem(
+                                    'Created',
+                                    investor.createdAt?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        'Unknown',
+                                    Icons.access_time_outlined,
+                                  ),
+                                  const Divider(height: 32),
+                                  _buildGlanceItem(
+                                    'Updated',
+                                    investor.updatedAt?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        'Unknown',
+                                    Icons.update_outlined,
+                                  ),
+                                ],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('At a Glance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 24),
-                                    _buildGlanceItem('Type', investor.type, Icons.category_outlined),
-                                    const Divider(height: 32),
-                                    _buildGlanceItem('Created', investor.createdAt?.toString().split(' ')[0] ?? 'Unknown', Icons.access_time_outlined),
-                                    const Divider(height: 32),
-                                    _buildGlanceItem('Updated', investor.updatedAt?.toString().split(' ')[0] ?? 'Unknown', Icons.update_outlined),
-                                  ],
-                                ),
-                              ),
-                            );
-                            
+                            ),
+                          );
+
                           if (isSmallScreen) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [card1, const SizedBox(height: 24), card2],
+                              children: [
+                                card1,
+                                const SizedBox(height: 24),
+                                card2,
+                              ],
                             );
                           } else {
                             return Row(
@@ -227,8 +296,20 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
@@ -252,9 +333,21 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),

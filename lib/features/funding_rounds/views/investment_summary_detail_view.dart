@@ -11,10 +11,12 @@ class InvestmentSummaryDetailView extends StatefulWidget {
   const InvestmentSummaryDetailView({super.key, required this.summaryIndex});
 
   @override
-  State<InvestmentSummaryDetailView> createState() => _InvestmentSummaryDetailViewState();
+  State<InvestmentSummaryDetailView> createState() =>
+      _InvestmentSummaryDetailViewState();
 }
 
-class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailView> {
+class _InvestmentSummaryDetailViewState
+    extends State<InvestmentSummaryDetailView> {
   @override
   void initState() {
     super.initState();
@@ -81,7 +83,10 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
 
           if (widget.summaryIndex >= controller.summaries.length) {
             return const Center(
-              child: Text('Investment summary not found', style: TextStyle(color: AppColors.textSecondary)),
+              child: Text(
+                'Investment summary not found',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             );
           }
 
@@ -119,16 +124,24 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
                                 children: [
                                   Text(
                                     summary.companyName,
-                                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: AppColors.primaryLight,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: Text(
                                           summary.roundName,
@@ -139,13 +152,20 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
                                           ),
                                         ),
                                       ),
-                                      if (summary.companyIndustry.isNotEmpty) ...[
+                                      if (summary
+                                          .companyIndustry
+                                          .isNotEmpty) ...[
                                         const SizedBox(width: 8),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 4,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: AppColors.surface,
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                           ),
                                           child: Text(
                                             summary.companyIndustry,
@@ -198,10 +218,14 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
 
                         if (isSmallScreen) {
                           return Column(
-                            children: cards.map((c) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: c,
-                            )).toList(),
+                            children: cards
+                                .map(
+                                  (c) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: c,
+                                  ),
+                                )
+                                .toList(),
                           );
                         }
                         return Row(
@@ -238,14 +262,22 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
                               children: [
                                 const Text(
                                   'Investor Breakdown',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                                 ElevatedButton.icon(
-                                  onPressed: () => context.push('/investments/add?companyId=${summary.companyId}&roundId=${summary.roundId}'),
+                                  onPressed: () => context.push(
+                                    '/investments/add?companyId=${summary.companyId}&roundId=${summary.roundId}',
+                                  ),
                                   icon: const Icon(Icons.add, size: 16),
                                   label: const Text('Add Investment'),
                                   style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
                                     textStyle: const TextStyle(fontSize: 12),
                                   ),
                                 ),
@@ -258,82 +290,161 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
                                 columnSpacing: 24.0,
                                 showCheckboxColumn: false,
                                 columns: const [
-                                  DataColumn(label: Text('INVESTOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                  DataColumn(label: Text('AMOUNT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                  DataColumn(label: Text('CURRENCY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                  DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                  DataColumn(label: Text('STATUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                                  DataColumn(label: Text('ACTIONS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                                  DataColumn(
+                                    label: Text(
+                                      'INVESTOR',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'AMOUNT',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'CURRENCY',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'DATE',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'STATUS',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'ACTIONS',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                                 rows: summary.investments.map((inv) {
-                                  return DataRow(cells: [
-                                    DataCell(
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            inv.investorId != null ? Icons.person_outline : Icons.groups_outlined,
-                                            size: 18,
-                                            color: AppColors.textMuted,
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              inv.investorId != null
+                                                  ? Icons.person_outline
+                                                  : Icons.groups_outlined,
+                                              size: 18,
+                                              color: AppColors.textMuted,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              inv.investorDisplayName,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontStyle:
+                                                    inv.investorId == null
+                                                    ? FontStyle.italic
+                                                    : FontStyle.normal,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Text(
+                                          '\$${inv.amount.toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            inv.investorDisplayName,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontStyle: inv.investorId == null ? FontStyle.italic : FontStyle.normal,
+                                        ),
+                                      ),
+                                      DataCell(Text(inv.currency)),
+                                      DataCell(
+                                        Text(
+                                          '${inv.investDate.year}-${inv.investDate.month.toString().padLeft(2, '0')}-${inv.investDate.day.toString().padLeft(2, '0')}',
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _statusBgColor(inv.status),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    DataCell(Text(
-                                      '\$${inv.amount.toStringAsFixed(2)}',
-                                      style: const TextStyle(fontWeight: FontWeight.w600),
-                                    )),
-                                    DataCell(Text(inv.currency)),
-                                    DataCell(Text(
-                                      '${inv.investDate.year}-${inv.investDate.month.toString().padLeft(2, '0')}-${inv.investDate.day.toString().padLeft(2, '0')}',
-                                    )),
-                                    DataCell(
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: _statusBgColor(inv.status),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          inv.status.toUpperCase(),
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                            color: _statusColor(inv.status),
+                                          child: Text(
+                                            inv.status.toUpperCase(),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: _statusColor(inv.status),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    DataCell(
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.edit, color: AppColors.primary, size: 20),
-                                            tooltip: 'Edit Investment',
-                                            onPressed: () {
-                                              context.push('/investments/edit/${inv.id}');
-                                            },
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                                            tooltip: 'Delete Investment',
-                                            onPressed: () {
-                                              _showDeleteDialog(inv.id, inv.amount);
-                                            },
-                                          ),
-                                        ],
+                                      DataCell(
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                color: AppColors.primary,
+                                                size: 20,
+                                              ),
+                                              tooltip: 'Edit Investment',
+                                              onPressed: () {
+                                                context.push(
+                                                  '/investments/edit/${inv.id}',
+                                                );
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete_outline,
+                                                color: Colors.red,
+                                                size: 20,
+                                              ),
+                                              tooltip: 'Delete Investment',
+                                              onPressed: () {
+                                                _showDeleteDialog(
+                                                  inv.id,
+                                                  inv.amount,
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ]);
+                                    ],
+                                  );
                                 }).toList(),
                               ),
                             ),
@@ -356,7 +467,9 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Investment'),
-        content: Text('Are you sure you want to delete this investment of \$${amount.toStringAsFixed(2)}?'),
+        content: Text(
+          'Are you sure you want to delete this investment of \$${amount.toStringAsFixed(2)}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -365,24 +478,34 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              final revController = Provider.of<RevisionsController>(context, listen: false);
+              final revController = Provider.of<RevisionsController>(
+                context,
+                listen: false,
+              );
               final messenger = ScaffoldMessenger.of(context);
-              revController.createRevision(
-                entityType: 'Investment',
-                entityId: invId,
-                proposedChanges: {'_action': 'delete'},
-              ).then((success) {
-                if (mounted) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(success
-                          ? 'Delete request submitted for review!'
-                          : (revController.errorMessage ?? 'Failed to submit.')),
-                      backgroundColor: success ? AppColors.success : AppColors.error,
-                    ),
-                  );
-                }
-              });
+              revController
+                  .createRevision(
+                    entityType: 'Investment',
+                    entityId: invId,
+                    proposedChanges: {'_action': 'delete'},
+                  )
+                  .then((success) {
+                    if (mounted) {
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            success
+                                ? 'Delete request submitted for review!'
+                                : (revController.errorMessage ??
+                                      'Failed to submit.'),
+                          ),
+                          backgroundColor: success
+                              ? AppColors.success
+                              : AppColors.error,
+                        ),
+                      );
+                    }
+                  });
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -421,9 +544,21 @@ class _InvestmentSummaryDetailViewState extends State<InvestmentSummaryDetailVie
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ),
             ),

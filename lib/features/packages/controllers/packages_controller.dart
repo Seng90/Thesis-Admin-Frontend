@@ -4,7 +4,7 @@ import 'package:investrack_admin/services/api_service.dart';
 
 class PackagesController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   List<Package> _packages = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -60,9 +60,14 @@ class PackagesController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = package.toJson()..remove('id')..remove('created_at');
+      final data = package.toJson()
+        ..remove('id')
+        ..remove('created_at');
       // Convert price to Decimal/double on backend if needed, toJson already produces double
-      final response = await _apiService.client.post('/admin/packages', data: data);
+      final response = await _apiService.client.post(
+        '/admin/packages',
+        data: data,
+      );
       final newPackage = Package.fromJson(response.data);
       _packages.add(newPackage);
     } catch (e) {
@@ -83,8 +88,13 @@ class PackagesController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = updatedPackage.toJson()..remove('id')..remove('created_at');
-      await _apiService.client.patch('/admin/packages/${updatedPackage.id}', data: data);
+      final data = updatedPackage.toJson()
+        ..remove('id')
+        ..remove('created_at');
+      await _apiService.client.patch(
+        '/admin/packages/${updatedPackage.id}',
+        data: data,
+      );
       final index = _packages.indexWhere((p) => p.id == updatedPackage.id);
       if (index != -1) {
         _packages[index] = updatedPackage;

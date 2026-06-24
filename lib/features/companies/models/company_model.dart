@@ -59,7 +59,9 @@ class Company {
       industry: json['industry'] ?? '',
       location: json['location'] ?? '',
       contactEmail: json['contact_email'] ?? '',
-      foundedDate: json['founded_date'] != null ? DateTime.tryParse(json['founded_date'].toString()) : null,
+      foundedDate: json['founded_date'] != null
+          ? DateTime.tryParse(json['founded_date'].toString())
+          : null,
       status: json['status'] ?? 'Pending',
       viewCount: json['view_count'] ?? 0,
       logoUrl: json['logo_url'],
@@ -75,8 +77,12 @@ class Company {
       operatingStatus: json['operating_status'] ?? 'Active',
       keyProducts: List<String>.from(json['key_products'] ?? []),
       keyPartners: List<String>.from(json['key_partners'] ?? []),
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
     );
   }
 

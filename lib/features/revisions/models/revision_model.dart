@@ -27,8 +27,12 @@ class Revision {
       proposedChanges: json['proposed_changes'] ?? {},
       status: json['status'] ?? 'Pending',
       createdBy: json['created_by'],
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
     );
   }
 

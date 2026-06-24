@@ -43,13 +43,24 @@ class FundraisingPost {
       excerpt: json['excerpt'] ?? '',
       content: json['content'] ?? '',
       roundType: json['round_type'] ?? json['roundType'] ?? '',
-      targetAmountUsd: double.tryParse((json['target_amount_usd'] ?? json['targetAmountUsd'] ?? 0).toString()) ?? 0.0,
-      minTicketUsd: double.tryParse((json['min_ticket_usd'] ?? json['minTicketUsd'] ?? 0).toString()) ?? 0.0,
+      targetAmountUsd:
+          double.tryParse(
+            (json['target_amount_usd'] ?? json['targetAmountUsd'] ?? 0)
+                .toString(),
+          ) ??
+          0.0,
+      minTicketUsd:
+          double.tryParse(
+            (json['min_ticket_usd'] ?? json['minTicketUsd'] ?? 0).toString(),
+          ) ??
+          0.0,
       contactEmail: json['contact_email'] ?? json['contactEmail'] ?? '',
       pitchDeckUrl: json['pitch_deck_url'] ?? json['pitchDeckUrl'],
       websiteUrl: json['website_url'] ?? json['websiteUrl'],
       coverUrl: json['cover_url'] ?? json['coverUrl'],
-      deadline: json['deadline'] != null ? DateTime.parse(json['deadline']) : DateTime.now(),
+      deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'])
+          : DateTime.now(),
       slug: json['slug'] ?? '',
       status: json['status'] ?? 'Active',
       adminFeedback: json['admin_feedback'],

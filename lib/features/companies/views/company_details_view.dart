@@ -22,7 +22,10 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<CompaniesController>(context, listen: false);
+      final controller = Provider.of<CompaniesController>(
+        context,
+        listen: false,
+      );
       if (controller.companies.isEmpty) {
         controller.loadCompanies();
       }
@@ -45,10 +48,12 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
           if (controller.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           try {
-            final company = controller.companies.firstWhere((c) => c.id == widget.companyId);
-            
+            final company = controller.companies.firstWhere(
+              (c) => c.id == widget.companyId,
+            );
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
               child: Center(
@@ -80,26 +85,44 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
                                             company.name,
-                                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                              fontSize: 28,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: company.status == 'Approved' ? AppColors.successBg : (company.status == 'Pending' ? AppColors.warningBg : AppColors.errorBg),
-                                            borderRadius: BorderRadius.circular(20),
+                                            color: company.status == 'Approved'
+                                                ? AppColors.successBg
+                                                : (company.status == 'Pending'
+                                                      ? AppColors.warningBg
+                                                      : AppColors.errorBg),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                           ),
                                           child: Text(
                                             company.status.toUpperCase(),
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
-                                              color: company.status == 'Approved' ? AppColors.success : (company.status == 'Pending' ? AppColors.warning : AppColors.error),
+                                              color:
+                                                  company.status == 'Approved'
+                                                  ? AppColors.success
+                                                  : (company.status == 'Pending'
+                                                        ? AppColors.warning
+                                                        : AppColors.error),
                                             ),
                                           ),
                                         ),
@@ -108,27 +131,48 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                                     const SizedBox(height: 8),
                                     Text(
                                       '${company.industry} • ${company.location}',
-                                      style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: AppColors.textSecondary,
+                                      ),
                                     ),
                                     const SizedBox(height: 24),
                                     Row(
                                       children: [
                                         ElevatedButton.icon(
-                                          onPressed: () => context.push('/companies/edit/${company.id}'),
-                                          icon: const Icon(Icons.edit, size: 16),
-                                          label: Text('Edit Company'.tr(context)),
+                                          onPressed: () => context.push(
+                                            '/companies/edit/${company.id}',
+                                          ),
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            size: 16,
+                                          ),
+                                          label: Text(
+                                            'Edit Company'.tr(context),
+                                          ),
                                           style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        if (company.websiteUrl != null && company.websiteUrl!.isNotEmpty)
+                                        if (company.websiteUrl != null &&
+                                            company.websiteUrl!.isNotEmpty)
                                           OutlinedButton.icon(
-                                            onPressed: () {}, // would launch URL
-                                            icon: const Icon(Icons.open_in_new, size: 16),
+                                            onPressed:
+                                                () {}, // would launch URL
+                                            icon: const Icon(
+                                              Icons.open_in_new,
+                                              size: 16,
+                                            ),
                                             label: const Text('Website'),
                                             style: OutlinedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
                                             ),
                                           ),
                                       ],
@@ -141,12 +185,12 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Details Cards
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final isSmallScreen = constraints.maxWidth < 800;
-                          
+
                           // -- Card 1: About & Contact --
                           final cardAbout = Card(
                             elevation: 0,
@@ -159,34 +203,94 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('About', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                  const Text(
+                                    'About',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    company.description.isNotEmpty ? company.description : 'No description provided.',
-                                    style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.textSecondary),
+                                    company.description.isNotEmpty
+                                        ? company.description
+                                        : 'No description provided.',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      height: 1.5,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                   const SizedBox(height: 32),
-                                  const Text('Contact Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                  const Text(
+                                    'Contact Information',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   const SizedBox(height: 16),
-                                  _buildInfoRow(Icons.email_outlined, 'Email', company.contactEmail.isNotEmpty ? company.contactEmail : 'N/A'),
+                                  _buildInfoRow(
+                                    Icons.email_outlined,
+                                    'Email',
+                                    company.contactEmail.isNotEmpty
+                                        ? company.contactEmail
+                                        : 'N/A',
+                                  ),
                                   const SizedBox(height: 12),
-                                  _buildInfoRow(Icons.location_on_outlined, 'Location', company.location),
-                                  if (company.headquartersAddress != null && company.headquartersAddress!.isNotEmpty) ...[
+                                  _buildInfoRow(
+                                    Icons.location_on_outlined,
+                                    'Location',
+                                    company.location,
+                                  ),
+                                  if (company.headquartersAddress != null &&
+                                      company
+                                          .headquartersAddress!
+                                          .isNotEmpty) ...[
                                     const SizedBox(height: 12),
-                                    _buildInfoRow(Icons.business_outlined, 'Headquarters', company.headquartersAddress!),
+                                    _buildInfoRow(
+                                      Icons.business_outlined,
+                                      'Headquarters',
+                                      company.headquartersAddress!,
+                                    ),
                                   ],
                                   const SizedBox(height: 24),
-                                  const Text('Social Media', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                  const Text(
+                                    'Social Media',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   const SizedBox(height: 16),
-                                  if (company.facebookUrl != null && company.facebookUrl!.isNotEmpty) ...[
-                                    _buildInfoRow(Icons.facebook, 'Facebook', company.facebookUrl!),
+                                  if (company.facebookUrl != null &&
+                                      company.facebookUrl!.isNotEmpty) ...[
+                                    _buildInfoRow(
+                                      Icons.facebook,
+                                      'Facebook',
+                                      company.facebookUrl!,
+                                    ),
                                     const SizedBox(height: 12),
                                   ],
-                                  if (company.linkedinUrl != null && company.linkedinUrl!.isNotEmpty) ...[
-                                    _buildInfoRow(Icons.work, 'LinkedIn', company.linkedinUrl!),
+                                  if (company.linkedinUrl != null &&
+                                      company.linkedinUrl!.isNotEmpty) ...[
+                                    _buildInfoRow(
+                                      Icons.work,
+                                      'LinkedIn',
+                                      company.linkedinUrl!,
+                                    ),
                                   ],
-                                  if ((company.facebookUrl == null || company.facebookUrl!.isEmpty) && (company.linkedinUrl == null || company.linkedinUrl!.isEmpty))
-                                    const Text('No social media links provided.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                                  if ((company.facebookUrl == null ||
+                                          company.facebookUrl!.isEmpty) &&
+                                      (company.linkedinUrl == null ||
+                                          company.linkedinUrl!.isEmpty))
+                                    const Text(
+                                      'No social media links provided.',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 13,
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -204,17 +308,46 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('At a Glance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                  const Text(
+                                    'At a Glance',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   const SizedBox(height: 24),
-                                  _buildGlanceItem('Operating Status', company.operatingStatus, Icons.power_settings_new),
+                                  _buildGlanceItem(
+                                    'Operating Status',
+                                    company.operatingStatus,
+                                    Icons.power_settings_new,
+                                  ),
                                   const Divider(height: 24),
-                                  _buildGlanceItem('Employees', company.employeeCount ?? 'N/A', Icons.people_outline),
+                                  _buildGlanceItem(
+                                    'Employees',
+                                    company.employeeCount ?? 'N/A',
+                                    Icons.people_outline,
+                                  ),
                                   const Divider(height: 24),
-                                  _buildGlanceItem('Branches', company.branchCount?.toString() ?? 'N/A', Icons.store_outlined),
+                                  _buildGlanceItem(
+                                    'Branches',
+                                    company.branchCount?.toString() ?? 'N/A',
+                                    Icons.store_outlined,
+                                  ),
                                   const Divider(height: 24),
-                                  _buildGlanceItem('Views', '${company.viewCount}', Icons.remove_red_eye_outlined),
+                                  _buildGlanceItem(
+                                    'Views',
+                                    '${company.viewCount}',
+                                    Icons.remove_red_eye_outlined,
+                                  ),
                                   const Divider(height: 24),
-                                  _buildGlanceItem('Founded', company.foundedDate?.toString().split(' ')[0] ?? 'Unknown', Icons.calendar_today_outlined),
+                                  _buildGlanceItem(
+                                    'Founded',
+                                    company.foundedDate?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        'Unknown',
+                                    Icons.calendar_today_outlined,
+                                  ),
                                 ],
                               ),
                             ),
@@ -232,11 +365,30 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Legal & Tax', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                  const Text(
+                                    'Legal & Tax',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   const SizedBox(height: 24),
-                                  _buildGlanceItem('Registration No.', company.registrationNumber?.isNotEmpty == true ? company.registrationNumber! : 'N/A', Icons.assignment_outlined),
+                                  _buildGlanceItem(
+                                    'Registration No.',
+                                    company.registrationNumber?.isNotEmpty ==
+                                            true
+                                        ? company.registrationNumber!
+                                        : 'N/A',
+                                    Icons.assignment_outlined,
+                                  ),
                                   const Divider(height: 24),
-                                  _buildGlanceItem('Tax ID', company.taxId?.isNotEmpty == true ? company.taxId! : 'N/A', Icons.receipt_long_outlined),
+                                  _buildGlanceItem(
+                                    'Tax ID',
+                                    company.taxId?.isNotEmpty == true
+                                        ? company.taxId!
+                                        : 'N/A',
+                                    Icons.receipt_long_outlined,
+                                  ),
                                 ],
                               ),
                             ),
@@ -254,50 +406,92 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Business Highlights', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                  const Text(
+                                    'Business Highlights',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   const SizedBox(height: 24),
-                                  const Text('Key Products', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                                  const Text(
+                                    'Key Products',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
                                   const SizedBox(height: 8),
                                   if (company.keyProducts.isEmpty)
-                                    const Text('No products listed.', style: TextStyle(color: AppColors.textMuted))
+                                    const Text(
+                                      'No products listed.',
+                                      style: TextStyle(
+                                        color: AppColors.textMuted,
+                                      ),
+                                    )
                                   else
                                     Wrap(
                                       spacing: 8,
                                       runSpacing: 8,
-                                      children: company.keyProducts.map((p) => Chip(
-                                        label: Text(p),
-                                        backgroundColor: AppColors.primaryLight,
-                                        side: BorderSide.none,
-                                      )).toList(),
+                                      children: company.keyProducts
+                                          .map(
+                                            (p) => Chip(
+                                              label: Text(p),
+                                              backgroundColor:
+                                                  AppColors.primaryLight,
+                                              side: BorderSide.none,
+                                            ),
+                                          )
+                                          .toList(),
                                     ),
                                   const SizedBox(height: 24),
-                                  const Text('Key Partners', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                                  const Text(
+                                    'Key Partners',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
                                   const SizedBox(height: 8),
                                   if (company.keyPartners.isEmpty)
-                                    const Text('No partners listed.', style: TextStyle(color: AppColors.textMuted))
+                                    const Text(
+                                      'No partners listed.',
+                                      style: TextStyle(
+                                        color: AppColors.textMuted,
+                                      ),
+                                    )
                                   else
                                     Wrap(
                                       spacing: 8,
                                       runSpacing: 8,
-                                      children: company.keyPartners.map((p) => Chip(
-                                        label: Text(p),
-                                        backgroundColor: AppColors.surface,
-                                        side: const BorderSide(color: AppColors.border),
-                                      )).toList(),
+                                      children: company.keyPartners
+                                          .map(
+                                            (p) => Chip(
+                                              label: Text(p),
+                                              backgroundColor:
+                                                  AppColors.surface,
+                                              side: const BorderSide(
+                                                color: AppColors.border,
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
                                     ),
                                 ],
                               ),
                             ),
                           );
-                            
+
                           if (isSmallScreen) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                cardAbout, 
-                                const SizedBox(height: 24), 
+                                cardAbout,
+                                const SizedBox(height: 24),
                                 cardHighlights,
-                                const SizedBox(height: 24), 
+                                const SizedBox(height: 24),
                                 cardGlance,
                                 const SizedBox(height: 24),
                                 cardLegal,
@@ -351,9 +545,21 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
@@ -377,9 +583,21 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),

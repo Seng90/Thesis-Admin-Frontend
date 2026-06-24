@@ -12,7 +12,7 @@ class AddInvestorView extends StatefulWidget {
 
 class _AddInvestorViewState extends State<AddInvestorView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final _nameController = TextEditingController();
   final _websiteController = TextEditingController();
   final _contactController = TextEditingController();
@@ -28,13 +28,16 @@ class _AddInvestorViewState extends State<AddInvestorView> {
 
   void _saveForm() async {
     if (_formKey.currentState!.validate()) {
-      final revisionsController = Provider.of<RevisionsController>(context, listen: false);
-      
+      final revisionsController = Provider.of<RevisionsController>(
+        context,
+        listen: false,
+      );
+
       Map<String, dynamic> proposedChanges = {
         'name': _nameController.text,
         'type': _type,
       };
-      
+
       if (_websiteController.text.isNotEmpty) {
         proposedChanges['website_url'] = _websiteController.text;
       }
@@ -51,11 +54,17 @@ class _AddInvestorViewState extends State<AddInvestorView> {
       if (mounted) {
         if (!success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(revisionsController.errorMessage ?? 'Failed to submit revision')),
+            SnackBar(
+              content: Text(
+                revisionsController.errorMessage ?? 'Failed to submit revision',
+              ),
+            ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Investor creation submitted for review!')),
+            const SnackBar(
+              content: Text('Investor creation submitted for review!'),
+            ),
           );
           context.pop();
         }
@@ -88,19 +97,30 @@ class _AddInvestorViewState extends State<AddInvestorView> {
                     children: [
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Investor Name'),
+                        decoration: const InputDecoration(
+                          labelText: 'Investor Name',
+                        ),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _type,
                         decoration: const InputDecoration(labelText: 'Type'),
-                        items: ['VC', 'Angel', 'PE', 'Corporate', 'Accelerator', 'Syndicate', 'Other'].map((String val) {
-                          return DropdownMenuItem(
-                            value: val,
-                            child: Text(val),
-                          );
-                        }).toList(),
+                        items:
+                            [
+                              'VC',
+                              'Angel',
+                              'PE',
+                              'Corporate',
+                              'Accelerator',
+                              'Syndicate',
+                              'Other',
+                            ].map((String val) {
+                              return DropdownMenuItem(
+                                value: val,
+                                child: Text(val),
+                              );
+                            }).toList(),
                         onChanged: (newVal) {
                           setState(() {
                             _type = newVal!;
@@ -110,12 +130,16 @@ class _AddInvestorViewState extends State<AddInvestorView> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _websiteController,
-                        decoration: const InputDecoration(labelText: 'Website URL (Optional)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Website URL (Optional)',
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _contactController,
-                        decoration: const InputDecoration(labelText: 'Contact Email/Phone'),
+                        decoration: const InputDecoration(
+                          labelText: 'Contact Email/Phone',
+                        ),
                       ),
                       const SizedBox(height: 32),
                       ElevatedButton(

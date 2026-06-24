@@ -31,7 +31,9 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         elevation: 2,
-        shadowColor: const Color(0x1A000000), // Very subtle shadow like shadow-sm
+        shadowColor: const Color(
+          0x1A000000,
+        ), // Very subtle shadow like shadow-sm
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16), // 1rem from CSS
           side: const BorderSide(color: AppColors.border, width: 1),
@@ -44,9 +46,7 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ),
@@ -54,7 +54,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.border),
@@ -129,7 +132,10 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFF334155), width: 1), // Slate 700
+          side: const BorderSide(
+            color: Color(0xFF334155),
+            width: 1,
+          ), // Slate 700
         ),
         color: const Color(0xFF1E293B),
         margin: EdgeInsets.zero,
@@ -139,9 +145,7 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ),
@@ -149,7 +153,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFF1E293B),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF334155)),
@@ -179,10 +186,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           fontSize: 12,
         ),
-        dataTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 13,
-        ),
+        dataTextStyle: const TextStyle(color: Colors.white, fontSize: 13),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(

@@ -5,7 +5,7 @@ import 'package:investrack_admin/services/api_service.dart';
 
 class AuthController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   Admin? _currentAdmin;
   bool _isLoading = false;
   String? _errorMessage;
@@ -20,11 +20,11 @@ class AuthController extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      final response = await _apiService.client.post('/auth/admin/login', data: {
-        'username': username,
-        'password': password,
-      });
-      
+      final response = await _apiService.client.post(
+        '/auth/admin/login',
+        data: {'username': username, 'password': password},
+      );
+
       final data = response.data;
       if (data != null && data['access_token'] != null) {
         final token = data['access_token'];
@@ -71,7 +71,7 @@ class AuthController extends ChangeNotifier {
   Future<void> checkAuthStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
-    
+
     if (token != null) {
       // For now, we just mock the admin details if token exists
       // In a full implementation, you might want to call a /auth/admin/me endpoint

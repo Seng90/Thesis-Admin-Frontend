@@ -75,8 +75,13 @@ class _InvestorsViewState extends State<InvestorsView> {
                         decoration: InputDecoration(
                           hintText: 'Search by name...',
                           prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                         onChanged: (value) {
                           setState(() {
@@ -88,9 +93,22 @@ class _InvestorsViewState extends State<InvestorsView> {
                     const SizedBox(width: 16),
                     DropdownButton<String>(
                       value: _typeFilter,
-                      items: ['All', 'VC', 'Angel', 'PE', 'Corporate', 'Accelerator', 'Syndicate', 'Other'].map((type) {
-                        return DropdownMenuItem(value: type, child: Text(type));
-                      }).toList(),
+                      items:
+                          [
+                            'All',
+                            'VC',
+                            'Angel',
+                            'PE',
+                            'Corporate',
+                            'Accelerator',
+                            'Syndicate',
+                            'Other',
+                          ].map((type) {
+                            return DropdownMenuItem(
+                              value: type,
+                              child: Text(type),
+                            );
+                          }).toList(),
                       onChanged: (value) {
                         if (value != null) {
                           setState(() {
@@ -106,13 +124,20 @@ class _InvestorsViewState extends State<InvestorsView> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       var filteredList = controller.investors.where((i) {
-                        final matchesSearch = _searchQuery.isEmpty || i.name.toLowerCase().contains(_searchQuery.toLowerCase());
-                        final matchesType = _typeFilter == 'All' || i.type == _typeFilter;
+                        final matchesSearch =
+                            _searchQuery.isEmpty ||
+                            i.name.toLowerCase().contains(
+                              _searchQuery.toLowerCase(),
+                            );
+                        final matchesType =
+                            _typeFilter == 'All' || i.type == _typeFilter;
                         return matchesSearch && matchesType;
                       }).toList();
 
                       if (filteredList.isEmpty) {
-                        return const Center(child: Text('No investors match your filters.'));
+                        return const Center(
+                          child: Text('No investors match your filters.'),
+                        );
                       }
 
                       return Card(
@@ -127,7 +152,8 @@ class _InvestorsViewState extends State<InvestorsView> {
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
                                   minHeight: constraints.maxHeight,
-                                  minWidth: MediaQuery.of(context).size.width - 64,
+                                  minWidth:
+                                      MediaQuery.of(context).size.width - 64,
                                 ),
                                 child: Scrollbar(
                                   controller: _verticalScroll,
@@ -145,121 +171,214 @@ class _InvestorsViewState extends State<InvestorsView> {
                                         DataColumn(label: Text(strActions)),
                                       ],
                                       rows: filteredList.map((investor) {
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            CustomLogoWidget(
-                                              imageUrl: investor.logoUrl,
-                                              fallbackName: investor.name,
-                                              size: 32,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Text(investor.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                                Text(investor.contactInfo ?? '', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                                              ],
-                                            ),
-                                          ],
-                                        )
-                                      ),
-                                      DataCell(
-                                        Chip(
-                                          label: Text(investor.type, style: const TextStyle(color: AppColors.primary)),
-                                          backgroundColor: AppColors.primaryLight,
-                                        ),
-                                      ),
-                                      DataCell(Text(investor.websiteUrl ?? 'N/A', style: const TextStyle(color: AppColors.textSecondary))),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            PopupMenuButton<String>(
-                                              icon: const Icon(Icons.more_horiz, color: AppColors.textMuted),
-                                              onSelected: (value) {
-                                                if (value == 'view') {
-                                                  context.push('/investors/view/${investor.id}');
-                                                } else if (value == 'edit') {
-                                                  context.push('/investors/edit/${investor.id}');
-                                                } else if (value == 'delete') {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (context) => AlertDialog(
-                                                      title: const Text('Delete Investor'),
-                                                      content: Text('Are you sure you want to delete "${investor.name}"?'),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () => Navigator.pop(context),
-                                                          child: Text(strCancel),
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  CustomLogoWidget(
+                                                    imageUrl: investor.logoUrl,
+                                                    fallbackName: investor.name,
+                                                    size: 32,
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text(
+                                                        investor.name,
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
-                                                        TextButton(
-                                                          onPressed: () {
-                                                            Navigator.pop(context);
-                                                            final revController = Provider.of<RevisionsController>(context, listen: false);
-                                                            revController.createRevision(
-                                                              entityType: 'Investor',
-                                                              entityId: investor.id,
-                                                              proposedChanges: {'_action': 'delete'},
-                                                            ).then((success) {
-                                                              if (context.mounted) {
-                                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                                  SnackBar(
-                                                                    content: Text(success ? 'Delete request submitted for review!' : 'Failed to submit.'),
-                                                                    backgroundColor: success ? AppColors.success : AppColors.error,
-                                                                  ),
-                                                                );
-                                                              }
-                                                            });
-                                                          },
-                                                          child: Text(strDelete, style: const TextStyle(color: Colors.red)),
+                                                      ),
+                                                      Text(
+                                                        investor.contactInfo ??
+                                                            '',
+                                                        style: const TextStyle(
+                                                          fontSize: 12,
+                                                          color: AppColors
+                                                              .textSecondary,
                                                         ),
-                                                      ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Chip(
+                                                label: Text(
+                                                  investor.type,
+                                                  style: const TextStyle(
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+                                                backgroundColor:
+                                                    AppColors.primaryLight,
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                investor.websiteUrl ?? 'N/A',
+                                                style: const TextStyle(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  PopupMenuButton<String>(
+                                                    icon: const Icon(
+                                                      Icons.more_horiz,
+                                                      color:
+                                                          AppColors.textMuted,
                                                     ),
-                                                  );
-                                                }
-                                              },
-                                              itemBuilder: (context) => [
-                                                PopupMenuItem(
-                                                  value: 'view',
-                                                  child: Text(strViewDetails),
-                                                ),
-                                                PopupMenuItem(
-                                                  value: 'edit',
-                                                  child: Text(strEdit),
-                                                ),
-                                                PopupMenuItem(
-                                                  value: 'delete',
-                                                  child: Text(strDelete, style: const TextStyle(color: Colors.red)),
-                                                ),
-                                              ],
+                                                    onSelected: (value) {
+                                                      if (value == 'view') {
+                                                        context.push(
+                                                          '/investors/view/${investor.id}',
+                                                        );
+                                                      } else if (value ==
+                                                          'edit') {
+                                                        context.push(
+                                                          '/investors/edit/${investor.id}',
+                                                        );
+                                                      } else if (value ==
+                                                          'delete') {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) => AlertDialog(
+                                                            title: const Text(
+                                                              'Delete Investor',
+                                                            ),
+                                                            content: Text(
+                                                              'Are you sure you want to delete "${investor.name}"?',
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                      context,
+                                                                    ),
+                                                                child: Text(
+                                                                  strCancel,
+                                                                ),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                    context,
+                                                                  );
+                                                                  final revController =
+                                                                      Provider.of<
+                                                                        RevisionsController
+                                                                      >(
+                                                                        context,
+                                                                        listen:
+                                                                            false,
+                                                                      );
+                                                                  revController
+                                                                      .createRevision(
+                                                                        entityType:
+                                                                            'Investor',
+                                                                        entityId:
+                                                                            investor.id,
+                                                                        proposedChanges: {
+                                                                          '_action':
+                                                                              'delete',
+                                                                        },
+                                                                      )
+                                                                      .then((
+                                                                        success,
+                                                                      ) {
+                                                                        if (context
+                                                                            .mounted) {
+                                                                          ScaffoldMessenger.of(
+                                                                            context,
+                                                                          ).showSnackBar(
+                                                                            SnackBar(
+                                                                              content: Text(
+                                                                                success
+                                                                                    ? 'Delete request submitted for review!'
+                                                                                    : 'Failed to submit.',
+                                                                              ),
+                                                                              backgroundColor: success
+                                                                                  ? AppColors.success
+                                                                                  : AppColors.error,
+                                                                            ),
+                                                                          );
+                                                                        }
+                                                                      });
+                                                                },
+                                                                child: Text(
+                                                                  strDelete,
+                                                                  style: const TextStyle(
+                                                                    color: Colors
+                                                                        .red,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                    itemBuilder: (context) => [
+                                                      PopupMenuItem(
+                                                        value: 'view',
+                                                        child: Text(
+                                                          strViewDetails,
+                                                        ),
+                                                      ),
+                                                      PopupMenuItem(
+                                                        value: 'edit',
+                                                        child: Text(strEdit),
+                                                      ),
+                                                      PopupMenuItem(
+                                                        value: 'delete',
+                                                        child: Text(
+                                                          strDelete,
+                                                          style:
+                                                              const TextStyle(
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ],
-                                        )
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ),
-        ],
-      );
-    },
-  ),
-),
-);
-}
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
 }

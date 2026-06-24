@@ -34,7 +34,8 @@ class DashboardSummary {
       totalCompanies: json['totalCompanies'] ?? 0,
       totalMembers: json['totalMembers'] ?? 0,
       newMembersThisMonth: json['newMembersThisMonth'] ?? 0,
-      monthlySubscriptionRevenue: (json['monthlySubscriptionRevenue'] ?? 0).toDouble(),
+      monthlySubscriptionRevenue: (json['monthlySubscriptionRevenue'] ?? 0)
+          .toDouble(),
     );
   }
 }
@@ -62,7 +63,8 @@ class FundingHistoryItem {
   factory FundingHistoryItem.fromJson(Map<String, dynamic> json) {
     return FundingHistoryItem(
       date: json['date'] ?? '',
-      totalAmount: (json['totalAmount'] ?? json['total_amount'] ?? 0).toDouble(),
+      totalAmount: (json['totalAmount'] ?? json['total_amount'] ?? 0)
+          .toDouble(),
     );
   }
 }
@@ -88,7 +90,55 @@ class RecentCompany {
       name: json['name'] ?? '',
       industry: json['industry'] ?? '',
       logoUrl: json['logo_url'] ?? json['logoUrl'],
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'])
+          : null,
+    );
+  }
+}
+
+class TopStartup {
+  final String id;
+  final String name;
+  final String industry;
+  final int viewCount;
+
+  TopStartup({
+    required this.id,
+    required this.name,
+    required this.industry,
+    required this.viewCount,
+  });
+
+  factory TopStartup.fromJson(Map<String, dynamic> json) {
+    return TopStartup(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      industry: json['industry'] ?? '',
+      viewCount: json['view_count'] ?? json['viewCount'] ?? 0,
+    );
+  }
+}
+
+class PopularPackage {
+  final String id;
+  final String name;
+  final num price;
+  final int purchaseCount;
+
+  PopularPackage({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.purchaseCount,
+  });
+
+  factory PopularPackage.fromJson(Map<String, dynamic> json) {
+    return PopularPackage(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      price: json['price'] ?? 0,
+      purchaseCount: json['purchase_count'] ?? json['purchaseCount'] ?? 0,
     );
   }
 }

@@ -20,14 +20,14 @@ class EditMemberView extends StatefulWidget {
 
 class _EditMemberViewState extends State<EditMemberView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
   late String _status;
   late String _role;
   String? _packageId;
   DateTime? _expiryDate;
-  
+
   bool _isInit = false;
   List<String> _initialManagedCompanyIds = [];
   List<String> _selectedCompanyIds = [];
@@ -38,21 +38,30 @@ class _EditMemberViewState extends State<EditMemberView> {
     super.didChangeDependencies();
     if (!_isInit) {
       final controller = Provider.of<MembersController>(context, listen: false);
-      final existingMember = controller.members.firstWhere((m) => m.id == widget.memberId);
-      
-      _usernameController = TextEditingController(text: existingMember.username);
+      final existingMember = controller.members.firstWhere(
+        (m) => m.id == widget.memberId,
+      );
+
+      _usernameController = TextEditingController(
+        text: existingMember.username,
+      );
       _emailController = TextEditingController(text: existingMember.email);
       _status = existingMember.status;
       final currentRole = existingMember.role.toLowerCase();
-      _role = ['founder', 'user', 'membership'].contains(currentRole) ? currentRole : 'user';
+      _role = ['founder', 'user', 'membership'].contains(currentRole)
+          ? currentRole
+          : 'user';
       _packageId = existingMember.packageId;
       _expiryDate = existingMember.expiryDate;
-      
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Provider.of<PackagesController>(context, listen: false).loadPackages();
-        Provider.of<CompaniesController>(context, listen: false).loadCompanies();
+        Provider.of<CompaniesController>(
+          context,
+          listen: false,
+        ).loadCompanies();
       });
-      
+
       _fetchManagedCompanies();
       _isInit = true;
     }
@@ -64,7 +73,9 @@ class _EditMemberViewState extends State<EditMemberView> {
     final companies = await controller.getManagedCompanies(widget.memberId);
     if (mounted) {
       setState(() {
-        _initialManagedCompanyIds = companies.map((c) => c['id'].toString()).toList();
+        _initialManagedCompanyIds = companies
+            .map((c) => c['id'].toString())
+            .toList();
         _selectedCompanyIds = List.from(_initialManagedCompanyIds);
         _isLoadingCompanies = false;
       });
@@ -72,7 +83,10 @@ class _EditMemberViewState extends State<EditMemberView> {
   }
 
   void _showCompaniesDialog() {
-    final companiesCtrl = Provider.of<CompaniesController>(context, listen: false);
+    final companiesCtrl = Provider.of<CompaniesController>(
+      context,
+      listen: false,
+    );
     final allCompanies = companiesCtrl.companies;
     List<String> tempSelected = List.from(_selectedCompanyIds);
     String searchQuery = '';
@@ -82,7 +96,12 @@ class _EditMemberViewState extends State<EditMemberView> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            final filteredCompanies = allCompanies.where((c) => c.name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+            final filteredCompanies = allCompanies
+                .where(
+                  (c) =>
+                      c.name.toLowerCase().contains(searchQuery.toLowerCase()),
+                )
+                .toList();
             return AlertDialog(
               title: const Text('Select Managed Companies'),
               content: SizedBox(
@@ -164,10 +183,12 @@ class _EditMemberViewState extends State<EditMemberView> {
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
       final controller = Provider.of<MembersController>(context, listen: false);
-      final existingMember = controller.members.firstWhere((m) => m.id == widget.memberId);
-      
+      final existingMember = controller.members.firstWhere(
+        (m) => m.id == widget.memberId,
+      );
+
       Map<String, dynamic> changes = {};
-      
+
       if (_usernameController.text != existingMember.username) {
         changes['username'] = _usernameController.text;
       }
@@ -181,10 +202,10 @@ class _EditMemberViewState extends State<EditMemberView> {
         changes['role'] = _role;
       }
       if (_packageId != existingMember.packageId) {
-        changes['packageId'] = _packageId;
+        changes['package_id'] = _packageId;
       }
       if (_expiryDate != existingMember.expiryDate) {
-        changes['expiryDate'] = _expiryDate?.toIso8601String();
+        changes['expiry_date'] = _expiryDate?.toIso8601String();
       }
 
       // Check if managed companies changed
@@ -199,13 +220,16 @@ class _EditMemberViewState extends State<EditMemberView> {
           }
         }
       }
-      
+
       if (companiesChanged) {
         changes['companyIds'] = _selectedCompanyIds;
       }
 
       if (changes.isNotEmpty) {
-        final revisionsController = Provider.of<RevisionsController>(context, listen: false);
+        final revisionsController = Provider.of<RevisionsController>(
+          context,
+          listen: false,
+        );
         revisionsController.createRevision(
           entityType: 'Member',
           entityId: widget.memberId,
@@ -219,7 +243,7 @@ class _EditMemberViewState extends State<EditMemberView> {
           SnackBar(content: Text('No changes detected.'.tr(context))),
         );
       }
-      
+
       context.pop();
     }
   }
@@ -265,24 +289,27 @@ class _EditMemberViewState extends State<EditMemberView> {
                     children: [
                       TextFormField(
                         controller: _usernameController,
-                        decoration: InputDecoration(labelText: 'Username'.tr(context)),
+                        decoration: InputDecoration(
+                          labelText: 'Username'.tr(context),
+                        ),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _emailController,
-                        decoration: InputDecoration(labelText: 'Email'.tr(context)),
+                        decoration: InputDecoration(
+                          labelText: 'Email'.tr(context),
+                        ),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _status,
-                        decoration: InputDecoration(labelText: 'Status'.tr(context)),
+                        decoration: InputDecoration(
+                          labelText: 'Status'.tr(context),
+                        ),
                         items: ['Active', 'Blocked'].map((String val) {
-                          return DropdownMenuItem(
-                            value: val,
-                            child: Text(val),
-                          );
+                          return DropdownMenuItem(value: val, child: Text(val));
                         }).toList(),
                         onChanged: (newVal) {
                           if (newVal != null) {
@@ -295,8 +322,12 @@ class _EditMemberViewState extends State<EditMemberView> {
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _role,
-                        decoration: InputDecoration(labelText: 'Role'.tr(context)),
-                        items: ['user', 'membership', 'founder'].map((String val) {
+                        decoration: InputDecoration(
+                          labelText: 'Role'.tr(context),
+                        ),
+                        items: ['user', 'membership', 'founder'].map((
+                          String val,
+                        ) {
                           return DropdownMenuItem(
                             value: val,
                             child: Text(val.toUpperCase()),
@@ -313,9 +344,14 @@ class _EditMemberViewState extends State<EditMemberView> {
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String?>(
                         initialValue: _packageId,
-                        decoration: InputDecoration(labelText: 'Package'.tr(context)),
+                        decoration: InputDecoration(
+                          labelText: 'Package'.tr(context),
+                        ),
                         items: [
-                          const DropdownMenuItem(value: null, child: Text('None (Lifetime)')),
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('None (Lifetime)'),
+                          ),
                           ...packagesController.packages.map((pkg) {
                             return DropdownMenuItem(
                               value: pkg.id,
@@ -333,9 +369,11 @@ class _EditMemberViewState extends State<EditMemberView> {
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text('Expiry Date'.tr(context)),
-                        subtitle: Text(_expiryDate != null 
-                            ? _expiryDate!.toString().split(' ')[0] 
-                            : 'Lifetime'),
+                        subtitle: Text(
+                          _expiryDate != null
+                              ? _expiryDate!.toString().split(' ')[0]
+                              : 'Lifetime',
+                        ),
                         trailing: const Icon(Icons.calendar_today),
                         onTap: () => _selectDate(context),
                       ),
@@ -346,7 +384,13 @@ class _EditMemberViewState extends State<EditMemberView> {
                             const SizedBox(height: 24),
                             const Divider(),
                             const SizedBox(height: 16),
-                            const Text('Managed Companies', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                            const Text(
+                              'Managed Companies',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             if (_isLoadingCompanies)
                               const Center(child: CircularProgressIndicator())
@@ -354,31 +398,55 @@ class _EditMemberViewState extends State<EditMemberView> {
                               Consumer<CompaniesController>(
                                 builder: (context, companiesCtrl, child) {
                                   if (companiesCtrl.isLoading) {
-                                    return const Center(child: CircularProgressIndicator());
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
                                   }
                                   if (companiesCtrl.companies.isEmpty) {
-                                    return const Text('No companies available.');
+                                    return const Text(
+                                      'No companies available.',
+                                    );
                                   }
-                                  final selectedCompanies = companiesCtrl.companies.where((c) => _selectedCompanyIds.contains(c.id)).toList();
-                                  
+                                  final selectedCompanies = companiesCtrl
+                                      .companies
+                                      .where(
+                                        (c) =>
+                                            _selectedCompanyIds.contains(c.id),
+                                      )
+                                      .toList();
+
                                   return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       if (selectedCompanies.isEmpty)
                                         const Padding(
-                                          padding: EdgeInsets.only(bottom: 16.0),
-                                          child: Text('No companies assigned.', style: TextStyle(color: Colors.grey)),
+                                          padding: EdgeInsets.only(
+                                            bottom: 16.0,
+                                          ),
+                                          child: Text(
+                                            'No companies assigned.',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
                                         )
                                       else
                                         Padding(
-                                          padding: const EdgeInsets.only(bottom: 16.0),
+                                          padding: const EdgeInsets.only(
+                                            bottom: 16.0,
+                                          ),
                                           child: ListView.separated(
                                             shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
                                             itemCount: selectedCompanies.length,
-                                            separatorBuilder: (context, index) => const Divider(height: 16),
+                                            separatorBuilder:
+                                                (context, index) =>
+                                                    const Divider(height: 16),
                                             itemBuilder: (context, index) {
-                                              final company = selectedCompanies[index];
+                                              final company =
+                                                  selectedCompanies[index];
                                               return Row(
                                                 children: [
                                                   CustomLogoWidget(
@@ -390,7 +458,11 @@ class _EditMemberViewState extends State<EditMemberView> {
                                                   Expanded(
                                                     child: Text(
                                                       company.name,
-                                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
                                                     ),
                                                   ),
                                                 ],

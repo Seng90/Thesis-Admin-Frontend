@@ -32,9 +32,15 @@ class Member {
       packageId: json['package_id'],
       avatarUrl: json['avatar_url'],
       role: json['role'] ?? 'user',
-      expiryDate: json['expiry_date'] != null ? DateTime.tryParse(json['expiry_date'].toString()) : null,
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
+      expiryDate: json['expiry_date'] != null
+          ? DateTime.tryParse(json['expiry_date'].toString())
+          : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
     );
   }
 

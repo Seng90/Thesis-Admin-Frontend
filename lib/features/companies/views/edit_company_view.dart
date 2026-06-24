@@ -17,7 +17,7 @@ class EditCompanyView extends StatefulWidget {
 
 class _EditCompanyViewState extends State<EditCompanyView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _descController;
   late TextEditingController _industryController;
@@ -46,40 +46,80 @@ class _EditCompanyViewState extends State<EditCompanyView> {
   List<String> _keyProducts = [];
   List<String> _keyPartners = [];
 
-  static const List<String> _employeeCountOptions = ['1-10', '11-50', '51-200', '200+'];
-  static const List<String> _operatingStatusOptions = ['Active', 'Acquired', 'Closed'];
+  static const List<String> _employeeCountOptions = [
+    '1-10',
+    '11-50',
+    '51-200',
+    '200+',
+  ];
+  static const List<String> _operatingStatusOptions = [
+    'Active',
+    'Acquired',
+    'Closed',
+  ];
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<CompaniesController>(context, listen: false);
+      final controller = Provider.of<CompaniesController>(
+        context,
+        listen: false,
+      );
       try {
-        _existingCompany = controller.companies.firstWhere((c) => c.id == widget.companyId);
+        _existingCompany = controller.companies.firstWhere(
+          (c) => c.id == widget.companyId,
+        );
       } catch (_) {
         _existingCompany = null;
       }
-      
-      _nameController = TextEditingController(text: _existingCompany?.name ?? '');
-      _descController = TextEditingController(text: _existingCompany?.description ?? '');
-      _industryController = TextEditingController(text: _existingCompany?.industry ?? '');
-      _locationController = TextEditingController(text: _existingCompany?.location ?? '');
-      _emailController = TextEditingController(text: _existingCompany?.contactEmail ?? '');
-      _logoUrlController = TextEditingController(text: _existingCompany?.logoUrl ?? '');
-      _websiteUrlController = TextEditingController(text: _existingCompany?.websiteUrl ?? '');
-      _regNumberController = TextEditingController(text: _existingCompany?.registrationNumber ?? '');
-      _taxIdController = TextEditingController(text: _existingCompany?.taxId ?? '');
-      _facebookUrlController = TextEditingController(text: _existingCompany?.facebookUrl ?? '');
-      _linkedinUrlController = TextEditingController(text: _existingCompany?.linkedinUrl ?? '');
-      _headquartersController = TextEditingController(text: _existingCompany?.headquartersAddress ?? '');
-      _branchCountController = TextEditingController(text: _existingCompany?.branchCount?.toString() ?? '');
+
+      _nameController = TextEditingController(
+        text: _existingCompany?.name ?? '',
+      );
+      _descController = TextEditingController(
+        text: _existingCompany?.description ?? '',
+      );
+      _industryController = TextEditingController(
+        text: _existingCompany?.industry ?? '',
+      );
+      _locationController = TextEditingController(
+        text: _existingCompany?.location ?? '',
+      );
+      _emailController = TextEditingController(
+        text: _existingCompany?.contactEmail ?? '',
+      );
+      _logoUrlController = TextEditingController(
+        text: _existingCompany?.logoUrl ?? '',
+      );
+      _websiteUrlController = TextEditingController(
+        text: _existingCompany?.websiteUrl ?? '',
+      );
+      _regNumberController = TextEditingController(
+        text: _existingCompany?.registrationNumber ?? '',
+      );
+      _taxIdController = TextEditingController(
+        text: _existingCompany?.taxId ?? '',
+      );
+      _facebookUrlController = TextEditingController(
+        text: _existingCompany?.facebookUrl ?? '',
+      );
+      _linkedinUrlController = TextEditingController(
+        text: _existingCompany?.linkedinUrl ?? '',
+      );
+      _headquartersController = TextEditingController(
+        text: _existingCompany?.headquartersAddress ?? '',
+      );
+      _branchCountController = TextEditingController(
+        text: _existingCompany?.branchCount?.toString() ?? '',
+      );
       _status = _existingCompany?.status ?? 'Pending';
       _operatingStatus = _existingCompany?.operatingStatus ?? 'Active';
       _employeeCount = _existingCompany?.employeeCount;
       _foundedDate = _existingCompany?.foundedDate;
       _keyProducts = List<String>.from(_existingCompany?.keyProducts ?? []);
       _keyPartners = List<String>.from(_existingCompany?.keyPartners ?? []);
-      
+
       _isInit = true;
     }
   }
@@ -128,29 +168,52 @@ class _EditCompanyViewState extends State<EditCompanyView> {
 
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isSaving = true);
-    
-    final revController = Provider.of<RevisionsController>(context, listen: false);
-    
+
+    final revController = Provider.of<RevisionsController>(
+      context,
+      listen: false,
+    );
+
     final proposedChanges = <String, dynamic>{
-      if (_nameController.text.trim() != _existingCompany?.name) 'name': _nameController.text.trim(),
-      if (_descController.text.trim() != _existingCompany?.description) 'description': _descController.text.trim(),
-      if (_industryController.text.trim() != _existingCompany?.industry) 'industry': _industryController.text.trim(),
-      if (_locationController.text.trim() != _existingCompany?.location) 'location': _locationController.text.trim(),
-      if (_emailController.text.trim() != _existingCompany?.contactEmail) 'contact_email': _emailController.text.trim(),
+      if (_nameController.text.trim() != _existingCompany?.name)
+        'name': _nameController.text.trim(),
+      if (_descController.text.trim() != _existingCompany?.description)
+        'description': _descController.text.trim(),
+      if (_industryController.text.trim() != _existingCompany?.industry)
+        'industry': _industryController.text.trim(),
+      if (_locationController.text.trim() != _existingCompany?.location)
+        'location': _locationController.text.trim(),
+      if (_emailController.text.trim() != _existingCompany?.contactEmail)
+        'contact_email': _emailController.text.trim(),
       if (_status != _existingCompany?.status) 'status': _status,
-      if (_foundedDate != _existingCompany?.foundedDate) 'founded_date': _foundedDate?.toIso8601String(),
-      if (_logoUrlController.text.trim() != (_existingCompany?.logoUrl ?? '')) 'logo_url': _logoUrlController.text.trim(),
-      if (_websiteUrlController.text.trim() != (_existingCompany?.websiteUrl ?? '')) 'website_url': _websiteUrlController.text.trim(),
+      if (_foundedDate != _existingCompany?.foundedDate)
+        'founded_date': _foundedDate?.toIso8601String(),
+      if (_logoUrlController.text.trim() != (_existingCompany?.logoUrl ?? ''))
+        'logo_url': _logoUrlController.text.trim(),
+      if (_websiteUrlController.text.trim() !=
+          (_existingCompany?.websiteUrl ?? ''))
+        'website_url': _websiteUrlController.text.trim(),
       // New fields
-      if (_regNumberController.text.trim() != (_existingCompany?.registrationNumber ?? '')) 'registration_number': _regNumberController.text.trim(),
-      if (_taxIdController.text.trim() != (_existingCompany?.taxId ?? '')) 'tax_id': _taxIdController.text.trim(),
-      if (_facebookUrlController.text.trim() != (_existingCompany?.facebookUrl ?? '')) 'facebook_url': _facebookUrlController.text.trim(),
-      if (_linkedinUrlController.text.trim() != (_existingCompany?.linkedinUrl ?? '')) 'linkedin_url': _linkedinUrlController.text.trim(),
-      if (_headquartersController.text.trim() != (_existingCompany?.headquartersAddress ?? '')) 'headquarters_address': _headquartersController.text.trim(),
-      if (_operatingStatus != _existingCompany?.operatingStatus) 'operating_status': _operatingStatus,
-      if (_employeeCount != _existingCompany?.employeeCount) 'employee_count': _employeeCount,
+      if (_regNumberController.text.trim() !=
+          (_existingCompany?.registrationNumber ?? ''))
+        'registration_number': _regNumberController.text.trim(),
+      if (_taxIdController.text.trim() != (_existingCompany?.taxId ?? ''))
+        'tax_id': _taxIdController.text.trim(),
+      if (_facebookUrlController.text.trim() !=
+          (_existingCompany?.facebookUrl ?? ''))
+        'facebook_url': _facebookUrlController.text.trim(),
+      if (_linkedinUrlController.text.trim() !=
+          (_existingCompany?.linkedinUrl ?? ''))
+        'linkedin_url': _linkedinUrlController.text.trim(),
+      if (_headquartersController.text.trim() !=
+          (_existingCompany?.headquartersAddress ?? ''))
+        'headquarters_address': _headquartersController.text.trim(),
+      if (_operatingStatus != _existingCompany?.operatingStatus)
+        'operating_status': _operatingStatus,
+      if (_employeeCount != _existingCompany?.employeeCount)
+        'employee_count': _employeeCount,
     };
 
     // Branch count
@@ -169,9 +232,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
 
     if (proposedChanges.isEmpty) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No changes made.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No changes made.')));
       context.pop();
       return;
     }
@@ -181,17 +244,25 @@ class _EditCompanyViewState extends State<EditCompanyView> {
       entityId: widget.companyId,
       proposedChanges: proposedChanges,
     );
-    
+
     if (mounted) {
       setState(() => _isSaving = false);
-      
+
       if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(revController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(
+              revController.errorMessage ?? 'Failed to submit revision',
+            ),
+            backgroundColor: AppColors.error,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Edit submitted for review!'), backgroundColor: AppColors.success),
+          const SnackBar(
+            content: Text('Edit submitted for review!'),
+            backgroundColor: AppColors.success,
+          ),
         );
         context.pop();
       }
@@ -217,7 +288,10 @@ class _EditCompanyViewState extends State<EditCompanyView> {
             hintText: hint,
             prefixIcon: Icon(icon),
             suffixIcon: IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+              icon: const Icon(
+                Icons.add_circle_outline,
+                color: AppColors.primary,
+              ),
               onPressed: onAdd,
               tooltip: 'Add tag',
             ),
@@ -236,7 +310,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                 onDeleted: () => onRemove(entry.key),
                 backgroundColor: AppColors.primaryLight,
                 side: BorderSide.none,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               );
             }).toList(),
           ),
@@ -278,7 +354,11 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                       // ── Section 1: Basic Info ──
                       const Text(
                         'Company Information',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -287,7 +367,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                           labelText: 'Company Name *',
                           prefixIcon: Icon(Icons.business),
                         ),
-                        validator: (v) => v!.trim().isEmpty ? 'Company name is required' : null,
+                        validator: (v) => v!.trim().isEmpty
+                            ? 'Company name is required'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -298,7 +380,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                           prefixIcon: Icon(Icons.description),
                           alignLabelWithHint: true,
                         ),
-                        validator: (v) => v!.trim().isEmpty ? 'Description is required' : null,
+                        validator: (v) => v!.trim().isEmpty
+                            ? 'Description is required'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -310,7 +394,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                                 labelText: 'Industry *',
                                 prefixIcon: Icon(Icons.category),
                               ),
-                              validator: (v) => v!.trim().isEmpty ? 'Industry is required' : null,
+                              validator: (v) => v!.trim().isEmpty
+                                  ? 'Industry is required'
+                                  : null,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -321,7 +407,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                                 labelText: 'Location *',
                                 prefixIcon: Icon(Icons.location_on),
                               ),
-                              validator: (v) => v!.trim().isEmpty ? 'Location is required' : null,
+                              validator: (v) => v!.trim().isEmpty
+                                  ? 'Location is required'
+                                  : null,
                             ),
                           ),
                         ],
@@ -334,7 +422,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                           prefixIcon: Icon(Icons.email),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        validator: (v) => v!.trim().isEmpty || !v.contains('@') ? 'Enter a valid email' : null,
+                        validator: (v) => v!.trim().isEmpty || !v.contains('@')
+                            ? 'Enter a valid email'
+                            : null,
                       ),
 
                       // ── Section 2: Legal & Tax ──
@@ -344,7 +434,11 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                       ),
                       const Text(
                         'Legal & Tax Information',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -406,22 +500,33 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                       ),
                       const Text(
                         'Organization Details',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              initialValue: _employeeCountOptions.contains(_employeeCount) ? _employeeCount : null,
+                              initialValue:
+                                  _employeeCountOptions.contains(_employeeCount)
+                                  ? _employeeCount
+                                  : null,
                               decoration: const InputDecoration(
                                 labelText: 'Employee Count',
                                 prefixIcon: Icon(Icons.people),
                               ),
                               items: _employeeCountOptions.map((s) {
-                                return DropdownMenuItem(value: s, child: Text(s));
+                                return DropdownMenuItem(
+                                  value: s,
+                                  child: Text(s),
+                                );
                               }).toList(),
-                              onChanged: (v) => setState(() => _employeeCount = v),
+                              onChanged: (v) =>
+                                  setState(() => _employeeCount = v),
                               isExpanded: true,
                             ),
                           ),
@@ -450,7 +555,10 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        initialValue: _operatingStatusOptions.contains(_operatingStatus) ? _operatingStatus : 'Active',
+                        initialValue:
+                            _operatingStatusOptions.contains(_operatingStatus)
+                            ? _operatingStatus
+                            : 'Active',
                         decoration: const InputDecoration(
                           labelText: 'Operating Status',
                           prefixIcon: Icon(Icons.power_settings_new),
@@ -471,7 +579,11 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                       ),
                       const Text(
                         'Web & Social Media',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -529,7 +641,11 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                       ),
                       const Text(
                         'Business Highlights',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       _buildTagInput(
@@ -547,7 +663,8 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                             });
                           }
                         },
-                        onRemove: (i) => setState(() => _keyProducts.removeAt(i)),
+                        onRemove: (i) =>
+                            setState(() => _keyProducts.removeAt(i)),
                       ),
                       const SizedBox(height: 16),
                       _buildTagInput(
@@ -565,7 +682,8 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                             });
                           }
                         },
-                        onRemove: (i) => setState(() => _keyPartners.removeAt(i)),
+                        onRemove: (i) =>
+                            setState(() => _keyPartners.removeAt(i)),
                       ),
 
                       // ── Section 6: Status & Date ──
@@ -575,7 +693,11 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                       ),
                       const Text(
                         'Status & Date',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -593,7 +715,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                                       ? '${_foundedDate!.year}-${_foundedDate!.month.toString().padLeft(2, '0')}-${_foundedDate!.day.toString().padLeft(2, '0')}'
                                       : 'Select a date...',
                                   style: TextStyle(
-                                    color: _foundedDate != null ? AppColors.textPrimary : AppColors.textMuted,
+                                    color: _foundedDate != null
+                                        ? AppColors.textPrimary
+                                        : AppColors.textMuted,
                                   ),
                                 ),
                               ),
@@ -607,7 +731,9 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                                 labelText: 'Status',
                                 prefixIcon: Icon(Icons.flag),
                               ),
-                              items: ['Pending', 'Approved', 'Rejected'].map((String val) {
+                              items: ['Pending', 'Approved', 'Rejected'].map((
+                                String val,
+                              ) {
                                 return DropdownMenuItem(
                                   value: val,
                                   child: Text(val),
@@ -627,10 +753,19 @@ class _EditCompanyViewState extends State<EditCompanyView> {
                         height: 48,
                         child: ElevatedButton.icon(
                           onPressed: _isSaving ? null : _saveForm,
-                          icon: _isSaving 
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Icon(Icons.save),
-                          label: Text(_isSaving ? 'Updating...' : 'Update Company'),
+                          icon: _isSaving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.save),
+                          label: Text(
+                            _isSaving ? 'Updating...' : 'Update Company',
+                          ),
                         ),
                       ),
                     ],

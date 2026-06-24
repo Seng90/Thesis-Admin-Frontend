@@ -190,7 +190,7 @@ final GoRouter _router = GoRouter(
           builder: (context, state) =>
               FounderDetailsView(founderId: state.pathParameters['id']!),
         ),
-        GoRoute(  
+        GoRoute(
           path: '/investments',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: InvestmentsView()),

@@ -12,18 +12,16 @@ class AddPackageView extends StatefulWidget {
 }
 
 class FeatureItem {
-  TextEditingController keyController = TextEditingController();
-  TextEditingController valueController = TextEditingController();
-  
+  TextEditingController controller = TextEditingController();
+
   void dispose() {
-    keyController.dispose();
-    valueController.dispose();
+    controller.dispose();
   }
 }
 
 class _AddPackageViewState extends State<AddPackageView> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final List<FeatureItem> _features = [FeatureItem()];
@@ -40,16 +38,19 @@ class _AddPackageViewState extends State<AddPackageView> {
 
   void _saveForm() async {
     if (_formKey.currentState!.validate()) {
-      final revisionsController = Provider.of<RevisionsController>(context, listen: false);
-      
-      Map<String, String> featuresMap = {};
+      final revisionsController = Provider.of<RevisionsController>(
+        context,
+        listen: false,
+      );
+
+      List<String> featuresArray = [];
       for (var f in _features) {
-        if (f.keyController.text.isNotEmpty && f.valueController.text.isNotEmpty) {
-          featuresMap[f.keyController.text.trim()] = f.valueController.text.trim();
+        if (f.controller.text.trim().isNotEmpty) {
+          featuresArray.add(f.controller.text.trim());
         }
       }
-      final featuresJson = jsonEncode(featuresMap);
-          
+      final featuresJson = jsonEncode(featuresArray);
+
       Map<String, dynamic> proposedChanges = {
         'name': _nameController.text,
         'price': double.tryParse(_priceController.text) ?? 0,
@@ -65,11 +66,17 @@ class _AddPackageViewState extends State<AddPackageView> {
       if (mounted) {
         if (!success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(revisionsController.errorMessage ?? 'Failed to submit revision')),
+            SnackBar(
+              content: Text(
+                revisionsController.errorMessage ?? 'Failed to submit revision',
+              ),
+            ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Package creation submitted for review!')),
+            const SnackBar(
+              content: Text('Package creation submitted for review!'),
+            ),
           );
           context.pop();
         }
@@ -102,18 +109,25 @@ class _AddPackageViewState extends State<AddPackageView> {
                     children: [
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Package Name (e.g. Premium)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Package Name (e.g. Premium)',
+                        ),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _priceController,
-                        decoration: const InputDecoration(labelText: 'Price (USD)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Price (USD)',
+                        ),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
-                      const Text('Features', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Features',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 8),
                       ..._features.asMap().entries.map((entry) {
                         int idx = entry.key;
@@ -124,19 +138,19 @@ class _AddPackageViewState extends State<AddPackageView> {
                             children: [
                               Expanded(
                                 child: TextFormField(
-                                  controller: item.keyController,
-                                  decoration: const InputDecoration(labelText: 'Feature Name (e.g. Max Investors)', isDense: true),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: item.valueController,
-                                  decoration: const InputDecoration(labelText: 'Value (e.g. Unlimited)', isDense: true),
+                                  controller: item.controller,
+                                  decoration: const InputDecoration(
+                                    labelText:
+                                        'Feature (e.g. Max 10 Investors)',
+                                    isDense: true,
+                                  ),
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.remove_circle,
+                                  color: Colors.red,
+                                ),
                                 onPressed: () {
                                   if (_features.length > 1) {
                                     setState(() {

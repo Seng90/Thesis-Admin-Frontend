@@ -21,7 +21,10 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final controller = Provider.of<FoundersController>(context, listen: false);
+      final controller = Provider.of<FoundersController>(
+        context,
+        listen: false,
+      );
       if (controller.founders.isEmpty) {
         controller.fetchFounders();
       }
@@ -43,17 +46,24 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
             icon: const Icon(Icons.delete, color: Colors.red),
             tooltip: 'Delete Founder',
             onPressed: () {
-              final controller = Provider.of<FoundersController>(context, listen: false);
+              final controller = Provider.of<FoundersController>(
+                context,
+                listen: false,
+              );
               String founderName = 'this founder';
               try {
-                final founder = controller.founders.firstWhere((f) => f.id == widget.founderId);
+                final founder = controller.founders.firstWhere(
+                  (f) => f.id == widget.founderId,
+                );
                 founderName = founder.nameEn;
               } catch (_) {}
               showDialog(
                 context: context,
                 builder: (ctx) => AlertDialog(
                   title: const Text('Delete Founder'),
-                  content: Text('Are you sure you want to delete "$founderName"?'),
+                  content: Text(
+                    'Are you sure you want to delete "$founderName"?',
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
@@ -62,23 +72,38 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                     TextButton(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        final revController = Provider.of<RevisionsController>(context, listen: false);
-                        revController.createRevision(
-                          entityType: 'Founder',
-                          entityId: widget.founderId,
-                          proposedChanges: {'_action': 'delete'},
-                        ).then((success) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(success ? 'Delete request submitted for review!' : (revController.errorMessage ?? 'Failed to submit.')),
-                                backgroundColor: success ? AppColors.success : AppColors.error,
-                              ),
-                            );
-                          }
-                        });
+                        final revController = Provider.of<RevisionsController>(
+                          context,
+                          listen: false,
+                        );
+                        revController
+                            .createRevision(
+                              entityType: 'Founder',
+                              entityId: widget.founderId,
+                              proposedChanges: {'_action': 'delete'},
+                            )
+                            .then((success) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      success
+                                          ? 'Delete request submitted for review!'
+                                          : (revController.errorMessage ??
+                                                'Failed to submit.'),
+                                    ),
+                                    backgroundColor: success
+                                        ? AppColors.success
+                                        : AppColors.error,
+                                  ),
+                                );
+                              }
+                            });
                       },
-                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(color: Colors.red),
+                      ),
                     ),
                   ],
                 ),
@@ -93,10 +118,12 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
           if (controller.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           try {
-            final founder = controller.founders.firstWhere((f) => f.id == widget.founderId);
-            
+            final founder = controller.founders.firstWhere(
+              (f) => f.id == widget.founderId,
+            );
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
               child: Center(
@@ -126,8 +153,16 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    founder.nameEn.isNotEmpty ? founder.nameEn.substring(0, 1).toUpperCase() : '?',
-                                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                    founder.nameEn.isNotEmpty
+                                        ? founder.nameEn
+                                              .substring(0, 1)
+                                              .toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -137,19 +172,28 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
                                             '${founder.nameLa} | ${founder.nameEn}',
-                                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                              fontSize: 28,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: AppColors.successBg,
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                           ),
                                           child: const Text(
                                             'ACTIVE',
@@ -165,27 +209,46 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                                     const SizedBox(height: 8),
                                     const Text(
                                       'Founder Profile',
-                                      style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: AppColors.textSecondary,
+                                      ),
                                     ),
                                     const SizedBox(height: 24),
                                     Row(
                                       children: [
                                         ElevatedButton.icon(
-                                          onPressed: () => context.push('/founders/edit/${founder.id}'),
-                                          icon: const Icon(Icons.edit, size: 16),
+                                          onPressed: () => context.push(
+                                            '/founders/edit/${founder.id}',
+                                          ),
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            size: 16,
+                                          ),
                                           label: const Text('Edit Founder'),
                                           style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        if (founder.linkedinUrl != null && founder.linkedinUrl!.isNotEmpty)
+                                        if (founder.linkedinUrl != null &&
+                                            founder.linkedinUrl!.isNotEmpty)
                                           OutlinedButton.icon(
-                                            onPressed: () {}, // would launch URL
-                                            icon: const Icon(Icons.open_in_new, size: 16),
+                                            onPressed:
+                                                () {}, // would launch URL
+                                            icon: const Icon(
+                                              Icons.open_in_new,
+                                              size: 16,
+                                            ),
                                             label: const Text('LinkedIn'),
                                             style: OutlinedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
                                             ),
                                           ),
                                       ],
@@ -203,56 +266,100 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                         builder: (context, constraints) {
                           final isSmallScreen = constraints.maxWidth < 600;
                           final card1 = Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: AppColors.border),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('About', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      (founder.bio != null && founder.bio!.isNotEmpty) ? founder.bio! : 'No bio provided.',
-                                      style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.textSecondary),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'About',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    const SizedBox(height: 32),
-                                    const Text('Contact Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 16),
-                                    _buildInfoRow(Icons.link_outlined, 'LinkedIn', (founder.linkedinUrl != null && founder.linkedinUrl!.isNotEmpty) ? founder.linkedinUrl! : 'N/A'),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    (founder.bio != null &&
+                                            founder.bio!.isNotEmpty)
+                                        ? founder.bio!
+                                        : 'No bio provided.',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      height: 1.5,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 32),
+                                  const Text(
+                                    'Contact Information',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildInfoRow(
+                                    Icons.link_outlined,
+                                    'LinkedIn',
+                                    (founder.linkedinUrl != null &&
+                                            founder.linkedinUrl!.isNotEmpty)
+                                        ? founder.linkedinUrl!
+                                        : 'N/A',
+                                  ),
+                                ],
                               ),
-                            );
-                            
+                            ),
+                          );
+
                           final card2 = Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: AppColors.border),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'At a Glance',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _buildGlanceItem(
+                                    'Created',
+                                    founder.createdAt.toString().split(' ')[0],
+                                    Icons.access_time_outlined,
+                                  ),
+                                  const Divider(height: 32),
+                                  _buildGlanceItem(
+                                    'Updated',
+                                    founder.updatedAt.toString().split(' ')[0],
+                                    Icons.update_outlined,
+                                  ),
+                                ],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('At a Glance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 24),
-                                    _buildGlanceItem('Created', founder.createdAt.toString().split(' ')[0], Icons.access_time_outlined),
-                                    const Divider(height: 32),
-                                    _buildGlanceItem('Updated', founder.updatedAt.toString().split(' ')[0], Icons.update_outlined),
-                                  ],
-                                ),
-                              ),
-                            );
-                            
+                            ),
+                          );
+
                           if (isSmallScreen) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [card1, const SizedBox(height: 24), card2],
+                              children: [
+                                card1,
+                                const SizedBox(height: 24),
+                                card2,
+                              ],
                             );
                           } else {
                             return Row(
@@ -288,8 +395,20 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
@@ -313,9 +432,21 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),

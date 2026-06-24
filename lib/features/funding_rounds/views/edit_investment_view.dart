@@ -39,7 +39,11 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
   List<Map<String, dynamic>> _fundingRounds = [];
   bool _isLoadingRounds = false;
 
-  static const List<String> _statusOptions = ['Pending', 'Completed', 'Refunded'];
+  static const List<String> _statusOptions = [
+    'Pending',
+    'Completed',
+    'Refunded',
+  ];
 
   @override
   void initState() {
@@ -51,8 +55,14 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
   }
 
   Future<void> _loadDependencies() async {
-    final companiesCtrl = Provider.of<CompaniesController>(context, listen: false);
-    final investorsCtrl = Provider.of<InvestorsController>(context, listen: false);
+    final companiesCtrl = Provider.of<CompaniesController>(
+      context,
+      listen: false,
+    );
+    final investorsCtrl = Provider.of<InvestorsController>(
+      context,
+      listen: false,
+    );
 
     if (companiesCtrl.companies.isEmpty) {
       companiesCtrl.loadCompanies();
@@ -83,7 +93,9 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
   Future<void> _loadInvestment() async {
     try {
       final api = ApiService();
-      final response = await api.client.get('/admin/investments/${widget.investmentId}');
+      final response = await api.client.get(
+        '/admin/investments/${widget.investmentId}',
+      );
       final found = Investment.fromJson(response.data);
       setState(() {
         _existingInvestment = found;
@@ -102,12 +114,17 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
     } catch (e) {
       if (!mounted) return;
       // Fallback: try from controller
-      final controller = Provider.of<InvestmentsController>(context, listen: false);
+      final controller = Provider.of<InvestmentsController>(
+        context,
+        listen: false,
+      );
       if (controller.investments.isEmpty) {
         await controller.fetchInvestments();
       }
       try {
-        final found = controller.investments.firstWhere((i) => i.id == widget.investmentId);
+        final found = controller.investments.firstWhere(
+          (i) => i.id == widget.investmentId,
+        );
         setState(() {
           _existingInvestment = found;
           _amountController.text = found.amount.toString();
@@ -154,21 +171,29 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) return;
     if (_investDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an investment date')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an investment date')),
+      );
       return;
     }
 
     setState(() => _isSaving = true);
-    final revisionsController = Provider.of<RevisionsController>(context, listen: false);
+    final revisionsController = Provider.of<RevisionsController>(
+      context,
+      listen: false,
+    );
 
     Map<String, dynamic> proposedChanges = {};
-    if (double.tryParse(_amountController.text.trim()) != _existingInvestment?.amount) {
-      proposedChanges['amount'] = double.tryParse(_amountController.text.trim()) ?? 0.0;
+    if (double.tryParse(_amountController.text.trim()) !=
+        _existingInvestment?.amount) {
+      proposedChanges['amount'] =
+          double.tryParse(_amountController.text.trim()) ?? 0.0;
     }
     if (_currencyController.text.trim() != _existingInvestment?.currency) {
       proposedChanges['currency'] = _currencyController.text.trim();
     }
-    if (_referenceUrlController.text.trim() != (_existingInvestment?.referenceUrl ?? '')) {
+    if (_referenceUrlController.text.trim() !=
+        (_existingInvestment?.referenceUrl ?? '')) {
       proposedChanges['reference_url'] = _referenceUrlController.text.trim();
     }
     if (_selectedCompanyId != _existingInvestment?.companyId) {
@@ -206,7 +231,9 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
 
     if (proposedChanges.isEmpty) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No changes made.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No changes made.')));
       context.pop();
       return;
     }
@@ -221,11 +248,19 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
       setState(() => _isSaving = false);
       if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(revisionsController.errorMessage ?? 'Failed to submit revision'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(
+              revisionsController.errorMessage ?? 'Failed to submit revision',
+            ),
+            backgroundColor: AppColors.error,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Edit submitted for review!'), backgroundColor: AppColors.success),
+          const SnackBar(
+            content: Text('Edit submitted for review!'),
+            backgroundColor: AppColors.success,
+          ),
         );
         context.pop();
       }
@@ -271,15 +306,24 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                     children: [
                       const Text(
                         'Investment Information',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
 
                       // Company Dropdown
                       Consumer<CompaniesController>(
                         builder: (context, ctrl, _) {
-                          final companyIds = ctrl.companies.map((c) => c.id).toSet();
-                          final currentVal = companyIds.contains(_selectedCompanyId) ? _selectedCompanyId : null;
+                          final companyIds = ctrl.companies
+                              .map((c) => c.id)
+                              .toSet();
+                          final currentVal =
+                              companyIds.contains(_selectedCompanyId)
+                              ? _selectedCompanyId
+                              : null;
 
                           return DropdownButtonFormField<String>(
                             initialValue: currentVal,
@@ -290,11 +334,16 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                             items: ctrl.companies.map((c) {
                               return DropdownMenuItem(
                                 value: c.id,
-                                child: Text(c.name, overflow: TextOverflow.ellipsis),
+                                child: Text(
+                                  c.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               );
                             }).toList(),
-                            onChanged: (v) => setState(() => _selectedCompanyId = v),
-                            validator: (v) => v == null ? 'Please select a company' : null,
+                            onChanged: (v) =>
+                                setState(() => _selectedCompanyId = v),
+                            validator: (v) =>
+                                v == null ? 'Please select a company' : null,
                             isExpanded: true,
                           );
                         },
@@ -304,7 +353,9 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                       // Investor Toggle
                       SwitchListTile(
                         title: const Text('Other / Anonymous Investor'),
-                        subtitle: const Text('Use this for unnamed groups or minor investors'),
+                        subtitle: const Text(
+                          'Use this for unnamed groups or minor investors',
+                        ),
                         value: _isOtherInvestor,
                         activeThumbColor: AppColors.primary,
                         contentPadding: EdgeInsets.zero,
@@ -330,8 +381,13 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                       else
                         Consumer<InvestorsController>(
                           builder: (context, ctrl, _) {
-                            final investorIds = ctrl.investors.map((i) => i.id).toSet();
-                            final currentVal = investorIds.contains(_selectedInvestorId) ? _selectedInvestorId : null;
+                            final investorIds = ctrl.investors
+                                .map((i) => i.id)
+                                .toSet();
+                            final currentVal =
+                                investorIds.contains(_selectedInvestorId)
+                                ? _selectedInvestorId
+                                : null;
 
                             return DropdownButtonFormField<String>(
                               initialValue: currentVal,
@@ -342,11 +398,17 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                               items: ctrl.investors.map((i) {
                                 return DropdownMenuItem(
                                   value: i.id,
-                                  child: Text(i.name, overflow: TextOverflow.ellipsis),
+                                  child: Text(
+                                    i.name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 );
                               }).toList(),
-                              onChanged: (v) => setState(() => _selectedInvestorId = v),
-                              validator: (v) => v == null ? 'Please select an investor' : null,
+                              onChanged: (v) =>
+                                  setState(() => _selectedInvestorId = v),
+                              validator: (v) => v == null
+                                  ? 'Please select an investor'
+                                  : null,
                               isExpanded: true,
                             );
                           },
@@ -356,34 +418,54 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                       // Funding Round Dropdown
                       _isLoadingRounds
                           ? const LinearProgressIndicator()
-                          : Builder(builder: (context) {
-                              final roundIds = _fundingRounds.map((r) => r['id']?.toString() ?? '').toSet();
-                              final currentVal = roundIds.contains(_selectedRoundId) ? _selectedRoundId : null;
+                          : Builder(
+                              builder: (context) {
+                                final roundIds = _fundingRounds
+                                    .map((r) => r['id']?.toString() ?? '')
+                                    .toSet();
+                                final currentVal =
+                                    roundIds.contains(_selectedRoundId)
+                                    ? _selectedRoundId
+                                    : null;
 
-                              return DropdownButtonFormField<String>(
-                                initialValue: currentVal,
-                                decoration: const InputDecoration(
-                                  labelText: 'Funding Round *',
-                                  prefixIcon: Icon(Icons.cyclone),
-                                ),
-                                items: _fundingRounds.map((r) {
-                                  final id = r['id']?.toString() ?? '';
-                                  final name = r['round_name'] ?? r['name'] ?? 'Round ${id.substring(0, id.length > 8 ? 8 : id.length)}';
-                                  return DropdownMenuItem(
-                                    value: id,
-                                    child: Text(name.toString(), overflow: TextOverflow.ellipsis),
-                                  );
-                                }).toList(),
-                                onChanged: (v) => setState(() => _selectedRoundId = v),
-                                validator: (v) => v == null ? 'Please select a funding round' : null,
-                                isExpanded: true,
-                              );
-                            }),
+                                return DropdownButtonFormField<String>(
+                                  initialValue: currentVal,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Funding Round *',
+                                    prefixIcon: Icon(Icons.cyclone),
+                                  ),
+                                  items: _fundingRounds.map((r) {
+                                    final id = r['id']?.toString() ?? '';
+                                    final name =
+                                        r['round_name'] ??
+                                        r['name'] ??
+                                        'Round ${id.substring(0, id.length > 8 ? 8 : id.length)}';
+                                    return DropdownMenuItem(
+                                      value: id,
+                                      child: Text(
+                                        name.toString(),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (v) =>
+                                      setState(() => _selectedRoundId = v),
+                                  validator: (v) => v == null
+                                      ? 'Please select a funding round'
+                                      : null,
+                                  isExpanded: true,
+                                );
+                              },
+                            ),
 
                       const SizedBox(height: 32),
                       const Text(
                         'Financial Details',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
 
@@ -397,7 +479,8 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                                 prefixIcon: Icon(Icons.attach_money),
                               ),
                               keyboardType: TextInputType.number,
-                              validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                              validator: (v) =>
+                                  v!.trim().isEmpty ? 'Required' : null,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -405,8 +488,11 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                             width: 120,
                             child: TextFormField(
                               controller: _currencyController,
-                              decoration: const InputDecoration(labelText: 'Currency *'),
-                              validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                              decoration: const InputDecoration(
+                                labelText: 'Currency *',
+                              ),
+                              validator: (v) =>
+                                  v!.trim().isEmpty ? 'Required' : null,
                             ),
                           ),
                         ],
@@ -415,7 +501,9 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
 
                       // Status Dropdown
                       DropdownButtonFormField<String>(
-                        initialValue: _statusOptions.contains(_selectedStatus) ? _selectedStatus : 'Pending',
+                        initialValue: _statusOptions.contains(_selectedStatus)
+                            ? _selectedStatus
+                            : 'Pending',
                         decoration: const InputDecoration(
                           labelText: 'Status',
                           prefixIcon: Icon(Icons.flag_outlined),
@@ -452,7 +540,9 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                                 ? '${_investDate!.year}-${_investDate!.month.toString().padLeft(2, '0')}-${_investDate!.day.toString().padLeft(2, '0')}'
                                 : 'Select a date...',
                             style: TextStyle(
-                              color: _investDate != null ? AppColors.textPrimary : AppColors.textMuted,
+                              color: _investDate != null
+                                  ? AppColors.textPrimary
+                                  : AppColors.textMuted,
                             ),
                           ),
                         ),
@@ -464,9 +554,18 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                         child: ElevatedButton.icon(
                           onPressed: _isSaving ? null : _saveForm,
                           icon: _isSaving
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Icon(Icons.save),
-                          label: Text(_isSaving ? 'Updating...' : 'Update Investment'),
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.save),
+                          label: Text(
+                            _isSaving ? 'Updating...' : 'Update Investment',
+                          ),
                         ),
                       ),
                     ],

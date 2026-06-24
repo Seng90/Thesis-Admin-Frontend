@@ -63,11 +63,13 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
           if (controller.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           try {
-            final member = controller.members.firstWhere((m) => m.id == widget.memberId);
+            final member = controller.members.firstWhere(
+              (m) => m.id == widget.memberId,
+            );
             final isActive = member.status == 'Active';
-            
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
               child: Center(
@@ -97,8 +99,14 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    member.username.substring(0, 1).toUpperCase(),
-                                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                    member.username
+                                        .substring(0, 1)
+                                        .toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -108,21 +116,30 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
                                             member.username,
-                                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                              fontSize: 28,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                         Row(
                                           children: [
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 6,
+                                                  ),
                                               decoration: BoxDecoration(
                                                 color: AppColors.primaryLight,
-                                                borderRadius: BorderRadius.circular(20),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
                                               ),
                                               child: Text(
                                                 member.role.toUpperCase(),
@@ -135,17 +152,26 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                             ),
                                             const SizedBox(width: 8),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 6,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: isActive ? AppColors.successBg : AppColors.errorBg,
-                                                borderRadius: BorderRadius.circular(20),
+                                                color: isActive
+                                                    ? AppColors.successBg
+                                                    : AppColors.errorBg,
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
                                               ),
                                               child: Text(
                                                 member.status.toUpperCase(),
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w600,
-                                                  color: isActive ? AppColors.success : AppColors.error,
+                                                  color: isActive
+                                                      ? AppColors.success
+                                                      : AppColors.error,
                                                 ),
                                               ),
                                             ),
@@ -156,17 +182,30 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                     const SizedBox(height: 8),
                                     Text(
                                       member.email,
-                                      style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: AppColors.textSecondary,
+                                      ),
                                     ),
                                     const SizedBox(height: 24),
                                     Row(
                                       children: [
                                         ElevatedButton.icon(
-                                          onPressed: () => context.push('/members/edit/${member.id}'),
-                                          icon: const Icon(Icons.edit, size: 16),
-                                          label: Text('Edit Member'.tr(context)),
+                                          onPressed: () => context.push(
+                                            '/members/edit/${member.id}',
+                                          ),
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            size: 16,
+                                          ),
+                                          label: Text(
+                                            'Edit Member'.tr(context),
+                                          ),
                                           style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -184,64 +223,114 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                         builder: (context, constraints) {
                           final isSmallScreen = constraints.maxWidth < 600;
                           final card1 = Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: AppColors.border),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Account Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 16),
-                                    _buildInfoRow(Icons.email_outlined, 'Email Address', member.email),
-                                    const SizedBox(height: 12),
-                                    Consumer<PackagesController>(
-                                      builder: (context, packagesController, child) {
-                                        String packageName = 'Lifetime';
-                                        if (member.packageId != null) {
-                                          final package = packagesController.packages.where((p) => p.id == member.packageId).firstOrNull;
-                                          packageName = package?.name ?? member.packageId!;
-                                        }
-                                        return _buildInfoRow(Icons.card_membership_outlined, 'Package', packageName);
-                                      }
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Account Information',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    const SizedBox(height: 12),
-                                    _buildInfoRow(Icons.event_busy_outlined, 'Expiry Date', member.expiryDate?.toString().split(' ')[0] ?? 'Lifetime'),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildInfoRow(
+                                    Icons.email_outlined,
+                                    'Email Address',
+                                    member.email,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Consumer<PackagesController>(
+                                    builder:
+                                        (context, packagesController, child) {
+                                          String packageName = 'Lifetime';
+                                          if (member.packageId != null) {
+                                            final package = packagesController
+                                                .packages
+                                                .where(
+                                                  (p) =>
+                                                      p.id == member.packageId,
+                                                )
+                                                .firstOrNull;
+                                            packageName =
+                                                package?.name ??
+                                                member.packageId!;
+                                          }
+                                          return _buildInfoRow(
+                                            Icons.card_membership_outlined,
+                                            'Package',
+                                            packageName,
+                                          );
+                                        },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildInfoRow(
+                                    Icons.event_busy_outlined,
+                                    'Expiry Date',
+                                    member.expiryDate?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        'Lifetime',
+                                  ),
+                                ],
                               ),
-                            );
-                            
+                            ),
+                          );
+
                           final card2 = Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: AppColors.border),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Timeline',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _buildGlanceItem(
+                                    'Created',
+                                    member.createdAt?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        'Unknown',
+                                    Icons.access_time_outlined,
+                                  ),
+                                  const Divider(height: 32),
+                                  _buildGlanceItem(
+                                    'Updated',
+                                    member.updatedAt?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        'Unknown',
+                                    Icons.update_outlined,
+                                  ),
+                                ],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Timeline', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 24),
-                                    _buildGlanceItem('Created', member.createdAt?.toString().split(' ')[0] ?? 'Unknown', Icons.access_time_outlined),
-                                    const Divider(height: 32),
-                                    _buildGlanceItem('Updated', member.updatedAt?.toString().split(' ')[0] ?? 'Unknown', Icons.update_outlined),
-                                  ],
-                                ),
-                              ),
-                            );
-                            
+                            ),
+                          );
+
                           if (isSmallScreen) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                card1, 
-                                const SizedBox(height: 24), 
+                                card1,
+                                const SizedBox(height: 24),
                                 card2,
                                 if (member.role.toLowerCase() == 'founder') ...[
                                   const SizedBox(height: 24),
@@ -291,8 +380,20 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
@@ -312,14 +413,20 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Managed Companies', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+            const Text(
+              'Managed Companies',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 16),
             if (_isLoadingCompanies)
               const Center(child: CircularProgressIndicator())
             else if (_managedCompanies.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Text('No companies assigned.', style: TextStyle(color: AppColors.textSecondary)),
+                child: Text(
+                  'No companies assigned.',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
               )
             else
               ListView.separated(
@@ -340,7 +447,10 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                       Expanded(
                         child: Text(
                           company['name'] ?? 'Unknown',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
@@ -369,9 +479,21 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),

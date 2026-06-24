@@ -70,9 +70,16 @@ class _CompaniesViewState extends State<CompaniesView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: AppColors.error,
+                    ),
                     const SizedBox(height: 16),
-                    Text(controller.errorMessage!, style: const TextStyle(color: AppColors.textSecondary)),
+                    Text(
+                      controller.errorMessage!,
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () => controller.loadCompanies(),
@@ -89,11 +96,25 @@ class _CompaniesViewState extends State<CompaniesView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.business, size: 64, color: AppColors.textMuted),
+                    const Icon(
+                      Icons.business,
+                      size: 64,
+                      color: AppColors.textMuted,
+                    ),
                     const SizedBox(height: 16),
-                    const Text('No companies yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    const Text(
+                      'No companies yet',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    const Text('Add your first company to get started.', style: TextStyle(color: AppColors.textMuted)),
+                    const Text(
+                      'Add your first company to get started.',
+                      style: TextStyle(color: AppColors.textMuted),
+                    ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                       onPressed: () => context.push('/companies/add'),
@@ -114,8 +135,13 @@ class _CompaniesViewState extends State<CompaniesView> {
                         decoration: InputDecoration(
                           hintText: 'Search by name or industry...',
                           prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                         onChanged: (value) {
                           setState(() {
@@ -127,8 +153,13 @@ class _CompaniesViewState extends State<CompaniesView> {
                     const SizedBox(width: 16),
                     DropdownButton<String>(
                       value: _statusFilter,
-                      items: ['All', 'Approved', 'Pending', 'Rejected'].map((status) {
-                        return DropdownMenuItem(value: status, child: Text(status));
+                      items: ['All', 'Approved', 'Pending', 'Rejected'].map((
+                        status,
+                      ) {
+                        return DropdownMenuItem(
+                          value: status,
+                          child: Text(status),
+                        );
                       }).toList(),
                       onChanged: (value) {
                         if (value != null) {
@@ -145,13 +176,23 @@ class _CompaniesViewState extends State<CompaniesView> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       var filteredList = controller.companies.where((c) {
-                        final matchesSearch = _searchQuery.isEmpty || c.name.toLowerCase().contains(_searchQuery.toLowerCase()) || c.industry.toLowerCase().contains(_searchQuery.toLowerCase());
-                        final matchesStatus = _statusFilter == 'All' || c.status == _statusFilter;
+                        final matchesSearch =
+                            _searchQuery.isEmpty ||
+                            c.name.toLowerCase().contains(
+                              _searchQuery.toLowerCase(),
+                            ) ||
+                            c.industry.toLowerCase().contains(
+                              _searchQuery.toLowerCase(),
+                            );
+                        final matchesStatus =
+                            _statusFilter == 'All' || c.status == _statusFilter;
                         return matchesSearch && matchesStatus;
                       }).toList();
 
                       if (filteredList.isEmpty) {
-                        return const Center(child: Text('No companies match your filters.'));
+                        return const Center(
+                          child: Text('No companies match your filters.'),
+                        );
                       }
 
                       return Card(
@@ -185,151 +226,272 @@ class _CompaniesViewState extends State<CompaniesView> {
                                         DataColumn(label: Text(strActions)),
                                       ],
                                       rows: filteredList.map((company) {
-                                        final isApproved = company.status == 'Approved';
-                                        final isPending = company.status == 'Pending';
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            CustomLogoWidget(
-                                              imageUrl: company.logoUrl,
-                                              fallbackName: company.name,
-                                              size: 32,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Text(company.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                                Text(company.contactEmail, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                                              ],
-                                            ),
-                                          ],
-                                        )
-                                      ),
-                                      DataCell(Text(company.industry)),
-                                      DataCell(Text(company.location)),
-                                      DataCell(
-                                        Chip(
-                                          label: Text(
-                                            company.status,
-                                            style: TextStyle(
-                                              color: isApproved ? AppColors.success : isPending ? AppColors.warning : AppColors.error,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          backgroundColor: isApproved ? AppColors.successBg : isPending ? AppColors.warningBg : AppColors.errorBg,
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            PopupMenuButton<String>(
-                                              icon: const Icon(Icons.more_horiz, color: AppColors.textMuted),
-                                              onSelected: (value) {
-                                                if (value == 'approve') {
-                                                  final revController = Provider.of<RevisionsController>(context, listen: false);
-                                                  revController.createRevision(
-                                                    entityType: 'Company',
-                                                    entityId: company.id,
-                                                    proposedChanges: {'status': 'Approved'},
-                                                  ).then((success) {
-                                                    if (context.mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(success ? 'Status change submitted for review!' : 'Failed to submit.'),
-                                                          backgroundColor: success ? AppColors.success : AppColors.error,
+                                        final isApproved =
+                                            company.status == 'Approved';
+                                        final isPending =
+                                            company.status == 'Pending';
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  CustomLogoWidget(
+                                                    imageUrl: company.logoUrl,
+                                                    fallbackName: company.name,
+                                                    size: 32,
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text(
+                                                        company.name,
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
-                                                      );
-                                                    }
-                                                  });
-                                                } else if (value == 'view') {
-                                                  context.push('/companies/view/${company.id}');
-                                                } else if (value == 'edit') {
-                                                  context.push('/companies/edit/${company.id}');
-                                                } else if (value == 'delete') {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (context) => AlertDialog(
-                                                      title: const Text('Delete Company'),
-                                                      content: Text('Are you sure you want to delete "${company.name}"?'),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () => Navigator.pop(context),
-                                                          child: Text(strCancel),
+                                                      ),
+                                                      Text(
+                                                        company.contactEmail,
+                                                        style: const TextStyle(
+                                                          fontSize: 12,
+                                                          color: AppColors
+                                                              .textSecondary,
                                                         ),
-                                                        TextButton(
-                                                          onPressed: () {
-                                                            Navigator.pop(context);
-                                                            final revController = Provider.of<RevisionsController>(context, listen: false);
-                                                            revController.createRevision(
-                                                              entityType: 'Company',
-                                                              entityId: company.id,
-                                                              proposedChanges: {'_action': 'delete'},
-                                                            ).then((success) {
-                                                              if (context.mounted) {
-                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            DataCell(Text(company.industry)),
+                                            DataCell(Text(company.location)),
+                                            DataCell(
+                                              Chip(
+                                                label: Text(
+                                                  company.status,
+                                                  style: TextStyle(
+                                                    color: isApproved
+                                                        ? AppColors.success
+                                                        : isPending
+                                                        ? AppColors.warning
+                                                        : AppColors.error,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                backgroundColor: isApproved
+                                                    ? AppColors.successBg
+                                                    : isPending
+                                                    ? AppColors.warningBg
+                                                    : AppColors.errorBg,
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  PopupMenuButton<String>(
+                                                    icon: const Icon(
+                                                      Icons.more_horiz,
+                                                      color:
+                                                          AppColors.textMuted,
+                                                    ),
+                                                    onSelected: (value) {
+                                                      if (value == 'approve') {
+                                                        final revController =
+                                                            Provider.of<
+                                                              RevisionsController
+                                                            >(
+                                                              context,
+                                                              listen: false,
+                                                            );
+                                                        revController
+                                                            .createRevision(
+                                                              entityType:
+                                                                  'Company',
+                                                              entityId:
+                                                                  company.id,
+                                                              proposedChanges: {
+                                                                'status':
+                                                                    'Approved',
+                                                              },
+                                                            )
+                                                            .then((success) {
+                                                              if (context
+                                                                  .mounted) {
+                                                                ScaffoldMessenger.of(
+                                                                  context,
+                                                                ).showSnackBar(
                                                                   SnackBar(
-                                                                    content: Text(success ? 'Delete request submitted for review!' : 'Failed to submit.'),
-                                                                    backgroundColor: success ? AppColors.success : AppColors.error,
+                                                                    content: Text(
+                                                                      success
+                                                                          ? 'Status change submitted for review!'
+                                                                          : 'Failed to submit.',
+                                                                    ),
+                                                                    backgroundColor:
+                                                                        success
+                                                                        ? AppColors
+                                                                              .success
+                                                                        : AppColors
+                                                                              .error,
                                                                   ),
                                                                 );
                                                               }
                                                             });
-                                                          },
-                                                          child: Text(strDelete, style: const TextStyle(color: Colors.red)),
+                                                      } else if (value ==
+                                                          'view') {
+                                                        context.push(
+                                                          '/companies/view/${company.id}',
+                                                        );
+                                                      } else if (value ==
+                                                          'edit') {
+                                                        context.push(
+                                                          '/companies/edit/${company.id}',
+                                                        );
+                                                      } else if (value ==
+                                                          'delete') {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) => AlertDialog(
+                                                            title: const Text(
+                                                              'Delete Company',
+                                                            ),
+                                                            content: Text(
+                                                              'Are you sure you want to delete "${company.name}"?',
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                      context,
+                                                                    ),
+                                                                child: Text(
+                                                                  strCancel,
+                                                                ),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                    context,
+                                                                  );
+                                                                  final revController =
+                                                                      Provider.of<
+                                                                        RevisionsController
+                                                                      >(
+                                                                        context,
+                                                                        listen:
+                                                                            false,
+                                                                      );
+                                                                  revController
+                                                                      .createRevision(
+                                                                        entityType:
+                                                                            'Company',
+                                                                        entityId:
+                                                                            company.id,
+                                                                        proposedChanges: {
+                                                                          '_action':
+                                                                              'delete',
+                                                                        },
+                                                                      )
+                                                                      .then((
+                                                                        success,
+                                                                      ) {
+                                                                        if (context
+                                                                            .mounted) {
+                                                                          ScaffoldMessenger.of(
+                                                                            context,
+                                                                          ).showSnackBar(
+                                                                            SnackBar(
+                                                                              content: Text(
+                                                                                success
+                                                                                    ? 'Delete request submitted for review!'
+                                                                                    : 'Failed to submit.',
+                                                                              ),
+                                                                              backgroundColor: success
+                                                                                  ? AppColors.success
+                                                                                  : AppColors.error,
+                                                                            ),
+                                                                          );
+                                                                        }
+                                                                      });
+                                                                },
+                                                                child: Text(
+                                                                  strDelete,
+                                                                  style: const TextStyle(
+                                                                    color: Colors
+                                                                        .red,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                    itemBuilder: (context) => [
+                                                      if (isPending)
+                                                        PopupMenuItem(
+                                                          value: 'approve',
+                                                          child: Text(
+                                                            strApprove,
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: AppColors
+                                                                      .primary,
+                                                                ),
+                                                          ),
                                                         ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                }
-                                              },
-                                              itemBuilder: (context) => [
-                                                if (isPending)
-                                                  PopupMenuItem(
-                                                    value: 'approve',
-                                                    child: Text(strApprove, style: const TextStyle(color: AppColors.primary)),
+                                                      PopupMenuItem(
+                                                        value: 'view',
+                                                        child: Text(
+                                                          strViewDetails,
+                                                        ),
+                                                      ),
+                                                      PopupMenuItem(
+                                                        value: 'edit',
+                                                        child: Text(strEdit),
+                                                      ),
+                                                      PopupMenuItem(
+                                                        value: 'delete',
+                                                        child: Text(
+                                                          strDelete,
+                                                          style:
+                                                              const TextStyle(
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                PopupMenuItem(
-                                                  value: 'view',
-                                                  child: Text(strViewDetails),
-                                                ),
-                                                PopupMenuItem(
-                                                  value: 'edit',
-                                                  child: Text(strEdit),
-                                                ),
-                                                PopupMenuItem(
-                                                  value: 'delete',
-                                                  child: Text(strDelete, style: const TextStyle(color: Colors.red)),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           ],
-                                        )
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
-                );
-              }
-            ),
-          ),
-        ],
-      );
-    },
-  ),
-),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }

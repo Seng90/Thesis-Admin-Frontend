@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsController extends ChangeNotifier {
   bool _isDarkMode = false;
   String _languageCode = 'en'; // 'en' or 'lo'
-  
+
   bool get isDarkMode => _isDarkMode;
   String get languageCode => _languageCode;
 

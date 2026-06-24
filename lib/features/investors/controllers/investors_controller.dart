@@ -4,7 +4,7 @@ import 'package:investrack_admin/services/api_service.dart';
 
 class InvestorsController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   List<Investor> _investors = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -60,8 +60,13 @@ class InvestorsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = investor.toJson()..remove('id')..remove('created_at');
-      final response = await _apiService.client.post('/admin/investors', data: data);
+      final data = investor.toJson()
+        ..remove('id')
+        ..remove('created_at');
+      final response = await _apiService.client.post(
+        '/admin/investors',
+        data: data,
+      );
       final newInvestor = Investor.fromJson(response.data);
       _investors.add(newInvestor);
     } catch (e) {
@@ -82,8 +87,13 @@ class InvestorsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = updatedInvestor.toJson()..remove('id')..remove('created_at');
-      await _apiService.client.patch('/admin/investors/${updatedInvestor.id}', data: data);
+      final data = updatedInvestor.toJson()
+        ..remove('id')
+        ..remove('created_at');
+      await _apiService.client.patch(
+        '/admin/investors/${updatedInvestor.id}',
+        data: data,
+      );
       final index = _investors.indexWhere((i) => i.id == updatedInvestor.id);
       if (index != -1) {
         _investors[index] = updatedInvestor;

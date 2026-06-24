@@ -4,7 +4,7 @@ import '../models/revision_model.dart';
 
 class RevisionsController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+
   List<Revision> _pendingRevisions = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -34,17 +34,24 @@ class RevisionsController extends ChangeNotifier {
     }
   }
 
-  Future<bool> createRevision({required String entityType, required String? entityId, required Map<String, dynamic> proposedChanges}) async {
+  Future<bool> createRevision({
+    required String entityType,
+    required String? entityId,
+    required Map<String, dynamic> proposedChanges,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _apiService.client.post('/admin/revisions', data: {
-        'entity_type': entityType,
-        'entity_id': entityId,
-        'proposed_changes': proposedChanges,
-      });
+      await _apiService.client.post(
+        '/admin/revisions',
+        data: {
+          'entity_type': entityType,
+          'entity_id': entityId,
+          'proposed_changes': proposedChanges,
+        },
+      );
       // Optionally reload pending revisions
       await loadPendingRevisions();
       return true;
