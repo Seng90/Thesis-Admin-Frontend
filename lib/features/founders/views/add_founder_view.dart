@@ -17,6 +17,10 @@ class _AddFounderViewState extends State<AddFounderView> {
   final _nameLaController = TextEditingController();
   final _bioController = TextEditingController();
   final _linkedinController = TextEditingController();
+  final _skillsController = TextEditingController();
+  final _pastExperienceController = TextEditingController();
+  final _twitterController = TextEditingController();
+  final _githubController = TextEditingController();
   bool _isSaving = false;
 
   @override
@@ -25,6 +29,10 @@ class _AddFounderViewState extends State<AddFounderView> {
     _nameLaController.dispose();
     _bioController.dispose();
     _linkedinController.dispose();
+    _skillsController.dispose();
+    _pastExperienceController.dispose();
+    _twitterController.dispose();
+    _githubController.dispose();
     super.dispose();
   }
 
@@ -48,6 +56,22 @@ class _AddFounderViewState extends State<AddFounderView> {
     }
     if (_linkedinController.text.trim().isNotEmpty) {
       proposedChanges['linkedin_url'] = _linkedinController.text.trim();
+    }
+    if (_pastExperienceController.text.trim().isNotEmpty) {
+      proposedChanges['past_experience'] = _pastExperienceController.text.trim();
+    }
+    if (_twitterController.text.trim().isNotEmpty) {
+      proposedChanges['twitter_url'] = _twitterController.text.trim();
+    }
+    if (_githubController.text.trim().isNotEmpty) {
+      proposedChanges['github_url'] = _githubController.text.trim();
+    }
+    if (_skillsController.text.trim().isNotEmpty) {
+      proposedChanges['skills'] = _skillsController.text
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
     }
 
     final success = await revisionsController.createRevision(
@@ -129,6 +153,35 @@ class _AddFounderViewState extends State<AddFounderView> {
                         controller: _linkedinController,
                         decoration: const InputDecoration(
                           labelText: 'LinkedIn URL',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _skillsController,
+                        decoration: const InputDecoration(
+                          labelText: 'Skills (comma-separated)',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _pastExperienceController,
+                        decoration: const InputDecoration(
+                          labelText: 'Past Experience',
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _twitterController,
+                        decoration: const InputDecoration(
+                          labelText: 'Twitter URL',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _githubController,
+                        decoration: const InputDecoration(
+                          labelText: 'GitHub URL',
                         ),
                       ),
                       const SizedBox(height: 32),

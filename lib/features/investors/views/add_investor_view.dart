@@ -16,6 +16,9 @@ class _AddInvestorViewState extends State<AddInvestorView> {
   final _nameController = TextEditingController();
   final _websiteController = TextEditingController();
   final _contactController = TextEditingController();
+  final _focusController = TextEditingController();
+  final _stagesController = TextEditingController();
+  final _industriesController = TextEditingController();
   String _type = 'VC';
 
   @override
@@ -23,6 +26,9 @@ class _AddInvestorViewState extends State<AddInvestorView> {
     _nameController.dispose();
     _websiteController.dispose();
     _contactController.dispose();
+    _focusController.dispose();
+    _stagesController.dispose();
+    _industriesController.dispose();
     super.dispose();
   }
 
@@ -43,6 +49,23 @@ class _AddInvestorViewState extends State<AddInvestorView> {
       }
       if (_contactController.text.isNotEmpty) {
         proposedChanges['contact_info'] = _contactController.text;
+      }
+      if (_focusController.text.isNotEmpty) {
+        proposedChanges['investment_focus'] = _focusController.text;
+      }
+      if (_stagesController.text.isNotEmpty) {
+        proposedChanges['preferred_stages'] = _stagesController.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+      if (_industriesController.text.isNotEmpty) {
+        proposedChanges['preferred_industries'] = _industriesController.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
       }
 
       final success = await revisionsController.createRevision(
@@ -139,6 +162,28 @@ class _AddInvestorViewState extends State<AddInvestorView> {
                         controller: _contactController,
                         decoration: const InputDecoration(
                           labelText: 'Contact Email/Phone',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _focusController,
+                        decoration: const InputDecoration(
+                          labelText: 'Investment Focus',
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _stagesController,
+                        decoration: const InputDecoration(
+                          labelText: 'Preferred Stages (comma-separated, e.g. Pre-seed, Seed)',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _industriesController,
+                        decoration: const InputDecoration(
+                          labelText: 'Preferred Industries (comma-separated, e.g. FinTech, EdTech)',
                         ),
                       ),
                       const SizedBox(height: 32),

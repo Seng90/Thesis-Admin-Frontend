@@ -7,6 +7,10 @@ class Founder {
   final String? linkedinUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<String>? skills;
+  final String? pastExperience;
+  final String? twitterUrl;
+  final String? githubUrl;
 
   Founder({
     required this.id,
@@ -17,6 +21,10 @@ class Founder {
     this.linkedinUrl,
     required this.createdAt,
     required this.updatedAt,
+    this.skills,
+    this.pastExperience,
+    this.twitterUrl,
+    this.githubUrl,
   });
 
   factory Founder.fromJson(Map<String, dynamic> json) {
@@ -37,6 +45,10 @@ class Founder {
             json['updatedAt'] ??
             DateTime.now().toIso8601String(),
       ),
+      skills: json['skills'] != null ? List<String>.from(json['skills']) : null,
+      pastExperience: json['past_experience'] ?? json['pastExperience'],
+      twitterUrl: json['twitter_url'] ?? json['twitterUrl'],
+      githubUrl: json['github_url'] ?? json['githubUrl'],
     );
   }
 
@@ -48,6 +60,10 @@ class Founder {
       'role': role,
       'bio': bio,
       'linkedin_url': linkedinUrl,
+      'skills': skills,
+      'past_experience': pastExperience,
+      'twitter_url': twitterUrl,
+      'github_url': githubUrl,
     };
   }
 }

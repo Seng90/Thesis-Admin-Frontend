@@ -22,6 +22,10 @@ class _EditFounderViewState extends State<EditFounderView> {
   late TextEditingController _nameLaController;
   late TextEditingController _bioController;
   late TextEditingController _linkedinController;
+  late TextEditingController _skillsController;
+  late TextEditingController _pastExperienceController;
+  late TextEditingController _twitterController;
+  late TextEditingController _githubController;
 
   Founder? _existingFounder;
   bool _isSaving = false;
@@ -53,6 +57,18 @@ class _EditFounderViewState extends State<EditFounderView> {
       _linkedinController = TextEditingController(
         text: _existingFounder?.linkedinUrl ?? '',
       );
+      _skillsController = TextEditingController(
+        text: _existingFounder?.skills?.join(', ') ?? '',
+      );
+      _pastExperienceController = TextEditingController(
+        text: _existingFounder?.pastExperience ?? '',
+      );
+      _twitterController = TextEditingController(
+        text: _existingFounder?.twitterUrl ?? '',
+      );
+      _githubController = TextEditingController(
+        text: _existingFounder?.githubUrl ?? '',
+      );
 
       _isInit = true;
     }
@@ -64,6 +80,10 @@ class _EditFounderViewState extends State<EditFounderView> {
     _nameLaController.dispose();
     _bioController.dispose();
     _linkedinController.dispose();
+    _skillsController.dispose();
+    _pastExperienceController.dispose();
+    _twitterController.dispose();
+    _githubController.dispose();
     super.dispose();
   }
 
@@ -89,6 +109,20 @@ class _EditFounderViewState extends State<EditFounderView> {
     }
     if (_linkedinController.text.trim() != _existingFounder?.linkedinUrl) {
       proposedChanges['linkedin_url'] = _linkedinController.text.trim();
+    }
+    if (_pastExperienceController.text.trim() != _existingFounder?.pastExperience) {
+      proposedChanges['past_experience'] = _pastExperienceController.text.trim();
+    }
+    if (_twitterController.text.trim() != _existingFounder?.twitterUrl) {
+      proposedChanges['twitter_url'] = _twitterController.text.trim();
+    }
+    if (_githubController.text.trim() != _existingFounder?.githubUrl) {
+      proposedChanges['github_url'] = _githubController.text.trim();
+    }
+    
+    final newSkills = _skillsController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    if (newSkills.join(',') != (_existingFounder?.skills?.join(',') ?? '')) {
+      proposedChanges['skills'] = newSkills;
     }
 
     if (proposedChanges.isEmpty) {
@@ -213,6 +247,39 @@ class _EditFounderViewState extends State<EditFounderView> {
                         controller: _linkedinController,
                         decoration: const InputDecoration(
                           labelText: 'LinkedIn URL',
+                          prefixIcon: Icon(Icons.link),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _skillsController,
+                        decoration: const InputDecoration(
+                          labelText: 'Skills (comma-separated)',
+                          prefixIcon: Icon(Icons.build),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _pastExperienceController,
+                        decoration: const InputDecoration(
+                          labelText: 'Past Experience',
+                          prefixIcon: Icon(Icons.work),
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _twitterController,
+                        decoration: const InputDecoration(
+                          labelText: 'Twitter URL',
+                          prefixIcon: Icon(Icons.link),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _githubController,
+                        decoration: const InputDecoration(
+                          labelText: 'GitHub URL',
                           prefixIcon: Icon(Icons.link),
                         ),
                       ),

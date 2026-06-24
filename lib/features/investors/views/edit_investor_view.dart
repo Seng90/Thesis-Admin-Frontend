@@ -23,6 +23,9 @@ class _EditInvestorViewState extends State<EditInvestorView> {
   late TextEditingController _websiteController;
   late TextEditingController _contactController;
   late TextEditingController _logoUrlController;
+  late TextEditingController _focusController;
+  late TextEditingController _stagesController;
+  late TextEditingController _industriesController;
   late String _type;
 
   bool _isSaving = false;
@@ -56,6 +59,15 @@ class _EditInvestorViewState extends State<EditInvestorView> {
       );
       _logoUrlController = TextEditingController(
         text: _existingInvestor?.logoUrl ?? '',
+      );
+      _focusController = TextEditingController(
+        text: _existingInvestor?.investmentFocus ?? '',
+      );
+      _stagesController = TextEditingController(
+        text: _existingInvestor?.preferredStages?.join(', ') ?? '',
+      );
+      _industriesController = TextEditingController(
+        text: _existingInvestor?.preferredIndustries?.join(', ') ?? '',
       );
 
       String initialType = _existingInvestor?.type ?? 'VC';
@@ -92,6 +104,9 @@ class _EditInvestorViewState extends State<EditInvestorView> {
     _websiteController.dispose();
     _contactController.dispose();
     _logoUrlController.dispose();
+    _focusController.dispose();
+    _stagesController.dispose();
+    _industriesController.dispose();
     super.dispose();
   }
 
@@ -105,7 +120,7 @@ class _EditInvestorViewState extends State<EditInvestorView> {
       listen: false,
     );
 
-    final proposedChanges = {
+    final proposedChanges = <String, dynamic>{
       if (_nameController.text.trim() != _existingInvestor?.name)
         'name': _nameController.text.trim(),
       if (_type != _existingInvestor?.type) 'type': _type,
@@ -115,7 +130,19 @@ class _EditInvestorViewState extends State<EditInvestorView> {
         'website_url': _websiteController.text.trim(),
       if (_contactController.text.trim() != _existingInvestor?.contactInfo)
         'contact_info': _contactController.text.trim(),
+      if (_focusController.text.trim() != _existingInvestor?.investmentFocus)
+        'investment_focus': _focusController.text.trim(),
     };
+
+    final newStages = _stagesController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    if (newStages.join(',') != (_existingInvestor?.preferredStages?.join(',') ?? '')) {
+      proposedChanges['preferred_stages'] = newStages;
+    }
+
+    final newIndustries = _industriesController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    if (newIndustries.join(',') != (_existingInvestor?.preferredIndustries?.join(',') ?? '')) {
+      proposedChanges['preferred_industries'] = newIndustries;
+    }
 
     if (proposedChanges.isEmpty) {
       setState(() => _isSaving = false);
@@ -232,6 +259,28 @@ class _EditInvestorViewState extends State<EditInvestorView> {
                         controller: _contactController,
                         decoration: const InputDecoration(
                           labelText: 'Contact Email/Phone',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _focusController,
+                        decoration: const InputDecoration(
+                          labelText: 'Investment Focus',
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _stagesController,
+                        decoration: const InputDecoration(
+                          labelText: 'Preferred Stages (comma-separated)',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _industriesController,
+                        decoration: const InputDecoration(
+                          labelText: 'Preferred Industries (comma-separated)',
                         ),
                       ),
                       const SizedBox(height: 32),

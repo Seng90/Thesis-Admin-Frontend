@@ -7,6 +7,9 @@ class Investor {
   final String? contactInfo;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? investmentFocus;
+  final List<String>? preferredStages;
+  final List<String>? preferredIndustries;
 
   Investor({
     required this.id,
@@ -17,6 +20,9 @@ class Investor {
     this.contactInfo,
     this.createdAt,
     this.updatedAt,
+    this.investmentFocus,
+    this.preferredStages,
+    this.preferredIndustries,
   });
 
   factory Investor.fromJson(Map<String, dynamic> json) {
@@ -33,6 +39,13 @@ class Investor {
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'].toString())
           : null,
+      investmentFocus: json['investment_focus'],
+      preferredStages: json['preferred_stages'] != null
+          ? List<String>.from(json['preferred_stages'])
+          : null,
+      preferredIndustries: json['preferred_industries'] != null
+          ? List<String>.from(json['preferred_industries'])
+          : null,
     );
   }
 
@@ -44,6 +57,9 @@ class Investor {
       'logo_url': logoUrl,
       'website_url': websiteUrl,
       'contact_info': contactInfo,
+      'investment_focus': investmentFocus,
+      'preferred_stages': preferredStages,
+      'preferred_industries': preferredIndustries,
     };
   }
 }
