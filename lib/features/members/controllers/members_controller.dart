@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import '../models/member_model.dart';
+import '../models/member_log_model.dart';
 import 'package:investrack_admin/services/api_service.dart';
 
 class MembersController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
 
   List<Member> _members = [];
+  List<MemberLog> _globalLogs = [];
   bool _isLoading = false;
+  bool _isLoadingLogs = false;
   String? _errorMessage;
 
   List<Member> get members => _members;
+  List<MemberLog> get globalLogs => _globalLogs;
   bool get isLoading => _isLoading;
+  bool get isLoadingLogs => _isLoadingLogs;
   String? get errorMessage => _errorMessage;
 
   Future<void> loadMembers() async {
@@ -143,6 +148,63 @@ class MembersController extends ChangeNotifier {
       return data.map((json) => json as Map<String, dynamic>).toList();
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<void> loadGlobalLogs() async {
+    _isLoadingLogs = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.client.get('/admin/manage-members');
+      final List<dynamic> data = response.data;
+      _globalLogs = data.map((json) => MemberLog.fromJson(json)).toList();
+    } catch (e) {
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to load audit logs: $e';
+      }
+    } finally {
+      _isLoadingLogs = false;
+      notifyListeners();
+    }
+  }
+
+  Future<List<MemberLog>> fetchMemberLogs(String memberId) async {
+    try {
+      final response = await _apiService.client.get(
+        '/admin/manage-members',
+        queryParameters: {'memberId': memberId},
+      );
+      final List<dynamic> data = response.data;
+      return data.map((json) => MemberLog.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<bool> checkExpiry() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _apiService.client.post('/admin/members/check-expiry');
+      await loadMembers();
+      await loadGlobalLogs();
+      return true;
+    } catch (e) {
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to check expiry: $e';
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

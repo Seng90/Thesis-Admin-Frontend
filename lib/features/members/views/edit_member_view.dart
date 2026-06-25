@@ -304,6 +304,7 @@ class _EditMemberViewState extends State<EditMemberView> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
+                        key: ValueKey('status_$_status'),
                         initialValue: _status,
                         decoration: InputDecoration(
                           labelText: 'Status'.tr(context),
@@ -321,6 +322,7 @@ class _EditMemberViewState extends State<EditMemberView> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
+                        key: ValueKey('role_$_role'),
                         initialValue: _role,
                         decoration: InputDecoration(
                           labelText: 'Role'.tr(context),
@@ -337,12 +339,16 @@ class _EditMemberViewState extends State<EditMemberView> {
                           if (newVal != null) {
                             setState(() {
                               _role = newVal;
+                              if (_role == 'user') {
+                                _packageId = null;
+                              }
                             });
                           }
                         },
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String?>(
+                        key: ValueKey('package_$_packageId'),
                         initialValue: _packageId,
                         decoration: InputDecoration(
                           labelText: 'Package'.tr(context),
@@ -362,6 +368,11 @@ class _EditMemberViewState extends State<EditMemberView> {
                         onChanged: (newVal) {
                           setState(() {
                             _packageId = newVal;
+                            if (_packageId == null) {
+                              if (_role == 'membership') {
+                                _role = 'user';
+                              }
+                            }
                           });
                         },
                       ),

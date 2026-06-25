@@ -58,7 +58,8 @@ class _AddFounderViewState extends State<AddFounderView> {
       proposedChanges['linkedin_url'] = _linkedinController.text.trim();
     }
     if (_pastExperienceController.text.trim().isNotEmpty) {
-      proposedChanges['past_experience'] = _pastExperienceController.text.trim();
+      proposedChanges['past_experience'] = _pastExperienceController.text
+          .trim();
     }
     if (_twitterController.text.trim().isNotEmpty) {
       proposedChanges['twitter_url'] = _twitterController.text.trim();

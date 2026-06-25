@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'package:investrack_admin/features/members/controllers/members_controller.dart';
+import 'package:investrack_admin/features/members/models/member_log_model.dart';
 import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
@@ -20,6 +22,8 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
   bool _isInit = false;
   List<Map<String, dynamic>> _managedCompanies = [];
   bool _isLoadingCompanies = false;
+  List<MemberLog> _actionLogs = [];
+  bool _isLoadingLogs = false;
 
   @override
   void didChangeDependencies() {
@@ -31,19 +35,27 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
           controller.loadMembers();
         });
       }
-      _fetchManagedCompanies();
+      _fetchMemberData();
       _isInit = true;
     }
   }
 
-  Future<void> _fetchManagedCompanies() async {
-    setState(() => _isLoadingCompanies = true);
+  Future<void> _fetchMemberData() async {
+    setState(() {
+      _isLoadingCompanies = true;
+      _isLoadingLogs = true;
+    });
     final controller = Provider.of<MembersController>(context, listen: false);
-    final companies = await controller.getManagedCompanies(widget.memberId);
+    final results = await Future.wait([
+      controller.getManagedCompanies(widget.memberId),
+      controller.fetchMemberLogs(widget.memberId),
+    ]);
     if (mounted) {
       setState(() {
-        _managedCompanies = companies;
+        _managedCompanies = results[0] as List<Map<String, dynamic>>;
+        _actionLogs = results[1] as List<MemberLog>;
         _isLoadingCompanies = false;
+        _isLoadingLogs = false;
       });
     }
   }
@@ -336,6 +348,8 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                   const SizedBox(height: 24),
                                   _buildManagedCompaniesCard(),
                                 ],
+                                const SizedBox(height: 24),
+                                _buildMemberActionHistoryCard(),
                               ],
                             );
                           } else {
@@ -353,6 +367,8 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                   const SizedBox(height: 24),
                                   _buildManagedCompaniesCard(),
                                 ],
+                                const SizedBox(height: 24),
+                                _buildMemberActionHistoryCard(),
                               ],
                             );
                           }
@@ -457,6 +473,130 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                   );
                 },
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMemberActionHistoryCard() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Action History'.tr(context),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 16),
+            _isLoadingLogs
+                ? const Center(child: CircularProgressIndicator())
+                : (_actionLogs.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Text(
+                            'No logs found'.tr(context),
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _actionLogs.length,
+                          separatorBuilder: (context, index) {
+                            return const Divider(height: 24);
+                          },
+                          itemBuilder: (context, index) {
+                            final log = _actionLogs[index];
+                            final formattedDate = DateFormat(
+                              'dd/MM/yyyy HH:mm',
+                            ).format(log.createdAt);
+
+                            Color actionColor = AppColors.textSecondary;
+                            IconData actionIcon = Icons.info_outline;
+
+                            final act = log.action.toLowerCase();
+                            if (act.contains('block') ||
+                                act.contains('delete')) {
+                              actionColor = AppColors.error;
+                              actionIcon = act.contains('block')
+                                  ? Icons.block_flipped
+                                  : Icons.delete_outline;
+                            } else if (act.contains('unblock') ||
+                                act.contains('active')) {
+                              actionColor = AppColors.success;
+                              actionIcon = Icons.check_circle_outline;
+                            } else if (act.contains('role')) {
+                              actionColor = AppColors.primary;
+                              actionIcon = Icons.admin_panel_settings_outlined;
+                            } else if (act.contains('company') ||
+                                act.contains('companies')) {
+                              actionColor = Colors.blue;
+                              actionIcon = Icons.business_outlined;
+                            }
+
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: actionColor.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    actionIcon,
+                                    color: actionColor,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        log.action,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      log.admin != null
+                                          ? Text(
+                                              'Performed by: ${log.admin!.username} (${log.admin!.role})',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            )
+                                          : const SizedBox.shrink(),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Text(
+                                  formattedDate,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        )),
           ],
         ),
       ),

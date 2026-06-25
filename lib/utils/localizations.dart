@@ -43,6 +43,17 @@ class AppLocalizations {
       'View Details': 'View Details',
       'Approve': 'Approve',
       'Block': 'Block',
+      'Audit Logs': 'Audit Logs',
+      'Action History': 'Action History',
+      'Admin': 'Admin',
+      'Action': 'Action',
+      'Date & Time': 'Date & Time',
+      'No logs found': 'No logs found',
+      'Search logs...': 'Search logs...',
+      'Sync Expiry': 'Sync Expiry',
+      'Expirations checked and synced successfully!':
+          'Expirations checked and synced successfully!',
+      'Failed to sync expirations.': 'Failed to sync expirations.',
     },
     'lo': {
       'Dashboard': 'ແຜງຄວບຄຸມ',
@@ -83,6 +94,17 @@ class AppLocalizations {
       'View Details': 'ເບິ່ງລາຍລະອຽດ',
       'Approve': 'ອະນຸມັດ',
       'Block': 'ບລັອກ',
+      'Audit Logs': 'ປະຫວັດການຈັດການ',
+      'Action History': 'ປະຫວັດການເຄື່ອນໄຫວ',
+      'Admin': 'ຜູ້ດູແລ',
+      'Action': 'ການກະທຳ',
+      'Date & Time': 'ວັນທີ & ເວລາ',
+      'No logs found': 'ບໍ່ພົບປະຫວັດການເຄື່ອນໄຫວ',
+      'Search logs...': 'ຄົ້ນຫາປະຫວັດ...',
+      'Sync Expiry': 'ຊິງຄ໌ວັນໝົດອາຍຸ',
+      'Expirations checked and synced successfully!':
+          'ກວດສອບ ແລະ ຊິງຄ໌ຂໍ້ມູນໝົດອາຍຸສຳເລັດແລ້ວ!',
+      'Failed to sync expirations.': 'ບໍ່ສາມາດຊິງຄ໌ຂໍ້ມູນໝົດອາຍຸໄດ້',
     },
   };
 

@@ -134,13 +134,23 @@ class _EditInvestorViewState extends State<EditInvestorView> {
         'investment_focus': _focusController.text.trim(),
     };
 
-    final newStages = _stagesController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-    if (newStages.join(',') != (_existingInvestor?.preferredStages?.join(',') ?? '')) {
+    final newStages = _stagesController.text
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (newStages.join(',') !=
+        (_existingInvestor?.preferredStages?.join(',') ?? '')) {
       proposedChanges['preferred_stages'] = newStages;
     }
 
-    final newIndustries = _industriesController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-    if (newIndustries.join(',') != (_existingInvestor?.preferredIndustries?.join(',') ?? '')) {
+    final newIndustries = _industriesController.text
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (newIndustries.join(',') !=
+        (_existingInvestor?.preferredIndustries?.join(',') ?? '')) {
       proposedChanges['preferred_industries'] = newIndustries;
     }
 

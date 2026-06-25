@@ -176,14 +176,16 @@ class _AddInvestorViewState extends State<AddInvestorView> {
                       TextFormField(
                         controller: _stagesController,
                         decoration: const InputDecoration(
-                          labelText: 'Preferred Stages (comma-separated, e.g. Pre-seed, Seed)',
+                          labelText:
+                              'Preferred Stages (comma-separated, e.g. Pre-seed, Seed)',
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _industriesController,
                         decoration: const InputDecoration(
-                          labelText: 'Preferred Industries (comma-separated, e.g. FinTech, EdTech)',
+                          labelText:
+                              'Preferred Industries (comma-separated, e.g. FinTech, EdTech)',
                         ),
                       ),
                       const SizedBox(height: 32),
