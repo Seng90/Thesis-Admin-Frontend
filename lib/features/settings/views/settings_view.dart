@@ -26,7 +26,7 @@ class _SettingsViewState extends State<SettingsView> {
   Widget build(BuildContext context) {
     final authController = Provider.of<AuthController>(context);
     final settingsController = Provider.of<SettingsController>(context);
-    final admin = authController.currentAdmin;
+    final user = authController.currentUser;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -40,7 +40,7 @@ class _SettingsViewState extends State<SettingsView> {
               children: [
                 // Profile Section
                 const Text(
-                  'Admin Profile',
+                  'User Profile',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -57,7 +57,7 @@ class _SettingsViewState extends State<SettingsView> {
                           radius: 36,
                           backgroundColor: AppColors.primaryLight,
                           child: Text(
-                            (admin?.username ?? 'A')
+                            (user?.username ?? 'U')
                                 .substring(0, 1)
                                 .toUpperCase(),
                             style: const TextStyle(
@@ -73,7 +73,7 @@ class _SettingsViewState extends State<SettingsView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                admin?.username ?? 'Unknown Admin',
+                                user?.username ?? 'Unknown User',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -91,7 +91,9 @@ class _SettingsViewState extends State<SettingsView> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  admin?.role ?? 'Admin',
+                                  user != null && user.roles.isNotEmpty
+                                      ? user.roles.join(', ')
+                                      : 'No Role',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -101,7 +103,7 @@ class _SettingsViewState extends State<SettingsView> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'ID: ${admin?.id ?? 'N/A'}',
+                                'ID: ${user?.id ?? 'N/A'}',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textMuted,

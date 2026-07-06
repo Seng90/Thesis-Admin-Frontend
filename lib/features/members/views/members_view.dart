@@ -59,10 +59,11 @@ class _MembersViewState extends State<MembersView> {
                                 content: Text(
                                   success
                                       ? 'Expirations checked and synced successfully!'
-                                            .tr(context)
+                                            .tr(context, listen: false)
                                       : (controller.errorMessage ??
                                             'Failed to sync expirations.'.tr(
                                               context,
+                                              listen: false,
                                             )),
                                 ),
                                 backgroundColor: success
@@ -318,12 +319,15 @@ class _MembersViewState extends State<MembersView> {
                                                                 SnackBar(
                                                                   content: Text(
                                                                     success
-                                                                        ? 'Role change submitted for review!'.tr(
+                                                                        ? 'Role change submitted for review!'
+                                                                            .tr(
                                                                             context,
+                                                                            listen: false,
                                                                           )
                                                                         : (revCtrl.errorMessage ??
                                                                               'Failed to submit role change'.tr(
                                                                                 context,
+                                                                                listen: false,
                                                                               )),
                                                                   ),
                                                                   backgroundColor:

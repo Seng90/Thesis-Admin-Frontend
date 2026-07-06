@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:investrack_admin/services/api_service.dart';
 import '../models/revision_model.dart';
@@ -68,10 +69,13 @@ class RevisionsController extends ChangeNotifier {
   }
 
   Future<bool> approveRevision(String id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
     try {
       await _apiService.client.patch('/admin/revisions/$id/approve');
       _pendingRevisions.removeWhere((r) => r.id == id);
-      notifyListeners();
       return true;
     } catch (e) {
       if (e is DioException && e.error != null) {
@@ -79,16 +83,21 @@ class RevisionsController extends ChangeNotifier {
       } else {
         _errorMessage = 'Failed to approve revision: $e';
       }
-      notifyListeners();
       return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   Future<bool> rejectRevision(String id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
     try {
       await _apiService.client.patch('/admin/revisions/$id/reject');
       _pendingRevisions.removeWhere((r) => r.id == id);
-      notifyListeners();
       return true;
     } catch (e) {
       if (e is DioException && e.error != null) {
@@ -96,8 +105,42 @@ class RevisionsController extends ChangeNotifier {
       } else {
         _errorMessage = 'Failed to reject revision: $e';
       }
-      notifyListeners();
       return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> partialApproveRevision(
+    String id,
+    Map<String, dynamic> fieldDecisions,
+    String? adminNote,
+  ) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _apiService.client.patch(
+        '/admin/revisions/$id/partial-approve',
+        data: {
+          'fieldDecisions': fieldDecisions,
+          'adminNote': adminNote,
+        },
+      );
+      _pendingRevisions.removeWhere((r) => r.id == id);
+      return true;
+    } catch (e) {
+      if (e is DioException && e.error != null) {
+        _errorMessage = e.error.toString();
+      } else {
+        _errorMessage = 'Failed to partially approve revision: $e';
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

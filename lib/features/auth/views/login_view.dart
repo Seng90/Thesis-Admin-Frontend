@@ -16,12 +16,12 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -46,9 +46,9 @@ class _LoginViewState extends State<LoginView> {
                   ),
                   const SizedBox(height: 32),
                   DesktopTextField(
-                    controller: _usernameController,
+                    controller: _emailController,
                     decoration: const InputDecoration(
-                      labelText: 'Username',
+                      labelText: 'Username or Email',
                       border: OutlineInputBorder(),
                     ),
                     onSubmitted: (_) =>
@@ -70,18 +70,18 @@ class _LoginViewState extends State<LoginView> {
                     builder: (context, authController, child) {
                       return ElevatedButton(
                         onPressed: authController.isLoading
-                            ? null
-                            : () => _performLogin(context, authController),
+                          ? null
+                          : () => _performLogin(context, authController),
                         child: authController.isLoading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Login'),
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Login'),
                       );
                     },
                   ),
@@ -100,19 +100,19 @@ class _LoginViewState extends State<LoginView> {
   ) async {
     if (authController.isLoading) return;
 
-    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (username.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter both username and password'),
+          content: Text('Please enter both username/email and password'),
         ),
       );
       return;
     }
 
-    bool success = await authController.login(username, password);
+    bool success = await authController.login(email, password);
     if (success && context.mounted) {
       // Fetch fresh data after successful login
       Provider.of<CompaniesController>(context, listen: false).loadCompanies();

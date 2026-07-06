@@ -1,28 +1,40 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/admin_model.dart';
+import '../models/user_model.dart';
 import 'package:investrack_admin/services/api_service.dart';
 
 class AuthController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
 
-  Admin? _currentAdmin;
+  UserModel? _currentUser;
   bool _isLoading = false;
+  bool _isCheckingAuth = true;
   String? _errorMessage;
 
-  Admin? get currentAdmin => _currentAdmin;
+  UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
+  bool get isCheckingAuth => _isCheckingAuth;
   String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => _currentAdmin != null;
+  bool get isAuthenticated => _currentUser != null;
 
-  Future<bool> login(String username, String password) async {
+  AuthController() {
+    ApiService.onUnauthorized = () {
+      logout();
+    };
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkAuthStatus();
+    });
+  }
+
+  Future<bool> login(String email, String password) async {
     _setLoading(true);
     _errorMessage = null;
 
     try {
       final response = await _apiService.client.post(
-        '/auth/admin/login',
-        data: {'username': username, 'password': password},
+        '/auth/login',
+        data: {'email': email, 'password': password},
       );
 
       final data = response.data;
@@ -36,13 +48,11 @@ class AuthController extends ChangeNotifier {
         }
 
         final userData = data['user'];
-        _currentAdmin = Admin(
-          id: userData['id'] ?? 'unknown',
-          username: userData['username'] ?? username,
-          role: userData['role'] ?? 'Admin',
-          createdAt: DateTime.now(),
-        );
+        _currentUser = UserModel.fromJson(userData);
+        await prefs.setString('user_data', jsonEncode(userData));
+        
         _setLoading(false);
+        notifyListeners();
         return true;
       } else {
         _errorMessage = 'Invalid response from server.';
@@ -53,7 +63,7 @@ class AuthController extends ChangeNotifier {
       if (e is DioException && e.error != null) {
         _errorMessage = e.error.toString();
       } else {
-        _errorMessage = 'Invalid username or password.';
+        _errorMessage = 'Invalid email or password.';
       }
       _setLoading(false);
       return false;
@@ -64,25 +74,63 @@ class AuthController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('refresh_token');
-    _currentAdmin = null;
+    await prefs.remove('user_data');
+    _currentUser = null;
     notifyListeners();
   }
 
   Future<void> checkAuthStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-
-    if (token != null) {
-      // For now, we just mock the admin details if token exists
-      // In a full implementation, you might want to call a /auth/admin/me endpoint
-      _currentAdmin = Admin(
-        id: 'cached-admin',
-        username: 'admin',
-        role: 'Admin',
-        createdAt: DateTime.now(),
-      );
-    }
+    _isCheckingAuth = true;
     notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      final userDataString = prefs.getString('user_data');
+
+      if (token != null && userDataString != null) {
+        try {
+          final userData = jsonDecode(userDataString);
+          _currentUser = UserModel.fromJson(userData);
+          notifyListeners();
+        } catch (_) {
+          await logout();
+          return;
+        }
+
+        // Refresh in background
+        _refreshProfileInBackground();
+      } else {
+        if (_currentUser != null) {
+          await logout();
+        }
+      }
+    } catch (_) {
+      if (_currentUser != null) {
+        await logout();
+      }
+    } finally {
+      _isCheckingAuth = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _refreshProfileInBackground() async {
+    try {
+      final response = await _apiService.client.get('/auth/me');
+      if (response.statusCode == 200 && response.data != null) {
+        _currentUser = UserModel.fromJson(response.data);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_data', jsonEncode(response.data));
+        notifyListeners();
+      }
+    } catch (e) {
+      // If unauthorized (401), force logout
+      if (e is DioException && e.response?.statusCode == 401) {
+        await logout();
+      }
+      // For network errors / server down, we keep the cached profile values gracefully
+    }
   }
 
   void _setLoading(bool value) {

@@ -49,7 +49,10 @@ import 'features/revisions/controllers/revisions_controller.dart';
 import 'features/settings/controllers/settings_controller.dart';
 import 'features/settings/views/settings_view.dart';
 
-void main() {
+final AuthController _authController = AuthController();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const InvesTrackAdminApp());
 }
 
@@ -60,7 +63,7 @@ class InvesTrackAdminApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthController()),
+        ChangeNotifierProvider.value(value: _authController),
         ChangeNotifierProvider(create: (_) => DashboardController()),
         ChangeNotifierProvider(create: (_) => RevisionsController()),
         ChangeNotifierProvider(create: (_) => CompaniesController()),
@@ -91,8 +94,36 @@ class InvesTrackAdminApp extends StatelessWidget {
 }
 
 final GoRouter _router = GoRouter(
-  initialLocation: '/login',
+  initialLocation: '/splash',
+  refreshListenable: _authController,
+  redirect: (context, state) {
+    final isAuthenticated = _authController.isAuthenticated;
+    final isCheckingAuth = _authController.isCheckingAuth;
+    final stateUri = state.uri.toString();
+
+    if (isCheckingAuth) {
+      return '/splash';
+    }
+
+    if (!isAuthenticated) {
+      return stateUri == '/login' ? null : '/login';
+    }
+
+    if (stateUri == '/login' || stateUri == '/splash') {
+      return '/dashboard';
+    }
+
+    return null;
+  },
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    ),
     GoRoute(path: '/login', builder: (context, state) => const LoginView()),
     ShellRoute(
       builder: (context, state, child) {

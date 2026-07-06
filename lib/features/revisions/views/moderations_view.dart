@@ -279,6 +279,33 @@ class _ModerationsViewState extends State<ModerationsView> {
                         ),
                       ),
                     ),
+                    revision.submitterType == 'member'
+                        ? const SizedBox(width: 8)
+                        : const SizedBox.shrink(),
+                    revision.submitterType == 'member'
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.successBg.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.success.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: const Text(
+                              'member request',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.success,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                     const SizedBox(width: 8),
                     Text(
                       '${changes.length} field${changes.length > 1 ? 's' : ''} changed',
@@ -303,7 +330,9 @@ class _ModerationsViewState extends State<ModerationsView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Submitted by Admin · ${revision.createdAt?.toString().split('.')[0] ?? 'N/A'}',
+                  revision.submitterType == 'member'
+                      ? 'Requested by ${revision.requestor?['username'] ?? 'Founder'} · ${revision.createdAt?.toString().split('.')[0] ?? 'N/A'}'
+                      : 'Submitted by Admin · ${revision.createdAt?.toString().split('.')[0] ?? 'N/A'}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -437,81 +466,166 @@ class _ModerationsViewState extends State<ModerationsView> {
                 ),
               ),
               const SizedBox(width: 6),
-              OutlinedButton.icon(
-                onPressed: () async {
-                  final success = await controller.rejectRevision(revision.id);
-                  if (context.mounted) {
-                    if (success) {
-                      _reloadRelatedController(context, revision.entityType);
-                    }
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          success
-                              ? 'Revision rejected.'
-                              : (controller.errorMessage ??
-                                    'Failed to reject revision.'),
+              revision.submitterType == 'member'
+                  ? ElevatedButton.icon(
+                      onPressed: () async {
+                        try {
+                          await _showPartialApprovalDialog(
+                              context, controller, revision);
+                        } catch (e) {
+                          // Handle any unexpected errors when opening the dialog
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error opening review dialog: $e'),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(LucideIcons.clipboardCheck, size: 14),
+                      label: const Text('Review Request',
+                          style: TextStyle(fontSize: 13)),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                        backgroundColor: success
-                            ? AppColors.warning
-                            : AppColors.error,
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
                       ),
-                    );
-                  }
-                },
-                icon: const Icon(LucideIcons.x, size: 14, color: Colors.red),
-                label: const Text(
-                  'Reject',
-                  style: TextStyle(fontSize: 13, color: Colors.red),
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  side: BorderSide(color: Colors.red.withValues(alpha: 0.3)),
-                ),
-              ),
-              const SizedBox(width: 6),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  final success = await controller.approveRevision(revision.id);
-                  if (context.mounted) {
-                    if (success) {
-                      _reloadRelatedController(context, revision.entityType);
-                    }
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          success
-                              ? 'Revision approved and published!'
-                              : (controller.errorMessage ??
-                                    'Failed to approve revision.'),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final success =
+                                await controller.rejectRevision(revision.id);
+                            if (context.mounted) {
+                              if (success) {
+                                _reloadRelatedController(
+                                    context, revision.entityType);
+                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    success
+                                        ? 'Revision rejected.'
+                                        : (controller.errorMessage ??
+                                            'Failed to reject revision.'),
+                                  ),
+                                  backgroundColor: success
+                                      ? AppColors.warning
+                                      : AppColors.error,
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(LucideIcons.x,
+                              size: 14, color: Colors.red),
+                          label: const Text(
+                            'Reject',
+                            style: TextStyle(fontSize: 13, color: Colors.red),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            side: BorderSide(
+                                color: Colors.red.withValues(alpha: 0.3)),
+                          ),
                         ),
-                        backgroundColor: success
-                            ? AppColors.success
-                            : AppColors.error,
-                      ),
-                    );
-                  }
-                },
-                icon: const Icon(LucideIcons.check, size: 14),
-                label: const Text('Approve', style: TextStyle(fontSize: 13)),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  backgroundColor: AppColors.success,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                ),
-              ),
+                        const SizedBox(width: 6),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            final success =
+                                await controller.approveRevision(revision.id);
+                            if (context.mounted) {
+                              if (success) {
+                                _reloadRelatedController(
+                                    context, revision.entityType);
+                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    success
+                                        ? 'Revision approved and published!'
+                                        : (controller.errorMessage ??
+                                            'Failed to approve revision.'),
+                                  ),
+                                  backgroundColor: success
+                                      ? AppColors.success
+                                      : AppColors.error,
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(LucideIcons.check, size: 14),
+                          label: const Text('Approve',
+                              style: TextStyle(fontSize: 13)),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            backgroundColor: AppColors.success,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                          ),
+                        ),
+                      ],
+                    ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _showPartialApprovalDialog(
+    BuildContext context,
+    RevisionsController controller,
+    Revision revision,
+  ) async {
+    // 🔍 DEBUG: Log when dialog is requested
+    print('🟢 DEBUG: Opening approval dialog for revision ${revision.id}');
+    print('   proposedChanges keys: ${revision.proposedChanges.keys.toList()}');
+    print('   proposedChanges length: ${revision.proposedChanges.length}');
+
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        print('🟢 DEBUG: Building dialog widget...');
+        return _PartialApprovalDialog(
+          revision: revision,
+          controller: controller,
+        );
+      },
+    );
+
+    if (context.mounted && result != null) {
+      _reloadRelatedController(context, revision.entityType);
+      String msg = '';
+      if (result == 'rejected_all') {
+        msg = 'Revision rejected entirely.';
+      } else if (result == 'approved_all') {
+        msg = 'Revision approved and published entirely!';
+      } else if (result == 'partial_approved') {
+        msg = 'Revision partially approved!';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
   }
 
   void _reloadRelatedController(BuildContext context, String entityType) {
@@ -537,5 +651,407 @@ class _ModerationsViewState extends State<ModerationsView> {
         context.read<FundraisingPostsController>().loadPosts();
         break;
     }
+  }
+}
+
+class _PartialApprovalDialog extends StatefulWidget {
+  final Revision revision;
+  final RevisionsController controller;
+
+  const _PartialApprovalDialog({
+    required this.revision,
+    required this.controller,
+  });
+
+  @override
+  State<_PartialApprovalDialog> createState() => _PartialApprovalDialogState();
+}
+
+class _PartialApprovalDialogState extends State<_PartialApprovalDialog> {
+  late Map<String, bool> _fieldApprovals;
+  late Map<String, TextEditingController> _reasonControllers;
+  late TextEditingController _adminNoteController;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print('🔵 DEBUG: initState started');
+
+    _fieldApprovals = {};
+    _reasonControllers = {};
+    _adminNoteController = TextEditingController();
+
+    print('🔵 DEBUG: Iterating over proposedChanges...');
+    widget.revision.proposedChanges.forEach((key, value) {
+      print('   Processing key: $key, value type: ${value.runtimeType}');
+      _fieldApprovals[key] = true; // default to approved
+      _reasonControllers[key] = TextEditingController();
+    });
+
+    print('🔵 DEBUG: initState completed');
+  }
+
+  @override
+  void dispose() {
+    _reasonControllers.forEach((_, c) {
+      c.dispose();
+    });
+    _adminNoteController.dispose();
+    super.dispose();
+  }
+
+  String _formatValue(dynamic val) {
+    print('🟡 DEBUG: _formatValue ENTRY - type: ${val.runtimeType}');
+
+    if (val == null) {
+      print('🟡 DEBUG: val is null, returning N/A');
+      return 'N/A';
+    }
+
+    // Handle primitives directly
+    if (val is String || val is num || val is bool) {
+      final result = val.toString();
+      print('🟡 DEBUG: primitive type, returning: "$result"');
+      return result;
+    }
+
+    // For Maps and Lists, use a safe converter with depth limit
+    if (val is Map || val is List) {
+      try {
+        print('   Attempting safe conversion...');
+        final result = _safeJsonConvert(val, maxDepth: 10);
+        print('   safe conversion SUCCESS');
+        return result;
+      } catch (e) {
+        print('   safe conversion FAILED: $e');
+        // Fallback to simple string representation
+        return '[${val.runtimeType}] (too complex to display)';
+      }
+    }
+
+    print('🟡 DEBUG: fallback to toString()');
+    return val.toString();
+  }
+
+  /// Safely converts complex objects to JSON string with depth limit to prevent infinite loops
+  String _safeJsonConvert(dynamic value, {int maxDepth = 10, int currentDepth = 0}) {
+    if (currentDepth >= maxDepth) {
+      return '[max depth reached]';
+    }
+
+    if (value == null) return 'null';
+    if (value is String) return '"$value"';
+    if (value is num || value is bool) return value.toString();
+
+    if (value is List) {
+      if (value.isEmpty) return '[]';
+      final items = value.take(5).map((e) => _safeJsonConvert(e, maxDepth: maxDepth, currentDepth: currentDepth + 1)).join(', ');
+      final remaining = value.length > 5 ? ' ... (+${value.length - 5} more)' : '';
+      return '[$items$remaining]';
+    }
+
+    if (value is Map) {
+      if (value.isEmpty) return '{}';
+      final entries = value.entries.take(5).map((e) => '${e.key}: ${_safeJsonConvert(e.value, maxDepth: maxDepth, currentDepth: currentDepth + 1)}').join(', ');
+      final remaining = value.length > 5 ? ' ... (+${value.length - 5} more)' : '';
+      return '{$entries$remaining}';
+    }
+
+    return value.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        children: [
+          const Icon(LucideIcons.clipboardCheck, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Review Request from: ${widget.revision.requestor?['username'] ?? 'Founder'}',
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: 600,
+        height: 500,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Entity: ${widget.revision.entityType} (ID: ${widget.revision.entityId})',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Review each field and choose to Approve or Reject:',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: widget.revision.proposedChanges.keys.map((field) {
+                  final proposedVal = widget.revision.proposedChanges[field];
+                  final isApproved = _fieldApprovals[field] ?? true;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.background.withValues(alpha: 0.2),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              field,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                ChoiceChip(
+                                  label: const Text('Approve'),
+                                  selected: isApproved,
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      _fieldApprovals[field] = true;
+                                    });
+                                  },
+                                  selectedColor: AppColors.success.withValues(alpha: 0.2),
+                                  labelStyle: TextStyle(
+                                    color: isApproved
+                                        ? AppColors.success
+                                        : AppColors.textSecondary,
+                                    fontWeight:
+                                        isApproved ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: const Text('Reject'),
+                                  selected: !isApproved,
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      _fieldApprovals[field] = false;
+                                    });
+                                  },
+                                  selectedColor: Colors.red.withValues(alpha: 0.2),
+                                  labelStyle: TextStyle(
+                                    color: !isApproved
+                                        ? Colors.red
+                                        : AppColors.textSecondary,
+                                    fontWeight:
+                                        !isApproved ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Proposed Value:',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            _formatValue(proposedVal),
+                            style: const TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        !isApproved
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  TextField(
+                                    controller: _reasonControllers[field],
+                                    decoration: const InputDecoration(
+                                      labelText: 'Reason for rejection',
+                                      hintText: 'e.g. Invalid website URL, typos, etc.',
+                                      labelStyle: TextStyle(fontSize: 12),
+                                      hintStyle: TextStyle(fontSize: 12),
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 8),
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _adminNoteController,
+              decoration: const InputDecoration(
+                labelText: 'Admin Note / Feedback to Founder',
+                hintText: 'Add general notes about this moderation action...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        const Spacer(),
+        OutlinedButton(
+          onPressed: _isSubmitting
+              ? null
+              : () async {
+                  setState(() => _isSubmitting = true);
+                  try {
+                    final success =
+                        await widget.controller.rejectRevision(widget.revision.id);
+                    if (context.mounted) {
+                      Navigator.pop(context, success ? 'rejected_all' : null);
+                    }
+                  } catch (e) {
+                    // Error is handled by controller and stored in errorMessage
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              widget.controller.errorMessage ?? 'Failed to reject revision'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
+                  } finally {
+                    if (mounted) setState(() => _isSubmitting = false);
+                  }
+                },
+          style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+          child: const Text('Reject All'),
+        ),
+        const SizedBox(width: 8),
+        OutlinedButton(
+          onPressed: _isSubmitting
+              ? null
+              : () async {
+                  setState(() => _isSubmitting = true);
+                  try {
+                    final success =
+                        await widget.controller.approveRevision(widget.revision.id);
+                    if (context.mounted) {
+                      Navigator.pop(context, success ? 'approved_all' : null);
+                    }
+                  } catch (e) {
+                    // Error is handled by controller and stored in errorMessage
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              widget.controller.errorMessage ?? 'Failed to approve revision'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
+                  } finally {
+                    if (mounted) setState(() => _isSubmitting = false);
+                  }
+                },
+          style: OutlinedButton.styleFrom(foregroundColor: AppColors.success),
+          child: const Text('Approve All'),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: _isSubmitting
+              ? null
+              : () async {
+                  setState(() => _isSubmitting = true);
+
+                  final fieldDecisions = <String, dynamic>{};
+                  _fieldApprovals.forEach((field, approved) {
+                    final decision = <String, dynamic>{
+                      'status': approved ? 'approved' : 'rejected',
+                    };
+                    if (!approved) {
+                      decision['reason'] = _reasonControllers[field]?.text ?? '';
+                    }
+                    fieldDecisions[field] = decision;
+                  });
+
+                  final adminNote = _adminNoteController.text.trim();
+
+                  try {
+                    final success = await widget.controller.partialApproveRevision(
+                      widget.revision.id,
+                      fieldDecisions,
+                      adminNote.isNotEmpty ? adminNote : null,
+                    );
+
+                    if (context.mounted) {
+                      Navigator.pop(context, success ? 'partial_approved' : null);
+                    }
+                  } catch (e) {
+                    // Error is handled by controller and stored in errorMessage
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              widget.controller.errorMessage ?? 'Failed to partially approve revision'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
+                  } finally {
+                    if (mounted) setState(() => _isSubmitting = false);
+                  }
+                },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+          ),
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                )
+              : const Text('Partial Approve'),
+        ),
+      ],
+    );
   }
 }

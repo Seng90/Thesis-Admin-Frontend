@@ -4,9 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants.dart';
 
 class ApiService {
+  static final ApiService _instance = ApiService._internal();
+  factory ApiService() => _instance;
+
+  static void Function()? onUnauthorized;
+
   late final Dio _dio;
 
-  ApiService() {
+  ApiService._internal() {
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConstants.baseUrl,
@@ -52,7 +57,7 @@ class ApiService {
             if (statusCode == 401) {
               // Try to refresh token before failing
               if (e.requestOptions.path != '/auth/refresh' &&
-                  e.requestOptions.path != '/auth/admin/login') {
+                  e.requestOptions.path != '/auth/login') {
                 try {
                   final prefs = await SharedPreferences.getInstance();
                   final refreshToken = prefs.getString('refresh_token');
@@ -99,6 +104,13 @@ class ApiService {
                   }
                 } catch (_) {
                   // Refresh failed, proceed to normal 401 handling
+                }
+              }
+
+              if (e.requestOptions.path != '/auth/refresh' &&
+                  e.requestOptions.path != '/auth/login') {
+                if (onUnauthorized != null) {
+                  onUnauthorized!();
                 }
               }
 

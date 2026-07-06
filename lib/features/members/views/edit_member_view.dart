@@ -236,11 +236,11 @@ class _EditMemberViewState extends State<EditMemberView> {
           proposedChanges: changes,
         );
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Edit submitted for review!'.tr(context))),
+          SnackBar(content: Text('Edit submitted for review!'.tr(context, listen: false))),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No changes detected.'.tr(context))),
+          SnackBar(content: Text('No changes detected.'.tr(context, listen: false))),
         );
       }
 

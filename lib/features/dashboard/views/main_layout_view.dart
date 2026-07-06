@@ -5,6 +5,7 @@ import 'package:investrack_admin/utils/localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/auth/controllers/auth_controller.dart';
 import 'package:investrack_admin/features/settings/controllers/settings_controller.dart';
+import 'package:investrack_admin/utils/permission_helper.dart';
 
 class MainLayoutView extends StatefulWidget {
   final Widget child;
@@ -23,14 +24,14 @@ class _MainLayoutViewState extends State<MainLayoutView> {
     int selectedIndex = _calculateSelectedIndex(context);
     final theme = Theme.of(context);
 
-    // Attempt to get admin info if available
-    String adminInitials = 'AD';
-    String adminName = 'Admin';
+    // Attempt to get user info if available
+    String adminInitials = 'US';
+    String adminName = 'User';
     try {
       final auth = Provider.of<AuthController>(
         context,
         listen: false,
-      ).currentAdmin;
+      ).currentUser;
       if (auth != null) {
         adminName = auth.username;
         if (adminName.isNotEmpty) {
@@ -129,87 +130,96 @@ class _MainLayoutViewState extends State<MainLayoutView> {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        _buildNavItem(
-                          context,
-                          'Dashboard'.tr(context),
-                          Icons.dashboard_outlined,
-                          Icons.dashboard,
-                          0,
-                          selectedIndex,
-                          '/dashboard',
-                        ),
-                        _buildNavItem(
-                          context,
-                          'Companies'.tr(context),
-                          Icons.business_outlined,
-                          Icons.business,
-                          1,
-                          selectedIndex,
-                          '/companies',
-                        ),
-                        _buildNavItem(
-                          context,
-                          'Founders'.tr(context),
-                          Icons.people_outline,
-                          Icons.people,
-                          2,
-                          selectedIndex,
-                          '/founders',
-                        ),
-                        _buildNavItem(
-                          context,
-                          'Investors'.tr(context),
-                          Icons.attach_money_outlined,
-                          Icons.attach_money,
-                          3,
-                          selectedIndex,
-                          '/investors',
-                        ),
-                        _buildNavItem(
-                          context,
-                          'Investments'.tr(context),
-                          Icons.trending_up_outlined,
-                          Icons.trending_up,
-                          4,
-                          selectedIndex,
-                          '/investments',
-                        ),
-                        _buildNavItem(
-                          context,
-                          'Fundraising'.tr(context),
-                          Icons.campaign_outlined,
-                          Icons.campaign,
-                          5,
-                          selectedIndex,
-                          '/raises',
-                        ),
-                        _buildNavItem(
-                          context,
-                          'Members'.tr(context),
-                          Icons.person_outline,
-                          Icons.person,
-                          6,
-                          selectedIndex,
-                          '/members',
-                        ),
-                        _buildNavItem(
-                          context,
-                          'Packages'.tr(context),
-                          Icons.card_membership_outlined,
-                          Icons.card_membership,
-                          7,
-                          selectedIndex,
-                          '/packages',
-                        ),
-                        _buildNavItem(
-                          context,
-                          'Moderation'.tr(context),
-                          Icons.gavel_outlined,
-                          Icons.gavel,
-                          8,
-                          selectedIndex,
-                          '/moderations',
-                        ),
+                        if (PermissionHelper.hasPermission(context, 'manage:dashboard'))
+                          _buildNavItem(
+                            context,
+                            'Dashboard'.tr(context),
+                            Icons.dashboard_outlined,
+                            Icons.dashboard,
+                            0,
+                            selectedIndex,
+                            '/dashboard',
+                          ),
+                        if (PermissionHelper.hasPermission(context, 'manage:companies'))
+                          _buildNavItem(
+                            context,
+                            'Companies'.tr(context),
+                            Icons.business_outlined,
+                            Icons.business,
+                            1,
+                            selectedIndex,
+                            '/companies',
+                          ),
+                        if (PermissionHelper.hasPermission(context, 'manage:founders'))
+                          _buildNavItem(
+                            context,
+                            'Founders'.tr(context),
+                            Icons.people_outline,
+                            Icons.people,
+                            2,
+                            selectedIndex,
+                            '/founders',
+                          ),
+                        if (PermissionHelper.hasPermission(context, 'manage:investors'))
+                          _buildNavItem(
+                            context,
+                            'Investors'.tr(context),
+                            Icons.attach_money_outlined,
+                            Icons.attach_money,
+                            3,
+                            selectedIndex,
+                            '/investors',
+                          ),
+                        if (PermissionHelper.hasPermission(context, 'manage:investments'))
+                          _buildNavItem(
+                            context,
+                            'Investments'.tr(context),
+                            Icons.trending_up_outlined,
+                            Icons.trending_up,
+                            4,
+                            selectedIndex,
+                            '/investments',
+                          ),
+                        if (PermissionHelper.hasPermission(context, 'manage:fundraising-posts'))
+                          _buildNavItem(
+                            context,
+                            'Fundraising'.tr(context),
+                            Icons.campaign_outlined,
+                            Icons.campaign,
+                            5,
+                            selectedIndex,
+                            '/raises',
+                          ),
+                        if (PermissionHelper.hasPermission(context, 'manage:members'))
+                          _buildNavItem(
+                            context,
+                            'Members'.tr(context),
+                            Icons.person_outline,
+                            Icons.person,
+                            6,
+                            selectedIndex,
+                            '/members',
+                          ),
+                        if (PermissionHelper.hasPermission(context, 'manage:packages'))
+                          _buildNavItem(
+                            context,
+                            'Packages'.tr(context),
+                            Icons.card_membership_outlined,
+                            Icons.card_membership,
+                            7,
+                            selectedIndex,
+                            '/packages',
+                          ),
+                        if (PermissionHelper.hasPermission(context, 'manage:revisions'))
+                          _buildNavItem(
+                            context,
+                            'Moderation'.tr(context),
+                            Icons.gavel_outlined,
+                            Icons.gavel,
+                            8,
+                            selectedIndex,
+                            '/moderations',
+                          ),
                       ],
                     ),
                   ),
@@ -356,9 +366,9 @@ class _MainLayoutViewState extends State<MainLayoutView> {
             child: Text('Cancel'.tr(context)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              context.go('/login');
+              await context.read<AuthController>().logout();
             },
             child: Text(
               'Logout'.tr(context),
