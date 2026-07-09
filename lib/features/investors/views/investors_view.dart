@@ -21,6 +21,17 @@ class _InvestorsViewState extends State<InvestorsView> {
   String _typeFilter = 'All';
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = Provider.of<InvestorsController>(context, listen: false);
+      if (controller.investors.isEmpty && !controller.isLoading) {
+        controller.loadInvestors();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _verticalScroll.dispose();
     _horizontalScroll.dispose();

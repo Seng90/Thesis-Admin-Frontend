@@ -96,9 +96,13 @@ class Revision {
           : null,
       requestedBy: json['requested_by'],
       submitterType: json['submitter_type'] ?? 'admin',
-      fieldDecisions: json['field_decisions'],
+      fieldDecisions: json['field_decisions'] != null
+          ? Map<String, dynamic>.from(json['field_decisions'] as Map)
+          : null,
       adminNote: json['admin_note'],
-      requestor: json['requestor'],
+      requestor: json['requestor'] != null
+          ? Map<String, dynamic>.from(json['requestor'] as Map)
+          : null,
     );
   }
 

@@ -36,8 +36,15 @@ class _DashboardViewState extends State<DashboardView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<RevisionsController>().loadPendingRevisions();
-      context.read<DashboardController>().loadAll();
+      final revController = context.read<RevisionsController>();
+      if (revController.pendingRevisions.isEmpty) {
+        revController.loadPendingRevisions();
+      }
+      
+      final dashController = context.read<DashboardController>();
+      if (dashController.summary == null && !dashController.isLoadingSummary) {
+        dashController.loadAll();
+      }
     });
   }
 

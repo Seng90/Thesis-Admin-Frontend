@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
-import 'package:investrack_admin/services/api_service.dart';
-
+import 'package:flutter/material.dart';
 import '../models/founder_model.dart';
+import '../repositories/founders_repository.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class FoundersController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final FoundersRepository _repository = FoundersRepository();
 
   List<Founder> _founders = [];
   bool _isLoading = false;
@@ -20,28 +20,29 @@ class FoundersController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/founders');
-      final List<dynamic> data = response.data;
-      _founders = data.map((json) => Founder.fromJson(json)).toList();
+      _founders = await _repository.getFounders();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load founders: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load founders');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> deleteFounder(String id) async {
+  Future<bool> deleteFounder(String id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
     try {
-      await _apiService.client.delete('/admin/founders/$id');
+      await _repository.deleteFounder(id);
       _founders.removeWhere((f) => f.id == id);
-      notifyListeners();
+      return true;
     } catch (e) {
-      _errorMessage = 'Failed to delete founder: $e';
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to delete founder');
+      return false;
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

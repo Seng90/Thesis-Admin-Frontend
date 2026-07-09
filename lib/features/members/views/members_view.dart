@@ -23,6 +23,17 @@ class _MembersViewState extends State<MembersView> {
   String _statusFilter = 'All';
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = Provider.of<MembersController>(context, listen: false);
+      if (controller.members.isEmpty && !controller.isLoading) {
+        controller.loadMembers();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _verticalScroll.dispose();
     _horizontalScroll.dispose();

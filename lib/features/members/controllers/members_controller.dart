@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/member_model.dart';
 import '../models/member_log_model.dart';
-import 'package:investrack_admin/services/api_service.dart';
+import '../repositories/members_repository.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class MembersController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final MembersRepository _repository = MembersRepository();
 
   List<Member> _members = [];
   List<MemberLog> _globalLogs = [];
@@ -24,15 +25,9 @@ class MembersController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/members');
-      final List<dynamic> data = response.data;
-      _members = data.map((json) => Member.fromJson(json)).toList();
+      _members = await _repository.getMembers();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load members: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load members');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -41,10 +36,7 @@ class MembersController extends ChangeNotifier {
 
   Future<void> blockMember(String id) async {
     try {
-      await _apiService.client.patch(
-        '/admin/members/$id',
-        data: {'status': 'Blocked'},
-      );
+      await _repository.blockMember(id);
       final index = _members.indexWhere((m) => m.id == id);
       if (index != -1) {
         final old = _members[index];
@@ -63,11 +55,7 @@ class MembersController extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to block member: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to block member');
     } finally {
       notifyListeners();
     }
@@ -75,10 +63,7 @@ class MembersController extends ChangeNotifier {
 
   Future<bool> changeRole(String id, String newRole) async {
     try {
-      await _apiService.client.patch(
-        '/admin/members/$id/role',
-        data: {'role': newRole},
-      );
+      await _repository.changeRole(id, newRole);
       final index = _members.indexWhere((m) => m.id == id);
       if (index != -1) {
         final old = _members[index];
@@ -98,11 +83,7 @@ class MembersController extends ChangeNotifier {
       }
       return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to change role: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to change role');
       notifyListeners();
       return false;
     }
@@ -117,35 +98,22 @@ class MembersController extends ChangeNotifier {
       final data = updatedMember.toJson()
         ..remove('id')
         ..remove('created_at');
-      await _apiService.client.patch(
-        '/admin/members/${updatedMember.id}',
-        data: data,
-      );
+      await _repository.updateMember(updatedMember.id, data);
       final index = _members.indexWhere((m) => m.id == updatedMember.id);
       if (index != -1) {
         _members[index] = updatedMember;
       }
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to update member: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to update member');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<List<Map<String, dynamic>>> getManagedCompanies(
-    String memberId,
-  ) async {
+  Future<List<Map<String, dynamic>>> getManagedCompanies(String memberId) async {
     try {
-      final response = await _apiService.client.get(
-        '/admin/members/$memberId/companies',
-      );
-      final List<dynamic> data = response.data;
-      return data.map((json) => json as Map<String, dynamic>).toList();
+      return await _repository.getManagedCompanies(memberId);
     } catch (e) {
       return [];
     }
@@ -157,15 +125,9 @@ class MembersController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/manage-members');
-      final List<dynamic> data = response.data;
-      _globalLogs = data.map((json) => MemberLog.fromJson(json)).toList();
+      _globalLogs = await _repository.getGlobalLogs();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load audit logs: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load audit logs');
     } finally {
       _isLoadingLogs = false;
       notifyListeners();
@@ -174,12 +136,7 @@ class MembersController extends ChangeNotifier {
 
   Future<List<MemberLog>> fetchMemberLogs(String memberId) async {
     try {
-      final response = await _apiService.client.get(
-        '/admin/manage-members',
-        queryParameters: {'memberId': memberId},
-      );
-      final List<dynamic> data = response.data;
-      return data.map((json) => MemberLog.fromJson(json)).toList();
+      return await _repository.getMemberLogs(memberId);
     } catch (e) {
       return [];
     }
@@ -191,16 +148,12 @@ class MembersController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _apiService.client.post('/admin/members/check-expiry');
+      await _repository.checkExpiry();
       await loadMembers();
       await loadGlobalLogs();
       return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to check expiry: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to check expiry');
       return false;
     } finally {
       _isLoading = false;

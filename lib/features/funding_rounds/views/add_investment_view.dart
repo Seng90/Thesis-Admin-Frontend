@@ -5,7 +5,7 @@ import 'package:investrack_admin/features/revisions/controllers/revisions_contro
 import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
 import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
-import 'package:investrack_admin/services/api_service.dart';
+import 'package:investrack_admin/features/funding_rounds/controllers/investments_controller.dart';
 
 class InvestmentEntry {
   bool isOtherInvestor = false;
@@ -95,13 +95,12 @@ class _AddInvestmentViewState extends State<AddInvestmentView> {
   Future<void> _loadFundingRounds() async {
     setState(() => _isLoadingRounds = true);
     try {
-      final api = ApiService();
-      final response = await api.client.get('/admin/funding-rounds');
-      final List<dynamic> data = response.data is List ? response.data : [];
+      final controller = Provider.of<InvestmentsController>(context, listen: false);
+      await controller.fetchFundingRounds();
       setState(() {
-        _fundingRounds = data.map((e) => Map<String, dynamic>.from(e)).toList();
+        _fundingRounds = controller.fundingRounds;
       });
-    } catch (e) {
+    } catch (_) {
       // Silently fail
     } finally {
       setState(() => _isLoadingRounds = false);

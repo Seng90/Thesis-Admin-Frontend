@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart';
-import 'package:investrack_admin/services/api_service.dart';
+import 'package:flutter/material.dart';
 import '../models/dashboard_model.dart';
+import '../repositories/dashboard_repository.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class DashboardController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final DashboardRepository _repository = DashboardRepository();
 
   DashboardSummary? summary;
   List<SectorStat> sectors = [];
@@ -23,7 +24,7 @@ class DashboardController extends ChangeNotifier {
   String currentFundingPeriod = '1M';
 
   DashboardController() {
-    loadAll();
+    // Data is now loaded lazily by the View using load-on-demand
   }
 
   Future<void> loadAll() async {
@@ -45,8 +46,8 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/dashboard/summary');
-      summary = DashboardSummary.fromJson(response.data);
+      final data = await _repository.getSummary();
+      summary = DashboardSummary.fromJson(data);
     } catch (e) {
       _handleError(e);
     } finally {
@@ -60,11 +61,8 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get(
-        '/admin/dashboard/companies-by-sector',
-      );
-      final List<dynamic> data = response.data;
-      sectors = data.map((json) => SectorStat.fromJson(json)).toList();
+      final data = await _repository.getSectors();
+      sectors = data.map<SectorStat>((json) => SectorStat.fromJson(json)).toList();
     } catch (e) {
       _handleError(e);
     } finally {
@@ -79,13 +77,9 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get(
-        '/admin/dashboard/funding-history',
-        queryParameters: {'period': period},
-      );
-      final List<dynamic> data = response.data;
+      final data = await _repository.getFundingHistory(period);
       fundingHistory = data
-          .map((json) => FundingHistoryItem.fromJson(json))
+          .map<FundingHistoryItem>((json) => FundingHistoryItem.fromJson(json))
           .toList();
     } catch (e) {
       _handleError(e);
@@ -100,12 +94,9 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get(
-        '/admin/dashboard/recent-companies',
-      );
-      final List<dynamic> data = response.data;
+      final data = await _repository.getRecentCompanies();
       recentCompanies = data
-          .map((json) => RecentCompany.fromJson(json))
+          .map<RecentCompany>((json) => RecentCompany.fromJson(json))
           .toList();
     } catch (e) {
       _handleError(e);
@@ -120,11 +111,8 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get(
-        '/admin/dashboard/top-startups',
-      );
-      final List<dynamic> data = response.data;
-      topStartups = data.map((json) => TopStartup.fromJson(json)).toList();
+      final data = await _repository.getTopStartups();
+      topStartups = data.map<TopStartup>((json) => TopStartup.fromJson(json)).toList();
     } catch (e) {
       _handleError(e);
     } finally {
@@ -138,12 +126,9 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get(
-        '/admin/dashboard/popular-packages',
-      );
-      final List<dynamic> data = response.data;
+      final data = await _repository.getPopularPackages();
       popularPackages = data
-          .map((json) => PopularPackage.fromJson(json))
+          .map<PopularPackage>((json) => PopularPackage.fromJson(json))
           .toList();
     } catch (e) {
       _handleError(e);
@@ -154,10 +139,6 @@ class DashboardController extends ChangeNotifier {
   }
 
   void _handleError(dynamic e) {
-    if (e is DioException && e.error != null) {
-      errorMessage = e.error.toString();
-    } else {
-      errorMessage = 'Dashboard API Error: $e';
-    }
+    errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Dashboard API Error');
   }
 }

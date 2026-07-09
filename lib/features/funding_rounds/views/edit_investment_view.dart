@@ -7,7 +7,6 @@ import 'package:investrack_admin/features/revisions/controllers/revisions_contro
 import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
 import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
-import 'package:investrack_admin/services/api_service.dart';
 
 class EditInvestmentView extends StatefulWidget {
   final String investmentId;
@@ -77,13 +76,12 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
   Future<void> _loadFundingRounds() async {
     setState(() => _isLoadingRounds = true);
     try {
-      final api = ApiService();
-      final response = await api.client.get('/admin/funding-rounds');
-      final List<dynamic> data = response.data is List ? response.data : [];
+      final controller = Provider.of<InvestmentsController>(context, listen: false);
+      await controller.fetchFundingRounds();
       setState(() {
-        _fundingRounds = data.map((e) => Map<String, dynamic>.from(e)).toList();
+        _fundingRounds = controller.fundingRounds;
       });
-    } catch (e) {
+    } catch (_) {
       // Silently fail
     } finally {
       setState(() => _isLoadingRounds = false);
@@ -92,28 +90,32 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
 
   Future<void> _loadInvestment() async {
     try {
-      final api = ApiService();
-      final response = await api.client.get(
-        '/admin/investments/${widget.investmentId}',
+      final controller = Provider.of<InvestmentsController>(
+        context,
+        listen: false,
       );
-      final found = Investment.fromJson(response.data);
-      setState(() {
-        _existingInvestment = found;
-        _amountController.text = found.amount.toString();
-        _currencyController.text = found.currency;
-        _referenceUrlController.text = found.referenceUrl ?? '';
-        _selectedCompanyId = found.companyId;
-        _selectedInvestorId = found.investorId;
-        _selectedRoundId = found.roundId;
-        _selectedStatus = found.status;
-        _investDate = found.investDate;
-        _isOtherInvestor = found.investorId == null;
-        _customInvestorNameController.text = found.customInvestorName ?? '';
-        _isLoadingData = false;
-      });
-    } catch (e) {
+      final found = await controller.fetchInvestmentDetail(widget.investmentId);
+      if (found != null) {
+        setState(() {
+          _existingInvestment = found;
+          _amountController.text = found.amount.toString();
+          _currencyController.text = found.currency;
+          _referenceUrlController.text = found.referenceUrl ?? '';
+          _selectedCompanyId = found.companyId;
+          _selectedInvestorId = found.investorId;
+          _selectedRoundId = found.roundId;
+          _selectedStatus = found.status;
+          _investDate = found.investDate;
+          _isOtherInvestor = found.investorId == null;
+          _customInvestorNameController.text = found.customInvestorName ?? '';
+          _isLoadingData = false;
+        });
+      } else {
+        throw Exception("Not found");
+      }
+    } catch (_) {
       if (!mounted) return;
-      // Fallback: try from controller
+      // Fallback: try from controller list
       final controller = Provider.of<InvestmentsController>(
         context,
         listen: false,

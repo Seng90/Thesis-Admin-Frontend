@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/package_model.dart';
-import 'package:investrack_admin/services/api_service.dart';
+import '../repositories/packages_repository.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class PackagesController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final PackagesRepository _repository = PackagesRepository();
 
   List<Package> _packages = [];
   bool _isLoading = false;
@@ -19,42 +20,34 @@ class PackagesController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/packages');
-      final List<dynamic> data = response.data;
-      _packages = data.map((json) => Package.fromJson(json)).toList();
+      _packages = await _repository.getPackages();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load packages: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load packages');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> deletePackage(String id) async {
+  Future<bool> deletePackage(String id) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _apiService.client.delete('/admin/packages/$id');
+      await _repository.deletePackage(id);
       _packages.removeWhere((p) => p.id == id);
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to delete package: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to delete package');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> addPackage(Package package) async {
+  Future<bool> addPackage(Package package) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -63,26 +56,19 @@ class PackagesController extends ChangeNotifier {
       final data = package.toJson()
         ..remove('id')
         ..remove('created_at');
-      // Convert price to Decimal/double on backend if needed, toJson already produces double
-      final response = await _apiService.client.post(
-        '/admin/packages',
-        data: data,
-      );
-      final newPackage = Package.fromJson(response.data);
-      _packages.add(newPackage);
+      final created = await _repository.createPackage(data);
+      _packages.add(created);
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to add package: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to add package');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> updatePackage(Package updatedPackage) async {
+  Future<bool> updatePackage(Package updatedPackage) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -91,20 +77,15 @@ class PackagesController extends ChangeNotifier {
       final data = updatedPackage.toJson()
         ..remove('id')
         ..remove('created_at');
-      await _apiService.client.patch(
-        '/admin/packages/${updatedPackage.id}',
-        data: data,
-      );
+      final updated = await _repository.updatePackage(updatedPackage.id, data);
       final index = _packages.indexWhere((p) => p.id == updatedPackage.id);
       if (index != -1) {
-        _packages[index] = updatedPackage;
+        _packages[index] = updated;
       }
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to update package: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to update package');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();

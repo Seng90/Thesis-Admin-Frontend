@@ -22,22 +22,14 @@ class ModerationsView extends StatefulWidget {
 }
 
 class _ModerationsViewState extends State<ModerationsView> {
-  bool _isInit = false;
   String _selectedTab = 'All';
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_isInit) {
-      final controller = Provider.of<RevisionsController>(
-        context,
-        listen: false,
-      );
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        controller.loadPendingRevisions();
-      });
-      _isInit = true;
-    }
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<RevisionsController>(context, listen: false).loadPendingRevisions();
+    });
   }
 
   @override
@@ -118,8 +110,34 @@ class _ModerationsViewState extends State<ModerationsView> {
             Expanded(
               child: Consumer<RevisionsController>(
                 builder: (context, controller, child) {
-                  if (controller.isLoading) {
+                   if (controller.isLoading) {
                     return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (controller.errorMessage != null) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: AppColors.error,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            controller.errorMessage!,
+                            style: const TextStyle(color: AppColors.textSecondary),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () => controller.loadPendingRevisions(),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
                   }
 
                   if (controller.pendingRevisions.isEmpty) {
@@ -236,7 +254,10 @@ class _ModerationsViewState extends State<ModerationsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -256,7 +277,6 @@ class _ModerationsViewState extends State<ModerationsView> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -279,34 +299,29 @@ class _ModerationsViewState extends State<ModerationsView> {
                         ),
                       ),
                     ),
-                    revision.submitterType == 'member'
-                        ? const SizedBox(width: 8)
-                        : const SizedBox.shrink(),
-                    revision.submitterType == 'member'
-                        ? Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.successBg.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppColors.success.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: const Text(
-                              'member request',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.success,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                    const SizedBox(width: 8),
+                    if (revision.submitterType == 'member')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.successBg.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.success.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: const Text(
+                          'member request',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
                     Text(
                       '${changes.length} field${changes.length > 1 ? 's' : ''} changed',
                       style: const TextStyle(
@@ -404,15 +419,18 @@ class _ModerationsViewState extends State<ModerationsView> {
                                     ),
                                   ),
                                 ),
-                                Text(
-                                  changeValue.length > 20
-                                      ? '${changeValue.substring(0, 20)}...'
-                                      : changeValue,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontFamily: 'monospace',
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.success,
+                                Expanded(
+                                  child: Text(
+                                    changeValue.length > 20
+                                        ? '${changeValue.substring(0, 20)}...'
+                                        : changeValue,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontFamily: 'monospace',
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.success,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],

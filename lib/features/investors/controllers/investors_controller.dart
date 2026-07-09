@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/investor_model.dart';
-import 'package:investrack_admin/services/api_service.dart';
+import '../repositories/investors_repository.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class InvestorsController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final InvestorsRepository _repository = InvestorsRepository();
 
   List<Investor> _investors = [];
   bool _isLoading = false;
@@ -19,42 +20,34 @@ class InvestorsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/investors');
-      final List<dynamic> data = response.data;
-      _investors = data.map((json) => Investor.fromJson(json)).toList();
+      _investors = await _repository.getInvestors();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load investors: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load investors');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> deleteInvestor(String id) async {
+  Future<bool> deleteInvestor(String id) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _apiService.client.delete('/admin/investors/$id');
+      await _repository.deleteInvestor(id);
       _investors.removeWhere((i) => i.id == id);
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to delete investor: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to delete investor');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> addInvestor(Investor investor) async {
+  Future<bool> addInvestor(Investor investor) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -63,25 +56,19 @@ class InvestorsController extends ChangeNotifier {
       final data = investor.toJson()
         ..remove('id')
         ..remove('created_at');
-      final response = await _apiService.client.post(
-        '/admin/investors',
-        data: data,
-      );
-      final newInvestor = Investor.fromJson(response.data);
-      _investors.add(newInvestor);
+      final created = await _repository.createInvestor(data);
+      _investors.add(created);
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to add investor: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to add investor');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> updateInvestor(Investor updatedInvestor) async {
+  Future<bool> updateInvestor(Investor updatedInvestor) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -90,20 +77,15 @@ class InvestorsController extends ChangeNotifier {
       final data = updatedInvestor.toJson()
         ..remove('id')
         ..remove('created_at');
-      await _apiService.client.patch(
-        '/admin/investors/${updatedInvestor.id}',
-        data: data,
-      );
+      final updated = await _repository.updateInvestor(updatedInvestor.id, data);
       final index = _investors.indexWhere((i) => i.id == updatedInvestor.id);
       if (index != -1) {
-        _investors[index] = updatedInvestor;
+        _investors[index] = updated;
       }
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to update investor: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to update investor');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();

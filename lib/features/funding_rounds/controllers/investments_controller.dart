@@ -1,82 +1,110 @@
-import 'package:flutter/foundation.dart';
-import 'package:investrack_admin/services/api_service.dart';
-
+import 'package:flutter/material.dart';
 import '../models/investment_model.dart';
 import '../models/investment_summary_model.dart';
+import '../repositories/investments_repository.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class InvestmentsController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final InvestmentsRepository _repository = InvestmentsRepository();
 
   List<Investment> _investments = [];
   List<InvestmentSummary> _summaries = [];
+  List<Map<String, dynamic>> _fundingRounds = [];
   bool _isLoading = false;
   String? _errorMessage;
 
   List<Investment> get investments => _investments;
   List<InvestmentSummary> get summaries => _summaries;
+  List<Map<String, dynamic>> get fundingRounds => _fundingRounds;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  /// Fetch flat list of all investments (used by edit/detail views)
+  /// Fetch flat list of all investments
   Future<void> fetchInvestments() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/investments');
-      final List<dynamic> data = response.data;
-      _investments = data.map((json) => Investment.fromJson(json)).toList();
+      _investments = await _repository.getInvestments();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load investments: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load investments');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// Fetch grouped/summarized investments (used by the main list view)
+  /// Fetch grouped/summarized investments
   Future<void> fetchSummaries() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get(
-        '/admin/investments/summary',
-      );
-      final List<dynamic> data = response.data;
-      _summaries = data
-          .map((json) => InvestmentSummary.fromJson(json))
-          .toList();
+      final data = await _repository.getSummaries();
+      _summaries = data.map((json) => InvestmentSummary.fromJson(json)).toList();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load investment summaries: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load investment summaries');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> deleteInvestment(String id) async {
+  /// Fetch available funding rounds
+  Future<void> fetchFundingRounds() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
     try {
-      await _apiService.client.delete('/admin/investments/$id');
+      _fundingRounds = await _repository.getFundingRounds();
+    } catch (e) {
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load funding rounds');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Fetch single investment details
+  Future<Investment?> fetchInvestmentDetail(String id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      return await _repository.getInvestment(id);
+    } catch (e) {
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load investment details');
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Delete an investment and update local lists
+  Future<bool> deleteInvestment(String id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.deleteInvestment(id);
       _investments.removeWhere((i) => i.id == id);
-      // Also remove from summaries
+      // Update summaries
       for (final summary in _summaries) {
         summary.investments.removeWhere((i) => i.id == id);
       }
       _summaries.removeWhere((s) => s.investments.isEmpty);
-      notifyListeners();
+      return true;
     } catch (e) {
-      _errorMessage = 'Failed to delete investment: $e';
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to delete investment');
+      return false;
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

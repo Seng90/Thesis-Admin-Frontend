@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/company_model.dart';
-import 'package:investrack_admin/services/api_service.dart';
+import '../repositories/companies_repository.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class CompaniesController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final CompaniesRepository _repository = CompaniesRepository();
 
   List<Company> _companies = [];
   bool _isLoading = false;
@@ -19,84 +20,51 @@ class CompaniesController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/companies');
-      final List<dynamic> data = response.data is List ? response.data : [];
-      _companies = data.map((json) => Company.fromJson(json)).toList();
+      _companies = await _repository.getCompanies();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load companies: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load companies');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> updateCompanyStatus(String id, String newStatus) async {
+  Future<bool> updateCompanyStatus(String id, String newStatus) async {
     try {
-      await _apiService.client.patch(
-        '/admin/companies/$id',
-        data: {'status': newStatus},
-      );
+      final updated = await _repository.updateCompany(id, {'status': newStatus});
       final index = _companies.indexWhere((c) => c.id == id);
       if (index != -1) {
-        final old = _companies[index];
-        _companies[index] = Company(
-          id: old.id,
-          name: old.name,
-          description: old.description,
-          industry: old.industry,
-          location: old.location,
-          contactEmail: old.contactEmail,
-          status: newStatus,
-          viewCount: old.viewCount,
-          foundedDate: old.foundedDate,
-          logoUrl: old.logoUrl,
-          websiteUrl: old.websiteUrl,
-          approvedBy: old.approvedBy,
-          createdAt: old.createdAt,
-          updatedAt: old.updatedAt,
-        );
+        _companies[index] = updated;
         notifyListeners();
       }
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to update company status: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to update company status');
       notifyListeners();
+      return false;
     }
   }
 
-  Future<void> addCompany(Company company) async {
+  Future<bool> addCompany(Company company) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final data = company.toJson()..remove('id');
-      final response = await _apiService.client.post(
-        '/admin/companies',
-        data: data,
-      );
-      final newCompany = Company.fromJson(response.data);
-      _companies.add(newCompany);
+      final data = company.toJson()..remove('id')..remove('approved_by');
+      final created = await _repository.createCompany(data);
+      _companies.add(created);
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to add company: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to add company');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> updateCompany(Company updatedCompany) async {
+  Future<bool> updateCompany(Company updatedCompany) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -105,40 +73,33 @@ class CompaniesController extends ChangeNotifier {
       final data = updatedCompany.toJson()
         ..remove('id')
         ..remove('approved_by');
-      await _apiService.client.patch(
-        '/admin/companies/${updatedCompany.id}',
-        data: data,
-      );
+      final updated = await _repository.updateCompany(updatedCompany.id, data);
       final index = _companies.indexWhere((c) => c.id == updatedCompany.id);
       if (index != -1) {
-        _companies[index] = updatedCompany;
+        _companies[index] = updated;
       }
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to update company: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to update company');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> deleteCompany(String id) async {
+  Future<bool> deleteCompany(String id) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _apiService.client.delete('/admin/companies/$id');
+      await _repository.deleteCompany(id);
       _companies.removeWhere((c) => c.id == id);
+      return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to delete company: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to delete company');
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();

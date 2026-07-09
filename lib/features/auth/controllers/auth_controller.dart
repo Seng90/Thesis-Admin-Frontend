@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
+import '../repositories/auth_repository.dart';
 import 'package:investrack_admin/services/api_service.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class AuthController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final AuthRepository _authRepository = AuthRepository();
 
   UserModel? _currentUser;
   bool _isLoading = false;
@@ -22,7 +24,7 @@ class AuthController extends ChangeNotifier {
     ApiService.onUnauthorized = () {
       logout();
     };
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future.microtask(() {
       checkAuthStatus();
     });
   }
@@ -32,10 +34,7 @@ class AuthController extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      final response = await _apiService.client.post(
-        '/auth/login',
-        data: {'email': email, 'password': password},
-      );
+      final response = await _authRepository.login(email, password);
 
       final data = response.data;
       if (data != null && data['access_token'] != null) {
@@ -60,11 +59,7 @@ class AuthController extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Invalid email or password.';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Invalid email or password');
       _setLoading(false);
       return false;
     }
@@ -117,7 +112,7 @@ class AuthController extends ChangeNotifier {
 
   Future<void> _refreshProfileInBackground() async {
     try {
-      final response = await _apiService.client.get('/auth/me');
+      final response = await _authRepository.getProfile();
       if (response.statusCode == 200 && response.data != null) {
         _currentUser = UserModel.fromJson(response.data);
         final prefs = await SharedPreferences.getInstance();
@@ -125,11 +120,9 @@ class AuthController extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      // If unauthorized (401), force logout
       if (e is DioException && e.response?.statusCode == 401) {
         await logout();
       }
-      // For network errors / server down, we keep the cached profile values gracefully
     }
   }
 

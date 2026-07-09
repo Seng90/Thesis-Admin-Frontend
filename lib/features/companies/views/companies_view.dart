@@ -21,6 +21,17 @@ class _CompaniesViewState extends State<CompaniesView> {
   String _statusFilter = 'All';
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = Provider.of<CompaniesController>(context, listen: false);
+      if (controller.companies.isEmpty && !controller.isLoading) {
+        controller.loadCompanies();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _verticalScroll.dispose();
     _horizontalScroll.dispose();

@@ -1,10 +1,10 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:investrack_admin/services/api_service.dart';
+import 'package:flutter/material.dart';
 import '../models/revision_model.dart';
+import '../repositories/revisions_repository.dart';
+import 'package:investrack_admin/utils/error_handler.dart';
 
 class RevisionsController extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final RevisionsRepository _repository = RevisionsRepository();
 
   List<Revision> _pendingRevisions = [];
   bool _isLoading = false;
@@ -20,15 +20,9 @@ class RevisionsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.client.get('/admin/revisions/pending');
-      final List<dynamic> data = response.data;
-      _pendingRevisions = data.map((json) => Revision.fromJson(json)).toList();
+      _pendingRevisions = await _repository.getPendingRevisions();
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to load revisions: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to load revisions');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -45,23 +39,11 @@ class RevisionsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _apiService.client.post(
-        '/admin/revisions',
-        data: {
-          'entity_type': entityType,
-          'entity_id': entityId,
-          'proposed_changes': proposedChanges,
-        },
-      );
-      // Optionally reload pending revisions
+      await _repository.createRevision(entityType, entityId, proposedChanges);
       await loadPendingRevisions();
       return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to create revision: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to create revision');
       _isLoading = false;
       notifyListeners();
       return false;
@@ -74,15 +56,11 @@ class RevisionsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _apiService.client.patch('/admin/revisions/$id/approve');
+      await _repository.approveRevision(id);
       _pendingRevisions.removeWhere((r) => r.id == id);
       return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to approve revision: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to approve revision');
       return false;
     } finally {
       _isLoading = false;
@@ -96,15 +74,11 @@ class RevisionsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _apiService.client.patch('/admin/revisions/$id/reject');
+      await _repository.rejectRevision(id);
       _pendingRevisions.removeWhere((r) => r.id == id);
       return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to reject revision: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to reject revision');
       return false;
     } finally {
       _isLoading = false;
@@ -122,21 +96,11 @@ class RevisionsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _apiService.client.patch(
-        '/admin/revisions/$id/partial-approve',
-        data: {
-          'fieldDecisions': fieldDecisions,
-          'adminNote': adminNote,
-        },
-      );
+      await _repository.partialApproveRevision(id, fieldDecisions, adminNote);
       _pendingRevisions.removeWhere((r) => r.id == id);
       return true;
     } catch (e) {
-      if (e is DioException && e.error != null) {
-        _errorMessage = e.error.toString();
-      } else {
-        _errorMessage = 'Failed to partially approve revision: $e';
-      }
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to partially approve revision');
       return false;
     } finally {
       _isLoading = false;

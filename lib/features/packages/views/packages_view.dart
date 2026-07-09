@@ -20,6 +20,17 @@ class _PackagesViewState extends State<PackagesView> {
   bool _isUSD = true;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = Provider.of<PackagesController>(context, listen: false);
+      if (controller.packages.isEmpty && !controller.isLoading) {
+        controller.loadPackages();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _verticalScroll.dispose();
     _horizontalScroll.dispose();
