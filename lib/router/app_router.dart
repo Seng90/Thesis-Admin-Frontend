@@ -33,7 +33,7 @@ import 'package:investrack_admin/features/fundraising_posts/views/fundraising_po
 import 'package:investrack_admin/features/fundraising_posts/views/edit_fundraising_post_view.dart';
 import 'package:investrack_admin/features/fundraising_posts/views/fundraising_post_details_view.dart';
 import 'package:investrack_admin/features/settings/views/settings_view.dart';
-import 'package:investrack_admin/features/admins/views/admins_view.dart';
+import 'package:investrack_admin/features/admins/views/manage_system_view.dart';
 import 'package:investrack_admin/features/admins/views/add_admin_view.dart';
 import 'package:investrack_admin/features/admins/views/edit_admin_view.dart';
 
@@ -227,7 +227,7 @@ GoRouter createAppRouter(AuthController authController) {
           GoRoute(
             path: '/admins',
             pageBuilder: (context, state) =>
-                const NoTransitionPage(child: AdminsView()),
+                const NoTransitionPage(child: ManageSystemView()),
           ),
           GoRoute(
             path: '/admins/add',

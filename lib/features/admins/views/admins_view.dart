@@ -35,13 +35,6 @@ class _AdminsViewState extends State<AdminsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage Admins'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: Consumer<AdminsController>(
         builder: (context, controller, child) {
           if (controller.isLoading) {
@@ -94,18 +87,22 @@ class _AdminsViewState extends State<AdminsView> {
                   child: Card(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Scrollbar(
-                        controller: _horizontalScroll,
-                        thumbVisibility: true,
-                        child: SingleChildScrollView(
-                          controller: _horizontalScroll,
-                          scrollDirection: Axis.horizontal,
-                          child: Scrollbar(
-                            controller: _verticalScroll,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Scrollbar(
+                            controller: _horizontalScroll,
                             thumbVisibility: true,
                             child: SingleChildScrollView(
-                              controller: _verticalScroll,
-                              scrollDirection: Axis.vertical,
+                              controller: _horizontalScroll,
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                                child: Scrollbar(
+                                  controller: _verticalScroll,
+                                  thumbVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _verticalScroll,
+                                    scrollDirection: Axis.vertical,
                               child: DataTable(
                                 columnSpacing: 24.0,
                                 showCheckboxColumn: false,
@@ -176,20 +173,23 @@ class _AdminsViewState extends State<AdminsView> {
                                     ],
                                   );
                                 }).toList(),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+                              ), // DataTable
+                            ), // SingleChildScrollView
+                          ), // Scrollbar
+                        ), // ConstrainedBox
+                      ), // SingleChildScrollView
+                    ); // return Scrollbar
+                  }, // builder LayoutBuilder
+                ), // LayoutBuilder
+              ), // ClipRRect
+            ), // Card
+          ), // Expanded
+        ], // Column children
+      ), // Column
+    ); // Padding
+  }, // Consumer builder
+), // Consumer
+); // Scaffold
   }
 
   void _confirmDelete(BuildContext context, String id) {

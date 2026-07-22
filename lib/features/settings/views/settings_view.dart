@@ -13,12 +13,10 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  final _apiUrlController = TextEditingController(text: AppConstants.baseUrl);
   bool _notificationsEnabled = true;
 
   @override
   void dispose() {
-    _apiUrlController.dispose();
     super.dispose();
   }
 
@@ -54,7 +52,7 @@ class _SettingsViewState extends State<SettingsView> {
                       ElevatedButton.icon(
                         onPressed: () => context.push('/admins'),
                         icon: const Icon(Icons.admin_panel_settings),
-                        label: const Text('Manage Admins'),
+                        label: const Text('Manage Base System & Admin'),
                       ),
                   ],
                 ),
@@ -130,57 +128,7 @@ class _SettingsViewState extends State<SettingsView> {
 
                 const SizedBox(height: 32),
 
-                // API Configuration Section
-                const Text(
-                  'API Configuration',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          controller: _apiUrlController,
-                          readOnly: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Backend API URL',
-                            prefixIcon: Icon(Icons.link),
-                            helperText: 'This is configured in constants.dart',
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.info_outline,
-                              size: 16,
-                              color: AppColors.textMuted,
-                            ),
-                            const SizedBox(width: 8),
-                            const Expanded(
-                              child: Text(
-                                'API Swagger Documentation is available at the base URL + /docs',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
 
-                const SizedBox(height: 32),
 
                 // Preferences Section
                 const Text(

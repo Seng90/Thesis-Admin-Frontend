@@ -459,6 +459,7 @@ class _MainLayoutViewState extends State<MainLayoutView> {
     if (location.startsWith('/packages')) return 7;
     if (location.startsWith('/moderation')) return 8;
     if (location.startsWith('/settings')) return 9;
+    if (location.startsWith('/admins')) return -1; // Hide from sidebar highlight
     return 0;
   }
 }
