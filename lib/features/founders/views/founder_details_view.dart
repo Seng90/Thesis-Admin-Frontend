@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/founders/controllers/founders_controller.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
+import 'package:investrack_admin/widgets/custom_logo_widget.dart';
+import 'package:investrack_admin/features/companies/models/company_model.dart';
 
 class FounderDetailsView extends StatefulWidget {
   final String founderId;
@@ -26,7 +28,9 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
         listen: false,
       );
       if (controller.founders.isEmpty) {
-        controller.fetchFounders();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          controller.fetchFounders();
+        });
       }
       _isInit = true;
     }
@@ -144,27 +148,10 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryLight,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    founder.nameEn.isNotEmpty
-                                        ? founder.nameEn
-                                              .substring(0, 1)
-                                              .toUpperCase()
-                                        : '?',
-                                    style: const TextStyle(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
+                              CustomLogoWidget(
+                                imageUrl: founder.avatarUrl,
+                                fallbackName: founder.nameEn.isNotEmpty ? founder.nameEn : '?',
+                                size: 80,
                               ),
                               const SizedBox(width: 24),
                               Expanded(
@@ -373,6 +360,11 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
                           }
                         },
                       ),
+                      
+                      if (founder.companies.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        _buildCompaniesSection(founder.companies),
+                      ],
                     ],
                   ),
                 ),
@@ -449,6 +441,78 @@ class _FounderDetailsViewState extends State<FounderDetailsView> {
               ),
             ],
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompaniesSection(List<Company> companies) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Founded Companies',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: companies.map((company) {
+            return InkWell(
+              onTap: () => context.push('/companies/view/${company.id}'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: 250,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    CustomLogoWidget(
+                      imageUrl: company.logoUrl,
+                      fallbackName: company.name,
+                      size: 40,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            company.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (company.industry.isNotEmpty)
+                            Text(
+                              company.industry,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ],
     );

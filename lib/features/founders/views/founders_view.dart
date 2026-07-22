@@ -39,6 +39,14 @@ class _FoundersViewState extends State<FoundersView> {
       appBar: AppBar(
         title: const Text('Founders'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 20),
+            tooltip: 'Refresh',
+            onPressed: () {
+              context.read<FoundersController>().fetchFounders();
+            },
+          ),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 32.0),
             child: ElevatedButton.icon(
@@ -230,7 +238,7 @@ class _FoundersViewState extends State<FoundersView> {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   CustomLogoWidget(
-                                                    imageUrl: null,
+                                                    imageUrl: founder.avatarUrl,
                                                     fallbackName:
                                                         founder.nameEn,
                                                     size: 32,
@@ -269,7 +277,9 @@ class _FoundersViewState extends State<FoundersView> {
                                             ),
                                             DataCell(
                                               Text(
-                                                founder.linkedinUrl ?? 'N/A',
+                                                (founder.linkedinUrl != null && founder.linkedinUrl!.isNotEmpty)
+                                                    ? 'Available'
+                                                    : 'N/A',
                                                 style: const TextStyle(
                                                   color:
                                                       AppColors.textSecondary,

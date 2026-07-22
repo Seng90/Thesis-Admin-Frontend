@@ -48,8 +48,11 @@ class _MembersViewState extends State<MembersView> {
     final strExpiry = 'EXPIRY'.tr(context);
     final strActions = 'ACTIONS'.tr(context);
     final strBlock = 'Block'.tr(context);
+    final strUnblock = 'Unblock'.tr(context);
     final strViewDetails = 'View Details'.tr(context);
     final strEditManage = 'Edit / Manage'.tr(context);
+    final strDelete = 'Delete'.tr(context);
+    final strCancel = 'Cancel'.tr(context);
 
     return DefaultTabController(
       length: 2,
@@ -444,14 +447,104 @@ class _MembersViewState extends State<MembersView> {
                                                                   'status':
                                                                       'Blocked',
                                                                 },
-                                                              );
-                                                              ScaffoldMessenger.of(
-                                                                context,
-                                                              ).showSnackBar(
-                                                                const SnackBar(
+                                                              ).then((success) {
+                                                                if (context.mounted) {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    SnackBar(
+                                                                      content: Text(
+                                                                        success
+                                                                            ? 'Block request submitted for review!'
+                                                                            : 'Failed to submit block request.',
+                                                                      ),
+                                                                      backgroundColor: success ? AppColors.success : AppColors.error,
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              });
+                                                            } else if (value ==
+                                                                'unblock') {
+                                                              final revCtrl =
+                                                                  Provider.of<
+                                                                    RevisionsController
+                                                                  >(
+                                                                    context,
+                                                                    listen:
+                                                                        false,
+                                                                  );
+                                                              revCtrl.createRevision(
+                                                                entityType:
+                                                                    'Member',
+                                                                entityId:
+                                                                    member.id,
+                                                                proposedChanges: {
+                                                                  'status':
+                                                                      'Active',
+                                                                },
+                                                              ).then((success) {
+                                                                if (context.mounted) {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    SnackBar(
+                                                                      content: Text(
+                                                                        success
+                                                                            ? 'Unblock request submitted for review!'
+                                                                            : 'Failed to submit unblock request.',
+                                                                      ),
+                                                                      backgroundColor: success ? AppColors.success : AppColors.error,
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              });
+                                                            } else if (value ==
+                                                                'delete') {
+                                                              showDialog(
+                                                                context: context,
+                                                                builder: (context) => AlertDialog(
+                                                                  title: Text(strDelete),
                                                                   content: Text(
-                                                                    'Block request submitted for review!',
+                                                                    'Are you sure you want to delete "${member.username}"?',
                                                                   ),
+                                                                  actions: [
+                                                                    TextButton(
+                                                                      onPressed: () => Navigator.pop(context),
+                                                                      child: Text(strCancel),
+                                                                    ),
+                                                                    TextButton(
+                                                                      onPressed: () {
+                                                                        Navigator.pop(context);
+                                                                        final revController = Provider.of<RevisionsController>(
+                                                                          context,
+                                                                          listen: false,
+                                                                        );
+                                                                        revController
+                                                                            .createRevision(
+                                                                              entityType: 'Member',
+                                                                              entityId: member.id,
+                                                                              proposedChanges: {
+                                                                                '_action': 'delete',
+                                                                              },
+                                                                            )
+                                                                            .then((success) {
+                                                                              if (context.mounted) {
+                                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                                  SnackBar(
+                                                                                    content: Text(
+                                                                                      success
+                                                                                          ? 'Delete request submitted for review!'
+                                                                                          : 'Failed to submit delete request.',
+                                                                                    ),
+                                                                                    backgroundColor:
+                                                                                        success ? AppColors.success : AppColors.error,
+                                                                                  ),
+                                                                                );
+                                                                              }
+                                                                            });
+                                                                      },
+                                                                      child: Text(
+                                                                        strDelete,
+                                                                        style: const TextStyle(color: AppColors.error),
+                                                                      ),
+                                                                    ),
+                                                                  ],
                                                                 ),
                                                               );
                                                             }
@@ -467,6 +560,17 @@ class _MembersViewState extends State<MembersView> {
                                                                         .error,
                                                                   ),
                                                                 ),
+                                                              )
+                                                            else
+                                                              PopupMenuItem(
+                                                                value: 'unblock',
+                                                                child: Text(
+                                                                  strUnblock,
+                                                                  style: const TextStyle(
+                                                                    color: AppColors
+                                                                        .success,
+                                                                  ),
+                                                                ),
                                                               ),
                                                             PopupMenuItem(
                                                               value: 'view',
@@ -478,6 +582,16 @@ class _MembersViewState extends State<MembersView> {
                                                               value: 'edit',
                                                               child: Text(
                                                                 strEditManage,
+                                                              ),
+                                                            ),
+                                                            PopupMenuItem(
+                                                              value: 'delete',
+                                                              child: Text(
+                                                                strDelete,
+                                                                style: const TextStyle(
+                                                                  color: AppColors
+                                                                      .error,
+                                                                ),
                                                               ),
                                                             ),
                                                           ],

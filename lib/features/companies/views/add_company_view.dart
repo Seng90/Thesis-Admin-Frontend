@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
@@ -16,7 +17,15 @@ class _AddCompanyViewState extends State<AddCompanyView> {
 
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
-  final _industryController = TextEditingController();
+  String? _selectedIndustry;
+  List<String> _industries = [
+    'FinTech',
+    'HealthTech',
+    'EdTech',
+    'E-commerce',
+    'SaaS',
+    'AI & Data',
+  ];
   final _locationController = TextEditingController();
   final _emailController = TextEditingController();
   final _logoUrlController = TextEditingController();
@@ -40,7 +49,7 @@ class _AddCompanyViewState extends State<AddCompanyView> {
   final List<String> _keyProducts = [];
   final List<String> _keyPartners = [];
 
-  static const List<String> _employeeCountOptions = [
+  List<String> _employeeCountOptions = [
     '1-10',
     '11-50',
     '51-200',
@@ -52,11 +61,57 @@ class _AddCompanyViewState extends State<AddCompanyView> {
     'Closed',
   ];
 
+
+  @override
+  void initState() {
+    super.initState();
+    _loadIndustries();
+    _loadEmployeeCounts();
+  }
+
+  Future<void> _loadIndustries() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('admin_industries');
+    if (saved != null && saved.isNotEmpty) {
+      if (mounted) setState(() => _industries = saved);
+    }
+  }
+
+  Future<void> _saveIndustries() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('admin_industries', _industries);
+  }
+
+  Future<void> _loadEmployeeCounts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('admin_employee_counts');
+    if (saved != null && saved.isNotEmpty) {
+      if (mounted) {
+        setState(() {
+          _employeeCountOptions = saved;
+          if (_employeeCount != null && !_employeeCountOptions.contains(_employeeCount!)) {
+            _employeeCountOptions.add(_employeeCount!);
+          }
+        });
+      }
+    } else {
+      if (mounted && _employeeCount != null && !_employeeCountOptions.contains(_employeeCount!)) {
+        setState(() {
+          _employeeCountOptions.add(_employeeCount!);
+        });
+      }
+    }
+  }
+
+  Future<void> _saveEmployeeCounts() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('admin_employee_counts', _employeeCountOptions);
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _descController.dispose();
-    _industryController.dispose();
     _locationController.dispose();
     _emailController.dispose();
     _logoUrlController.dispose();
@@ -88,6 +143,10 @@ class _AddCompanyViewState extends State<AddCompanyView> {
 
   Future<void> _saveForm() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedIndustry == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an industry')));
+      return;
+    }
 
     setState(() => _isSaving = true);
 
@@ -99,7 +158,8 @@ class _AddCompanyViewState extends State<AddCompanyView> {
     Map<String, dynamic> proposedChanges = {
       'name': _nameController.text.trim(),
       'description': _descController.text.trim(),
-      'industry': _industryController.text.trim(),
+      if (_selectedIndustry != null)
+        'industry': _selectedIndustry,
       'location': _locationController.text.trim(),
       'contact_email': _emailController.text.trim(),
       'status': _status,
@@ -228,6 +288,183 @@ class _AddCompanyViewState extends State<AddCompanyView> {
     );
   }
 
+
+  void _showManageIndustriesDialog() {
+    final newIndController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Manage Industries', style: TextStyle(fontWeight: FontWeight.bold)),
+              contentPadding: const EdgeInsets.all(24),
+              content: SizedBox(
+                width: 450,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: newIndController,
+                            decoration: const InputDecoration(
+                              labelText: 'New Industry',
+                              border: OutlineInputBorder(),
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            final val = newIndController.text.trim();
+                            if (val.isNotEmpty && !_industries.contains(val)) {
+                              setState(() {
+                                _industries.add(val);
+                                _saveIndustries();
+                              });
+                              setDialogState(() {});
+                              newIndController.clear();
+                            }
+                          },
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Add'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 350),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: _industries.length,
+                        separatorBuilder: (context, index) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final ind = _industries[index];
+                          return ListTile(
+                            dense: true,
+                            title: Text(ind, style: const TextStyle(fontWeight: FontWeight.w500)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                              onPressed: () {
+                                setState(() {
+                                  _industries.removeAt(index);
+                                  if (_selectedIndustry == ind) _selectedIndustry = null;
+                                  _saveIndustries();
+                                });
+                                setDialogState(() {});
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showManageEmployeeCountsDialog() {
+    final newCountController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Manage Employee Counts', style: TextStyle(fontWeight: FontWeight.bold)),
+              contentPadding: const EdgeInsets.all(24),
+              content: SizedBox(
+                width: 450,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: newCountController,
+                            decoration: const InputDecoration(
+                              labelText: 'New Employee Count',
+                              border: OutlineInputBorder(),
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            final val = newCountController.text.trim();
+                            if (val.isNotEmpty && !_employeeCountOptions.contains(val)) {
+                              setState(() {
+                                _employeeCountOptions.add(val);
+                                _saveEmployeeCounts();
+                              });
+                              setDialogState(() {});
+                              newCountController.clear();
+                            }
+                          },
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Add'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 350),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: _employeeCountOptions.length,
+                        separatorBuilder: (context, index) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final ind = _employeeCountOptions[index];
+                          return ListTile(
+                            dense: true,
+                            title: Text(ind, style: const TextStyle(fontWeight: FontWeight.w500)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                              onPressed: () {
+                                setState(() {
+                                  _employeeCountOptions.removeAt(index);
+                                  if (_employeeCount == ind) _employeeCount = null;
+                                  _saveEmployeeCounts();
+                                });
+                                setDialogState(() {});
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -290,17 +527,34 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                       Row(
                         children: [
                           Expanded(
-                            child: TextFormField(
-                              controller: _industryController,
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedIndustry,
                               decoration: const InputDecoration(
                                 labelText: 'Industry *',
-                                hintText: 'e.g. FinTech',
                                 prefixIcon: Icon(Icons.category),
                               ),
-                              validator: (v) => v!.trim().isEmpty
+                              items: _industries
+                                  .map((ind) => DropdownMenuItem(
+                                        value: ind,
+                                        child: Text(ind),
+                                      ))
+                                  .toList(),
+                              onChanged: (val) {
+                                setState(() {
+                                  _selectedIndustry = val;
+                                });
+                              },
+                              validator: (v) => v == null || v.isEmpty
                                   ? 'Industry is required'
                                   : null,
                             ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.settings),
+                            tooltip: 'Manage Industries',
+                            onPressed: _showManageIndustriesDialog,
+                          
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -431,6 +685,12 @@ class _AddCompanyViewState extends State<AddCompanyView> {
                                   setState(() => _employeeCount = v),
                               isExpanded: true,
                             ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.settings),
+                            tooltip: 'Manage Employee Counts',
+                            onPressed: _showManageEmployeeCountsDialog,
                           ),
                           const SizedBox(width: 12),
                           Expanded(

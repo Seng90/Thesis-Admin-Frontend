@@ -326,27 +326,39 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                               companyIds.contains(_selectedCompanyId)
                               ? _selectedCompanyId
                               : null;
+                          final selectedCompany = currentVal != null ? ctrl.companies.firstWhere((c) => c.id == currentVal) : null;
 
-                          return DropdownButtonFormField<String>(
+                          return FormField<String>(
                             initialValue: currentVal,
-                            decoration: const InputDecoration(
-                              labelText: 'Company *',
-                              prefixIcon: Icon(Icons.business),
-                            ),
-                            items: ctrl.companies.map((c) {
-                              return DropdownMenuItem(
-                                value: c.id,
-                                child: Text(
-                                  c.name,
-                                  overflow: TextOverflow.ellipsis,
+                            validator: (v) => _selectedCompanyId == null ? 'Please select a company' : null,
+                            builder: (formFieldState) {
+                              return InkWell(
+                                onTap: () {
+                                  final options = ctrl.companies.map((c) => {'value': c.id, 'label': c.name}).toList();
+                                  _showSearchableDialog(
+                                    title: 'Select Company',
+                                    options: options,
+                                    currentValue: currentVal,
+                                    onSelected: (val) {
+                                      setState(() => _selectedCompanyId = val);
+                                      formFieldState.didChange(val);
+                                    },
+                                  );
+                                },
+                                child: InputDecorator(
+                                  decoration: InputDecoration(
+                                    labelText: 'Company *',
+                                    prefixIcon: const Icon(Icons.business),
+                                    errorText: formFieldState.errorText,
+                                  ),
+                                  child: Text(
+                                    selectedCompany?.name ?? 'Select Company...',
+                                    style: TextStyle(color: selectedCompany != null ? AppColors.textPrimary : AppColors.textSecondary),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               );
-                            }).toList(),
-                            onChanged: (v) =>
-                                setState(() => _selectedCompanyId = v),
-                            validator: (v) =>
-                                v == null ? 'Please select a company' : null,
-                            isExpanded: true,
+                            },
                           );
                         },
                       ),
@@ -390,28 +402,39 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                                 investorIds.contains(_selectedInvestorId)
                                 ? _selectedInvestorId
                                 : null;
+                            final selectedInvestor = currentVal != null ? ctrl.investors.firstWhere((i) => i.id == currentVal) : null;
 
-                            return DropdownButtonFormField<String>(
+                            return FormField<String>(
                               initialValue: currentVal,
-                              decoration: const InputDecoration(
-                                labelText: 'Investor *',
-                                prefixIcon: Icon(Icons.person),
-                              ),
-                              items: ctrl.investors.map((i) {
-                                return DropdownMenuItem(
-                                  value: i.id,
-                                  child: Text(
-                                    i.name,
-                                    overflow: TextOverflow.ellipsis,
+                              validator: (v) => _selectedInvestorId == null ? 'Please select an investor' : null,
+                              builder: (formFieldState) {
+                                return InkWell(
+                                  onTap: () {
+                                    final options = ctrl.investors.map((i) => {'value': i.id, 'label': i.name}).toList();
+                                    _showSearchableDialog(
+                                      title: 'Select Investor',
+                                      options: options,
+                                      currentValue: currentVal,
+                                      onSelected: (val) {
+                                        setState(() => _selectedInvestorId = val);
+                                        formFieldState.didChange(val);
+                                      },
+                                    );
+                                  },
+                                  child: InputDecorator(
+                                    decoration: InputDecoration(
+                                      labelText: 'Investor *',
+                                      prefixIcon: const Icon(Icons.person),
+                                      errorText: formFieldState.errorText,
+                                    ),
+                                    child: Text(
+                                      selectedInvestor?.name ?? 'Select Investor...',
+                                      style: TextStyle(color: selectedInvestor != null ? AppColors.textPrimary : AppColors.textSecondary),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 );
-                              }).toList(),
-                              onChanged: (v) =>
-                                  setState(() => _selectedInvestorId = v),
-                              validator: (v) => v == null
-                                  ? 'Please select an investor'
-                                  : null,
-                              isExpanded: true,
+                              },
                             );
                           },
                         ),
@@ -429,33 +452,47 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
                                     roundIds.contains(_selectedRoundId)
                                     ? _selectedRoundId
                                     : null;
-
-                                return DropdownButtonFormField<String>(
+                                final selectedRound = currentVal != null ? _fundingRounds.firstWhere((r) => (r['id']?.toString() ?? '') == currentVal) : null;
+                                String getRoundName(Map<String, dynamic>? r) {
+                                  if (r == null) return 'Select Funding Round...';
+                                  final id = r['id']?.toString() ?? '';
+                                  return (r['round_name'] ?? r['name'] ?? 'Round ${id.substring(0, id.length > 8 ? 8 : id.length)}').toString();
+                                }
+                                return FormField<String>(
                                   initialValue: currentVal,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Funding Round *',
-                                    prefixIcon: Icon(Icons.cyclone),
-                                  ),
-                                  items: _fundingRounds.map((r) {
-                                    final id = r['id']?.toString() ?? '';
-                                    final name =
-                                        r['round_name'] ??
-                                        r['name'] ??
-                                        'Round ${id.substring(0, id.length > 8 ? 8 : id.length)}';
-                                    return DropdownMenuItem(
-                                      value: id,
-                                      child: Text(
-                                        name.toString(),
-                                        overflow: TextOverflow.ellipsis,
+                                  validator: (v) => _selectedRoundId == null ? 'Please select a funding round' : null,
+                                  builder: (formFieldState) {
+                                    return InkWell(
+                                      onTap: () {
+                                        final options = _fundingRounds.map((r) => {
+                                          'value': r['id']?.toString() ?? '',
+                                          'label': getRoundName(r)
+                                        }).toList();
+                                        _showSearchableDialog(
+                                          title: 'Select Funding Round',
+                                          options: options,
+                                          currentValue: currentVal,
+                                          onSelected: (val) {
+                                            setState(() => _selectedRoundId = val);
+                                            formFieldState.didChange(val);
+                                          },
+                                          onManage: _showManageFundingRoundsDialog,
+                                        );
+                                      },
+                                      child: InputDecorator(
+                                        decoration: InputDecoration(
+                                          labelText: 'Funding Round *',
+                                          prefixIcon: const Icon(Icons.cyclone),
+                                          errorText: formFieldState.errorText,
+                                        ),
+                                        child: Text(
+                                          getRoundName(selectedRound),
+                                          style: TextStyle(color: selectedRound != null ? AppColors.textPrimary : AppColors.textSecondary),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
                                     );
-                                  }).toList(),
-                                  onChanged: (v) =>
-                                      setState(() => _selectedRoundId = v),
-                                  validator: (v) => v == null
-                                      ? 'Please select a funding round'
-                                      : null,
-                                  isExpanded: true,
+                                  },
                                 );
                               },
                             ),
@@ -578,6 +615,247 @@ class _EditInvestmentViewState extends State<EditInvestmentView> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _showSearchableDialog({
+    required String title,
+    required List<Map<String, String>> options,
+    required String? currentValue,
+    required ValueChanged<String?> onSelected,
+    VoidCallback? onManage,
+  }) async {
+    final searchController = TextEditingController();
+    List<Map<String, String>> filtered = List.from(options);
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  if (onManage != null)
+                    IconButton(
+                      icon: const Icon(Icons.edit, size: 20),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onManage();
+                      },
+                      tooltip: 'Manage Options',
+                    ),
+                ],
+              ),
+              contentPadding: const EdgeInsets.all(24),
+              content: SizedBox(
+                width: 400,
+                height: 400,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: searchController,
+                      decoration: const InputDecoration(
+                        labelText: 'Search',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      onChanged: (val) {
+                        setDialogState(() {
+                          if (val.isEmpty) {
+                            filtered = List.from(options);
+                          } else {
+                            filtered = options
+                                .where((opt) => (opt['label'] ?? '')
+                                    .toLowerCase()
+                                    .contains(val.toLowerCase()))
+                                .toList();
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: filtered.isEmpty
+                            ? const Center(child: Text('No results found.'))
+                            : ListView.separated(
+                                itemCount: filtered.length,
+                                separatorBuilder: (context, index) => const Divider(height: 1),
+                                itemBuilder: (context, index) {
+                                  final item = filtered[index];
+                                  final isSelected = item['value'] == currentValue;
+                                  return ListTile(
+                                    title: Text(item['label'] ?? ''),
+                                    trailing: isSelected
+                                        ? const Icon(Icons.check, color: AppColors.primary)
+                                        : null,
+                                    onTap: () {
+                                      onSelected(item['value']);
+                                      Navigator.pop(context);
+                                    },
+                                  );
+                                },
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showManageFundingRoundsDialog() async {
+    final newRoundController = TextEditingController();
+    final controller = Provider.of<InvestmentsController>(context, listen: false);
+    bool isLoadingAction = false;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Manage Funding Rounds', style: TextStyle(fontWeight: FontWeight.bold)),
+              contentPadding: const EdgeInsets.all(24),
+              content: SizedBox(
+                width: 450,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: newRoundController,
+                            decoration: const InputDecoration(
+                              labelText: 'New Funding Round',
+                              border: OutlineInputBorder(),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            enabled: !isLoadingAction,
+                            onSubmitted: (val) async {
+                              final name = val.trim();
+                              if (name.isNotEmpty) {
+                                setDialogState(() => isLoadingAction = true);
+                                final success = await controller.createFundingRound(name);
+                                if (success && mounted) {
+                                  setState(() {
+                                    _fundingRounds = controller.fundingRounds;
+                                  });
+                                  newRoundController.clear();
+                                }
+                                setDialogState(() => isLoadingAction = false);
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: isLoadingAction
+                              ? null
+                              : () async {
+                                  final name = newRoundController.text.trim();
+                                  if (name.isNotEmpty) {
+                                    setDialogState(() => isLoadingAction = true);
+                                    final success = await controller.createFundingRound(name);
+                                    if (success && mounted) {
+                                      setState(() {
+                                        _fundingRounds = controller.fundingRounds;
+                                      });
+                                      newRoundController.clear();
+                                    }
+                                    setDialogState(() => isLoadingAction = false);
+                                  }
+                                },
+                          icon: isLoadingAction
+                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                              : const Icon(Icons.add, size: 18),
+                          label: const Text('Add'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    if (controller.fundingRounds.isEmpty)
+                      const Text(
+                        'No funding rounds available.',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      )
+                    else
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 350),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: controller.fundingRounds.length,
+                          separatorBuilder: (context, index) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final round = controller.fundingRounds[index];
+                            final id = round['id']?.toString() ?? '';
+                            final name = (round['round_name'] ?? round['name'] ?? 'Round').toString();
+                            return ListTile(
+                              dense: true,
+                              title: Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
+                                tooltip: 'Delete round',
+                                onPressed: isLoadingAction
+                                    ? null
+                                    : () async {
+                                        setDialogState(() => isLoadingAction = true);
+                                        final success = await controller.deleteFundingRound(id);
+                                        if (success && mounted) {
+                                          setState(() {
+                                            _fundingRounds = controller.fundingRounds;
+                                            if (_selectedRoundId == id) {
+                                              _selectedRoundId = null;
+                                            }
+                                          });
+                                        }
+                                        setDialogState(() => isLoadingAction = false);
+                                      },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

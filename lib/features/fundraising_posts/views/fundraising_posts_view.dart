@@ -38,7 +38,19 @@ class _FundraisingPostsViewState extends State<FundraisingPostsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Fundraising'.tr(context))),
+      appBar: AppBar(
+        title: Text('Fundraising'.tr(context)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 20),
+            tooltip: 'Refresh',
+            onPressed: () {
+              context.read<FundraisingPostsController>().loadPosts();
+            },
+          ),
+          const SizedBox(width: 32),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
         child: Consumer<FundraisingPostsController>(

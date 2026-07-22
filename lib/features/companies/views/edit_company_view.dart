@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
@@ -46,7 +47,7 @@ class _EditCompanyViewState extends State<EditCompanyView> {
   List<String> _keyProducts = [];
   List<String> _keyPartners = [];
 
-  static const List<String> _employeeCountOptions = [
+  List<String> _employeeCountOptions = [
     '1-10',
     '11-50',
     '51-200',

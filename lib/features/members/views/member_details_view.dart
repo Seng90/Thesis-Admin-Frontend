@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:investrack_admin/features/members/controllers/members_controller.dart';
 import 'package:investrack_admin/features/members/models/member_log_model.dart';
 import 'package:investrack_admin/features/packages/controllers/packages_controller.dart';
+import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
 import 'package:investrack_admin/widgets/custom_logo_widget.dart';
@@ -202,23 +203,128 @@ class _MemberDetailsViewState extends State<MemberDetailsView> {
                                     const SizedBox(height: 24),
                                     Row(
                                       children: [
-                                        ElevatedButton.icon(
-                                          onPressed: () => context.push(
-                                            '/members/edit/${member.id}',
-                                          ),
-                                          icon: const Icon(
-                                            Icons.edit,
-                                            size: 16,
-                                          ),
-                                          label: Text(
-                                            'Edit Member'.tr(context),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
+                                        Row(
+                                          children: [
+                                            ElevatedButton.icon(
+                                              onPressed: () => context.push(
+                                                '/members/edit/${member.id}',
+                                              ),
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                size: 16,
+                                              ),
+                                              label: Text(
+                                                'Edit Member'.tr(context),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                            const SizedBox(width: 12),
+                                            if (isActive)
+                                              OutlinedButton.icon(
+                                                onPressed: () {
+                                                  final revCtrl = Provider.of<RevisionsController>(context, listen: false);
+                                                  revCtrl.createRevision(
+                                                    entityType: 'Member',
+                                                    entityId: member.id,
+                                                    proposedChanges: {'status': 'Blocked'},
+                                                  ).then((success) {
+                                                    if (context.mounted) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(success ? 'Block request submitted for review!' : 'Failed to submit block request.'),
+                                                          backgroundColor: success ? AppColors.success : AppColors.error,
+                                                        ),
+                                                      );
+                                                    }
+                                                  });
+                                                },
+                                                icon: const Icon(Icons.block, size: 16, color: AppColors.error),
+                                                label: Text('Block'.tr(context), style: const TextStyle(color: AppColors.error)),
+                                                style: OutlinedButton.styleFrom(
+                                                  side: const BorderSide(color: AppColors.error),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                ),
+                                              )
+                                            else
+                                              OutlinedButton.icon(
+                                                onPressed: () {
+                                                  final revCtrl = Provider.of<RevisionsController>(context, listen: false);
+                                                  revCtrl.createRevision(
+                                                    entityType: 'Member',
+                                                    entityId: member.id,
+                                                    proposedChanges: {'status': 'Active'},
+                                                  ).then((success) {
+                                                    if (context.mounted) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(success ? 'Unblock request submitted for review!' : 'Failed to submit unblock request.'),
+                                                          backgroundColor: success ? AppColors.success : AppColors.error,
+                                                        ),
+                                                      );
+                                                    }
+                                                  });
+                                                },
+                                                icon: const Icon(Icons.check_circle_outline, size: 16, color: AppColors.success),
+                                                label: Text('Unblock'.tr(context), style: const TextStyle(color: AppColors.success)),
+                                                style: OutlinedButton.styleFrom(
+                                                  side: const BorderSide(color: AppColors.success),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                ),
+                                              ),
+                                            const SizedBox(width: 12),
+                                            OutlinedButton.icon(
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) => AlertDialog(
+                                                    title: const Text('Delete Member'),
+                                                    content: Text('Are you sure you want to delete "${member.username}"?'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(context),
+                                                        child: const Text('Cancel'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(context);
+                                                          final revController = Provider.of<RevisionsController>(context, listen: false);
+                                                          revController.createRevision(
+                                                            entityType: 'Member',
+                                                            entityId: member.id,
+                                                            proposedChanges: {'_action': 'delete'},
+                                                          ).then((success) {
+                                                            if (context.mounted) {
+                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                SnackBar(
+                                                                  content: Text(success ? 'Delete request submitted for review!' : 'Failed to submit delete request.'),
+                                                                  backgroundColor: success ? AppColors.success : AppColors.error,
+                                                                ),
+                                                              );
+                                                              if (success) {
+                                                                context.pop();
+                                                              }
+                                                            }
+                                                          });
+                                                        },
+                                                        child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                              icon: const Icon(Icons.delete_outline, size: 16, color: AppColors.error),
+                                              label: Text('Delete'.tr(context), style: const TextStyle(color: AppColors.error)),
+                                              style: OutlinedButton.styleFrom(
+                                                side: const BorderSide(color: AppColors.error),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),

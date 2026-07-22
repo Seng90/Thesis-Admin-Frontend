@@ -39,13 +39,24 @@ class _SettingsViewState extends State<SettingsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Profile Section
-                const Text(
-                  'User Profile',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'User Profile',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    if (user != null && user.roles.contains('super_admin'))
+                      ElevatedButton.icon(
+                        onPressed: () => context.push('/admins'),
+                        icon: const Icon(Icons.admin_panel_settings),
+                        label: const Text('Manage Admins'),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 Card(

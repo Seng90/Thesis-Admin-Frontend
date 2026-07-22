@@ -40,7 +40,7 @@ class _DashboardViewState extends State<DashboardView> {
       if (revController.pendingRevisions.isEmpty) {
         revController.loadPendingRevisions();
       }
-      
+
       final dashController = context.read<DashboardController>();
       if (dashController.summary == null && !dashController.isLoadingSummary) {
         dashController.loadAll();
@@ -63,7 +63,7 @@ class _DashboardViewState extends State<DashboardView> {
                   onPressed: () {
                     context.read<DashboardController>().loadAll();
                   },
-                  icon: const Icon(LucideIcons.refreshCcw, size: 16),
+                  icon: const Icon(Icons.refresh, size: 16),
                   label: const Text('Refresh'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,
@@ -82,6 +82,8 @@ class _DashboardViewState extends State<DashboardView> {
                           dashboardCtrl.summary,
                           dashboardCtrl.sectors,
                           dashboardCtrl.recentCompanies,
+                          dashboardCtrl.popularPackages,
+                          dashboardCtrl.topStartups,
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -163,7 +165,7 @@ class _DashboardViewState extends State<DashboardView> {
                                       SizedBox(
                                         width: 250,
                                         child: _buildStatCard(
-                                          'Founders & people',
+                                          'members',
                                           (sum?.totalMembers ??
                                                   membersCtrl.members.length)
                                               .toString(),
@@ -930,7 +932,7 @@ class _FundingAreaChartState extends State<_FundingAreaChart> {
             right: 16,
             child: IconButton(
               icon: const Icon(
-                LucideIcons.refreshCcw,
+                Icons.refresh,
                 size: 16,
                 color: AppColors.textSecondary,
               ),
@@ -1336,22 +1338,26 @@ class _TopStartupsList extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${index + 1}',
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        child: Text(
+                          '${index + 1}',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
-                    ),
+                      CustomLogoWidget(
+                        imageUrl: item.logoUrl,
+                        fallbackName: item.name,
+                        size: 32,
+                      ),
+                    ],
                   ),
                   const SizedBox(width: 16),
                   Expanded(

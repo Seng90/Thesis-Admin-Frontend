@@ -24,12 +24,14 @@ class _AddPackageViewState extends State<AddPackageView> {
 
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+  final _durationController = TextEditingController();
   final List<FeatureItem> _features = [FeatureItem()];
 
   @override
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _durationController.dispose();
     for (var f in _features) {
       f.dispose();
     }
@@ -54,6 +56,7 @@ class _AddPackageViewState extends State<AddPackageView> {
       Map<String, dynamic> proposedChanges = {
         'name': _nameController.text,
         'price': double.tryParse(_priceController.text) ?? 0,
+        'duration_days': int.tryParse(_durationController.text),
         'features': featuresJson,
       };
 
@@ -122,6 +125,14 @@ class _AddPackageViewState extends State<AddPackageView> {
                         ),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _durationController,
+                        decoration: const InputDecoration(
+                          labelText: 'Duration in Days (Leave blank for Lifetime)',
+                        ),
+                        keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 16),
                       const Text(

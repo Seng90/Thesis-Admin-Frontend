@@ -129,12 +129,14 @@ class TopStartup {
   final String name;
   final String industry;
   final int viewCount;
+  final String? logoUrl;
 
   TopStartup({
     required this.id,
     required this.name,
     required this.industry,
     required this.viewCount,
+    this.logoUrl,
   });
 
   factory TopStartup.fromJson(Map<String, dynamic> json) {
@@ -152,6 +154,7 @@ class TopStartup {
       name: json['name'] ?? '',
       industry: json['industry'] ?? '',
       viewCount: parseInt(json['view_count'] ?? json['viewCount']),
+      logoUrl: json['logo_url'] ?? json['logoUrl'],
     );
   }
 }

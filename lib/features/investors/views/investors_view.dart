@@ -55,6 +55,14 @@ class _InvestorsViewState extends State<InvestorsView> {
       appBar: AppBar(
         title: Text(strInvestors),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 20),
+            tooltip: 'Refresh',
+            onPressed: () {
+              context.read<InvestorsController>().loadInvestors();
+            },
+          ),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 32.0),
             child: ElevatedButton.icon(
@@ -237,7 +245,9 @@ class _InvestorsViewState extends State<InvestorsView> {
                                             ),
                                             DataCell(
                                               Text(
-                                                investor.websiteUrl ?? 'N/A',
+                                                (investor.websiteUrl != null && investor.websiteUrl!.isNotEmpty)
+                                                    ? 'Available'
+                                                    : 'N/A',
                                                 style: const TextStyle(
                                                   color:
                                                       AppColors.textSecondary,

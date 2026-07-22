@@ -28,6 +28,7 @@ class _EditPackageViewState extends State<EditPackageView> {
 
   late TextEditingController _nameController;
   late TextEditingController _priceController;
+  late TextEditingController _durationController;
   final List<FeatureItem> _features = [];
 
   bool _isInit = false;
@@ -47,6 +48,9 @@ class _EditPackageViewState extends State<EditPackageView> {
       _nameController = TextEditingController(text: existingPackage.name);
       _priceController = TextEditingController(
         text: existingPackage.price.toString(),
+      );
+      _durationController = TextEditingController(
+        text: existingPackage.durationDays?.toString() ?? '',
       );
 
       try {
@@ -92,6 +96,7 @@ class _EditPackageViewState extends State<EditPackageView> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _durationController.dispose();
     for (var f in _features) {
       f.dispose();
     }
@@ -116,6 +121,10 @@ class _EditPackageViewState extends State<EditPackageView> {
       final newPrice = double.tryParse(_priceController.text) ?? 0;
       if (newPrice != existingPackage.price) {
         changes['price'] = newPrice;
+      }
+      final newDuration = int.tryParse(_durationController.text);
+      if (newDuration != existingPackage.durationDays) {
+        changes['duration_days'] = newDuration;
       }
 
       List<String> featuresArray = [];
@@ -191,6 +200,14 @@ class _EditPackageViewState extends State<EditPackageView> {
                         ),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _durationController,
+                        decoration: const InputDecoration(
+                          labelText: 'Duration in Days (Leave blank for Lifetime)',
+                        ),
+                        keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 16),
                       const Text(

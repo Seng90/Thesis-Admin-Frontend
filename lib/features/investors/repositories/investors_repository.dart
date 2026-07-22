@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:investrack_admin/services/api_service.dart';
 import '../models/investor_model.dart';
 
@@ -22,5 +23,16 @@ class InvestorsRepository {
 
   Future<void> deleteInvestor(String id) async {
     await _apiService.client.delete('/admin/investors/$id');
+  }
+
+  Future<String?> uploadInvestorLogo(dynamic fileBytes, String fileName) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
+    });
+    final response = await _apiService.client.post(
+      '/admin/upload/investor-logo',
+      data: formData,
+    );
+    return response.data['url'];
   }
 }

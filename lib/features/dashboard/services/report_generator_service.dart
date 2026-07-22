@@ -9,6 +9,8 @@ class ReportGeneratorService {
     DashboardSummary? summary,
     List<SectorStat> sectors,
     List<RecentCompany> recentCompanies,
+    List<PopularPackage> popularPackages,
+    List<TopStartup> topStartups,
   ) async {
     final pdf = pw.Document();
 
@@ -275,6 +277,144 @@ class ReportGeneratorService {
             else
               pw.Text(
                 'No recent companies data available.',
+                style: const pw.TextStyle(color: PdfColors.grey),
+              ),
+
+            pw.SizedBox(height: 30),
+
+            // 4. Most Visited Startups Section
+            pw.Text(
+              '4. Most Visited Startups',
+              style: pw.TextStyle(
+                fontSize: 16,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.blue800,
+              ),
+            ),
+            pw.SizedBox(height: 10),
+            if (topStartups.isNotEmpty)
+              pw.Table(
+                border: pw.TableBorder.all(
+                  color: PdfColors.grey300,
+                  width: 0.5,
+                ),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(3),
+                  1: const pw.FlexColumnWidth(2),
+                  2: const pw.FlexColumnWidth(1),
+                },
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                    ),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Company Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Industry', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Views', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  ...topStartups.map(
+                    (comp) => pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(comp.name),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(comp.industry),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(numberFormatter.format(comp.viewCount)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            else
+              pw.Text(
+                'No top startups data available.',
+                style: const pw.TextStyle(color: PdfColors.grey),
+              ),
+
+            pw.SizedBox(height: 30),
+
+            // 5. Popular Packages Section
+            pw.Text(
+              '5. Popular Subscription Packages',
+              style: pw.TextStyle(
+                fontSize: 16,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.blue800,
+              ),
+            ),
+            pw.SizedBox(height: 10),
+            if (popularPackages.isNotEmpty)
+              pw.Table(
+                border: pw.TableBorder.all(
+                  color: PdfColors.grey300,
+                  width: 0.5,
+                ),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(2),
+                  1: const pw.FlexColumnWidth(1),
+                  2: const pw.FlexColumnWidth(1),
+                },
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                    ),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Package Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Price', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Purchases', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  ...popularPackages.map(
+                    (pkg) => pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(pkg.name),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(pkg.price == 0 ? 'Free' : currencyFormatter.format(pkg.price)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(numberFormatter.format(pkg.purchaseCount)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            else
+              pw.Text(
+                'No popular packages data available.',
                 style: const pw.TextStyle(color: PdfColors.grey),
               ),
           ];

@@ -58,6 +58,14 @@ class _CompaniesViewState extends State<CompaniesView> {
       appBar: AppBar(
         title: Text(strCompanies),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 20),
+            tooltip: 'Refresh',
+            onPressed: () {
+              context.read<CompaniesController>().loadCompanies();
+            },
+          ),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 32.0),
             child: ElevatedButton.icon(

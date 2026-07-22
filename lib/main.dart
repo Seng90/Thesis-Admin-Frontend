@@ -15,6 +15,7 @@ import 'features/members/controllers/members_controller.dart';
 import 'features/packages/controllers/packages_controller.dart';
 import 'features/revisions/controllers/revisions_controller.dart';
 import 'features/settings/controllers/settings_controller.dart';
+import 'features/admins/controllers/admins_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +54,7 @@ class InvesTrackAdminApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InvestmentsController()),
         ChangeNotifierProvider(create: (_) => FundraisingPostsController()),
         ChangeNotifierProvider(create: (_) => SettingsController()),
+        ChangeNotifierProvider(create: (_) => AdminsController()),
       ],
       child: Consumer<SettingsController>(
         builder: (context, settingsController, child) {

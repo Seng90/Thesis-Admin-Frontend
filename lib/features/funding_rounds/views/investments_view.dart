@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/funding_rounds/controllers/investments_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/widgets/custom_logo_widget.dart';
+import 'package:investrack_admin/features/companies/models/company_model.dart';
+import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
 
 class InvestmentsView extends StatefulWidget {
   const InvestmentsView({super.key});
@@ -15,7 +17,9 @@ class InvestmentsView extends StatefulWidget {
 class _InvestmentsViewState extends State<InvestmentsView> {
   final ScrollController _verticalScroll = ScrollController();
   final ScrollController _horizontalScroll = ScrollController();
+  final TextEditingController _companyFilterController = TextEditingController();
   String _searchQuery = '';
+  Company? _selectedCompanyFilter;
 
   @override
   void initState() {
@@ -25,11 +29,17 @@ class _InvestmentsViewState extends State<InvestmentsView> {
         context,
         listen: false,
       ).fetchSummaries();
+
+      final companiesCtrl = Provider.of<CompaniesController>(context, listen: false);
+      if (companiesCtrl.companies.isEmpty && !companiesCtrl.isLoading) {
+        companiesCtrl.loadCompanies();
+      }
     });
   }
 
   @override
   void dispose() {
+    _companyFilterController.dispose();
     _verticalScroll.dispose();
     _horizontalScroll.dispose();
     super.dispose();
@@ -41,6 +51,14 @@ class _InvestmentsViewState extends State<InvestmentsView> {
       appBar: AppBar(
         title: const Text('Investments'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 20),
+            tooltip: 'Refresh',
+            onPressed: () {
+              context.read<InvestmentsController>().fetchInvestments();
+            },
+          ),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 32.0),
             child: ElevatedButton.icon(
@@ -121,6 +139,9 @@ class _InvestmentsViewState extends State<InvestmentsView> {
             }
 
             final filtered = controller.summaries.where((s) {
+              if (_selectedCompanyFilter != null && s.companyName != _selectedCompanyFilter!.name) {
+                return false;
+              }
               if (_searchQuery.isEmpty) return true;
               final q = _searchQuery.toLowerCase();
               return s.companyName.toLowerCase().contains(q) ||
@@ -131,23 +152,127 @@ class _InvestmentsViewState extends State<InvestmentsView> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Search bar
-                SizedBox(
-                  width: 300,
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search by company or round...',
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 12,
+                // Filters Row
+                Row(
+                  children: [
+                    // Search bar
+                    SizedBox(
+                      width: 300,
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search by round or amount...',
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
+                        ),
+                        onChanged: (v) => setState(() => _searchQuery = v),
                       ),
                     ),
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                  ),
+                    const SizedBox(width: 16),
+                    // Company Filter Dropdown
+                    SizedBox(
+                      width: 300,
+                      child: Consumer<CompaniesController>(
+                        builder: (context, companiesCtrl, child) {
+                          return Autocomplete<Company>(
+                            optionsBuilder: (TextEditingValue textEditingValue) {
+                              if (textEditingValue.text.isEmpty) {
+                                return const Iterable<Company>.empty();
+                              }
+                              return companiesCtrl.companies.where((company) {
+                                return company.name.toLowerCase().contains(
+                                      textEditingValue.text.toLowerCase(),
+                                    );
+                              });
+                            },
+                            displayStringForOption: (Company option) => option.name,
+                            onSelected: (Company selection) {
+                              setState(() {
+                                _selectedCompanyFilter = selection;
+                              });
+                            },
+                            fieldViewBuilder: (
+                              BuildContext context,
+                              TextEditingController textEditingController,
+                              FocusNode focusNode,
+                              VoidCallback onFieldSubmitted,
+                            ) {
+                              // If there's a selected company, force the text to reflect it.
+                              if (_selectedCompanyFilter != null && textEditingController.text != _selectedCompanyFilter!.name) {
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  textEditingController.text = _selectedCompanyFilter!.name;
+                                });
+                              }
+                              
+                              return TextField(
+                                controller: textEditingController,
+                                focusNode: focusNode,
+                                decoration: InputDecoration(
+                                  hintText: 'Filter by Company',
+                                  prefixIcon: const Icon(Icons.business, size: 20),
+                                  suffixIcon: _selectedCompanyFilter != null
+                                      ? IconButton(
+                                          icon: const Icon(Icons.clear, color: AppColors.error),
+                                          onPressed: () {
+                                            textEditingController.clear();
+                                            setState(() {
+                                              _selectedCompanyFilter = null;
+                                            });
+                                          },
+                                        )
+                                      : null,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 12,
+                                  ),
+                                ),
+                              );
+                            },
+                            optionsViewBuilder: (
+                              BuildContext context,
+                              AutocompleteOnSelected<Company> onSelected,
+                              Iterable<Company> options,
+                            ) {
+                              return Align(
+                                alignment: Alignment.topLeft,
+                                child: Material(
+                                  elevation: 4.0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(maxHeight: 250, maxWidth: 300),
+                                    child: ListView.builder(
+                                      padding: EdgeInsets.zero,
+                                      shrinkWrap: true,
+                                      itemCount: options.length,
+                                      itemBuilder: (BuildContext context, int index) {
+                                        final Company option = options.elementAt(index);
+                                        return ListTile(
+                                          title: Text(option.name),
+                                          onTap: () {
+                                            onSelected(option);
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 // Table
@@ -236,8 +361,8 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                                       rows: filtered.asMap().entries.map((
                                         entry,
                                       ) {
-                                        final idx = entry.key;
                                         final summary = entry.value;
+                                        final actualIdx = controller.summaries.indexOf(summary);
                                         return DataRow(
                                           cells: [
                                             DataCell(
@@ -323,7 +448,7 @@ class _InvestmentsViewState extends State<InvestmentsView> {
                                               ElevatedButton.icon(
                                                 onPressed: () {
                                                   context.push(
-                                                    '/investments/summary/$idx',
+                                                    '/investments/summary/$actualIdx',
                                                   );
                                                 },
                                                 icon: const Icon(

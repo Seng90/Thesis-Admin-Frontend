@@ -68,6 +68,32 @@ class InvestmentsController extends ChangeNotifier {
     }
   }
 
+  Future<bool> createFundingRound(String name) async {
+    try {
+      final newRound = await _repository.createFundingRound({'round_name': name});
+      _fundingRounds.add(newRound);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to create funding round');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteFundingRound(String id) async {
+    try {
+      await _repository.deleteFundingRound(id);
+      _fundingRounds.removeWhere((r) => r['id']?.toString() == id);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to delete funding round');
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Fetch single investment details
   Future<Investment?> fetchInvestmentDetail(String id) async {
     _isLoading = true;

@@ -46,4 +46,14 @@ class FoundersController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<String?> uploadFounderAvatar(dynamic fileBytes, String fileName) async {
+    try {
+      return await _repository.uploadFounderAvatar(fileBytes, fileName);
+    } catch (e) {
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to upload avatar');
+      notifyListeners();
+      return null;
+    }
+  }
 }

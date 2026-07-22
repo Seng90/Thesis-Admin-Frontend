@@ -5,6 +5,8 @@ import 'package:investrack_admin/features/companies/controllers/companies_contro
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
 import 'package:investrack_admin/widgets/custom_logo_widget.dart';
+import 'package:investrack_admin/features/founders/models/founder_model.dart';
+import 'package:investrack_admin/features/investors/models/investor_model.dart';
 
 class CompanyDetailsView extends StatefulWidget {
   final String companyId;
@@ -27,7 +29,9 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
         listen: false,
       );
       if (controller.companies.isEmpty) {
-        controller.loadCompanies();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          controller.loadCompanies();
+        });
       }
       _isInit = true;
     }
@@ -493,8 +497,16 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                                 cardHighlights,
                                 const SizedBox(height: 24),
                                 cardGlance,
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 16),
                                 cardLegal,
+                                if (company.founders.isNotEmpty) ...[
+                                  const SizedBox(height: 24),
+                                  _buildFoundersSection(company.founders),
+                                ],
+                                if (company.investors.isNotEmpty) ...[
+                                  const SizedBox(height: 24),
+                                  _buildInvestorsSection(company.investors),
+                                ],
                               ],
                             );
                           } else {
@@ -517,6 +529,14 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
                                     Expanded(flex: 1, child: cardLegal),
                                   ],
                                 ),
+                                if (company.founders.isNotEmpty) ...[
+                                  const SizedBox(height: 32),
+                                  _buildFoundersSection(company.founders),
+                                ],
+                                if (company.investors.isNotEmpty) ...[
+                                  const SizedBox(height: 32),
+                                  _buildInvestorsSection(company.investors),
+                                ],
                               ],
                             );
                           }
@@ -600,6 +620,154 @@ class _CompanyDetailsViewState extends State<CompanyDetailsView> {
               ),
             ],
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFoundersSection(List<Founder> founders) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Founders',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: founders.map((founder) {
+            return InkWell(
+              onTap: () => context.push('/founders/view/${founder.id}'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: 250,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    CustomLogoWidget(
+                      imageUrl: founder.avatarUrl,
+                      fallbackName: founder.nameEn.isNotEmpty ? founder.nameEn : '?',
+                      size: 48,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            founder.nameEn,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            founder.role ?? 'Founder',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInvestorsSection(List<Investor> investors) {
+    // A company might have multiple investments from the same investor. We should deduplicate.
+    final uniqueInvestors = investors.fold<Map<String, Investor>>({}, (map, inv) {
+      map[inv.id] = inv;
+      return map;
+    }).values.toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Investors',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: uniqueInvestors.map((investor) {
+            return InkWell(
+              onTap: () => context.push('/investors/view/${investor.id}'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: 250,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    CustomLogoWidget(
+                      imageUrl: investor.logoUrl,
+                      fallbackName: investor.name,
+                      size: 48,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            investor.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            investor.type,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ],
     );

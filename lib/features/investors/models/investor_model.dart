@@ -1,3 +1,5 @@
+import 'package:investrack_admin/features/companies/models/company_model.dart';
+
 class Investor {
   final String id;
   final String name;
@@ -10,6 +12,7 @@ class Investor {
   final String? investmentFocus;
   final List<String>? preferredStages;
   final List<String>? preferredIndustries;
+  final List<Company> companies;
 
   Investor({
     required this.id,
@@ -23,6 +26,7 @@ class Investor {
     this.investmentFocus,
     this.preferredStages,
     this.preferredIndustries,
+    this.companies = const [],
   });
 
   factory Investor.fromJson(Map<String, dynamic> json) {
@@ -46,6 +50,11 @@ class Investor {
       preferredIndustries: json['preferred_industries'] != null
           ? List<String>.from(json['preferred_industries'])
           : null,
+      companies: json['investments'] != null
+          ? (json['investments'] as List)
+              .map((inv) => Company.fromJson(inv['companies'] ?? {}))
+              .toList()
+          : [],
     );
   }
 

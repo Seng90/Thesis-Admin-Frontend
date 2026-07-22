@@ -3,6 +3,7 @@ class Package {
   final String name;
   final double price;
   final String features;
+  final int? durationDays;
   final int purchaseCount;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -12,6 +13,7 @@ class Package {
     required this.name,
     required this.price,
     required this.features,
+    this.durationDays,
     required this.purchaseCount,
     this.createdAt,
     this.updatedAt,
@@ -23,6 +25,7 @@ class Package {
       name: json['name'] ?? '',
       price: double.tryParse(json['price'].toString()) ?? 0.0,
       features: json['features'] ?? '',
+      durationDays: json['duration_days'],
       purchaseCount: json['purchase_count'] ?? 0,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
@@ -39,6 +42,7 @@ class Package {
       'name': name,
       'price': price,
       'features': features,
+      'duration_days': durationDays,
       'purchase_count': purchaseCount,
     };
   }

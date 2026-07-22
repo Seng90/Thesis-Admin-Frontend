@@ -91,4 +91,14 @@ class InvestorsController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<String?> uploadInvestorLogo(dynamic fileBytes, String fileName) async {
+    try {
+      return await _repository.uploadInvestorLogo(fileBytes, fileName);
+    } catch (e) {
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to upload logo');
+      notifyListeners();
+      return null;
+    }
+  }
 }

@@ -54,6 +54,14 @@ class _PackagesViewState extends State<PackagesView> {
       appBar: AppBar(
         title: Text(strPackages),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 20),
+            tooltip: 'Refresh',
+            onPressed: () {
+              context.read<PackagesController>().loadPackages();
+            },
+          ),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 32.0),
             child: ElevatedButton.icon(
@@ -158,8 +166,7 @@ class _PackagesViewState extends State<PackagesView> {
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
                                   minHeight: constraints.maxHeight,
-                                  minWidth:
-                                      MediaQuery.of(context).size.width - 64,
+                                  minWidth: constraints.maxWidth,
                                 ),
                                 child: Scrollbar(
                                   controller: _verticalScroll,
@@ -169,10 +176,13 @@ class _PackagesViewState extends State<PackagesView> {
                                     scrollDirection: Axis.vertical,
                                     child: DataTable(
                                       columnSpacing: 16.0,
+                                      dataRowMaxHeight: 70,
+                                      dataRowMinHeight: 50,
                                       showCheckboxColumn: false,
                                       columns: [
                                         DataColumn(label: Text(strPackage)),
                                         DataColumn(label: Text(strPrice)),
+                                        DataColumn(label: const Text('Duration (Days)')),
                                         DataColumn(label: Text(strPurchases)),
                                         DataColumn(label: Text(strActions)),
                                       ],
@@ -193,12 +203,21 @@ class _PackagesViewState extends State<PackagesView> {
                                                           FontWeight.w600,
                                                     ),
                                                   ),
-                                                  Text(
-                                                    pkg.features,
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: AppColors
-                                                          .textSecondary,
+                                                  const SizedBox(height: 4),
+                                                  SizedBox(
+                                                    width: 200,
+                                                    child: Tooltip(
+                                                      message: pkg.features,
+                                                      child: Text(
+                                                        pkg.features,
+                                                        style: const TextStyle(
+                                                          fontSize: 12,
+                                                          color: AppColors
+                                                              .textSecondary,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
                                                     ),
                                                   ),
                                                 ],
@@ -213,6 +232,16 @@ class _PackagesViewState extends State<PackagesView> {
                                                     : '${(pkg.price * 25000).toStringAsFixed(0)} LAK',
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                pkg.durationDays != null && pkg.durationDays! > 0
+                                                    ? '${pkg.durationDays} Days'
+                                                    : 'Lifetime',
+                                                style: const TextStyle(
+                                                  color: AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
@@ -372,7 +401,7 @@ class _PackagesViewState extends State<PackagesView> {
                                 ),
                               ),
                             ),
-                          ),
+                            ),
                         ),
                       );
                     },

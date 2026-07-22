@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:investrack_admin/services/api_service.dart';
 import '../models/founder_model.dart';
 
@@ -22,5 +23,16 @@ class FoundersRepository {
 
   Future<void> deleteFounder(String id) async {
     await _apiService.client.delete('/admin/founders/$id');
+  }
+
+  Future<String?> uploadFounderAvatar(dynamic fileBytes, String fileName) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
+    });
+    final response = await _apiService.client.post(
+      '/admin/upload/founder-avatar',
+      data: formData,
+    );
+    return response.data['url'];
   }
 }

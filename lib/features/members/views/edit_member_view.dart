@@ -347,34 +347,39 @@ class _EditMemberViewState extends State<EditMemberView> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      DropdownButtonFormField<String?>(
-                        key: ValueKey('package_$_packageId'),
-                        initialValue: _packageId,
-                        decoration: InputDecoration(
-                          labelText: 'Package'.tr(context),
-                        ),
-                        items: [
-                          const DropdownMenuItem(
-                            value: null,
-                            child: Text('None (Lifetime)'),
-                          ),
-                          ...packagesController.packages.map((pkg) {
-                            return DropdownMenuItem(
-                              value: pkg.id,
-                              child: Text(pkg.name),
-                            );
-                          }),
-                        ],
-                        onChanged: (newVal) {
-                          setState(() {
-                            _packageId = newVal;
-                            if (_packageId == null) {
-                              if (_role == 'membership') {
-                                _role = 'user';
-                              }
-                            }
-                          });
-                        },
+                      Builder(
+                        builder: (context) {
+                          final validPackageId = packagesController.packages.any((p) => p.id == _packageId) ? _packageId : null;
+                          return DropdownButtonFormField<String?>(
+                            key: ValueKey('package_$validPackageId'),
+                            initialValue: validPackageId,
+                            decoration: InputDecoration(
+                              labelText: 'Package'.tr(context),
+                            ),
+                            items: [
+                              const DropdownMenuItem(
+                                value: null,
+                                child: Text('None (Lifetime)'),
+                              ),
+                              ...packagesController.packages.map((pkg) {
+                                return DropdownMenuItem(
+                                  value: pkg.id,
+                                  child: Text(pkg.name),
+                                );
+                              }),
+                            ],
+                            onChanged: (newVal) {
+                              setState(() {
+                                _packageId = newVal;
+                                if (_packageId == null) {
+                                  if (_role == 'membership') {
+                                    _role = 'user';
+                                  }
+                                }
+                              });
+                            },
+                          );
+                        }
                       ),
                       const SizedBox(height: 16),
                       ListTile(

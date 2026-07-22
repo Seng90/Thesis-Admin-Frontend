@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
 import 'package:investrack_admin/features/investors/models/investor_model.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
+import 'package:investrack_admin/widgets/editable_multi_select_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditInvestorView extends StatefulWidget {
   final String investorId;
@@ -24,13 +27,45 @@ class _EditInvestorViewState extends State<EditInvestorView> {
   late TextEditingController _contactController;
   late TextEditingController _logoUrlController;
   late TextEditingController _focusController;
-  late TextEditingController _stagesController;
-  late TextEditingController _industriesController;
-  late String _type;
+  List<String> _selectedStages = [];
+  List<String> _selectedIndustries = [];
+  String? _type;
+  List<String> _types = [
+    'VC',
+    'Angel',
+    'PE',
+    'Corporate',
+    'Accelerator',
+    'Syndicate',
+    'Other',
+  ];
 
   bool _isSaving = false;
   bool _isInit = false;
   Investor? _existingInvestor;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTypes();
+  }
+
+  Future<void> _loadTypes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('admin_investor_types');
+    if (saved != null && saved.isNotEmpty) {
+      if (mounted) {
+        setState(() {
+          _types = saved;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveTypes() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('admin_investor_types', _types);
+  }
 
   @override
   void didChangeDependencies() {
@@ -63,12 +98,8 @@ class _EditInvestorViewState extends State<EditInvestorView> {
       _focusController = TextEditingController(
         text: _existingInvestor?.investmentFocus ?? '',
       );
-      _stagesController = TextEditingController(
-        text: _existingInvestor?.preferredStages?.join(', ') ?? '',
-      );
-      _industriesController = TextEditingController(
-        text: _existingInvestor?.preferredIndustries?.join(', ') ?? '',
-      );
+      _selectedStages = List<String>.from(_existingInvestor?.preferredStages ?? []);
+      _selectedIndustries = List<String>.from(_existingInvestor?.preferredIndustries ?? []);
 
       String initialType = _existingInvestor?.type ?? 'VC';
       // Normalize common long-form type names from legacy databases or inputs
@@ -80,18 +111,12 @@ class _EditInvestorViewState extends State<EditInvestorView> {
         initialType = 'PE';
       }
 
-      const allowedTypes = [
-        'VC',
-        'Angel',
-        'PE',
-        'Corporate',
-        'Accelerator',
-        'Syndicate',
-        'Other',
-      ];
-      if (!allowedTypes.contains(initialType)) {
-        initialType = 'Other';
+      if (!_types.contains(initialType) && initialType.isNotEmpty) {
+        // If it's a completely unknown type but we have it from db, we could auto-add it to types
+        _types.add(initialType);
+        _saveTypes(); // Save it back so it becomes an allowed type
       }
+      
       _type = initialType;
 
       _isInit = true;
@@ -105,9 +130,43 @@ class _EditInvestorViewState extends State<EditInvestorView> {
     _contactController.dispose();
     _logoUrlController.dispose();
     _focusController.dispose();
-    _stagesController.dispose();
-    _industriesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAndUploadLogo() async {
+    final picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() => _isSaving = true);
+        final bytes = await image.readAsBytes();
+        final ctrl = Provider.of<InvestorsController>(context, listen: false);
+        final url = await ctrl.uploadInvestorLogo(bytes, image.name);
+        setState(() => _isSaving = false);
+        
+        if (url != null) {
+          _logoUrlController.text = url;
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Logo uploaded successfully')),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Failed to upload logo')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      setState(() => _isSaving = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _saveForm() async {
@@ -134,24 +193,14 @@ class _EditInvestorViewState extends State<EditInvestorView> {
         'investment_focus': _focusController.text.trim(),
     };
 
-    final newStages = _stagesController.text
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (newStages.join(',') !=
+    if (_selectedStages.join(',') !=
         (_existingInvestor?.preferredStages?.join(',') ?? '')) {
-      proposedChanges['preferred_stages'] = newStages;
+      proposedChanges['preferred_stages'] = _selectedStages;
     }
 
-    final newIndustries = _industriesController.text
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (newIndustries.join(',') !=
+    if (_selectedIndustries.join(',') !=
         (_existingInvestor?.preferredIndustries?.join(',') ?? '')) {
-      proposedChanges['preferred_industries'] = newIndustries;
+      proposedChanges['preferred_industries'] = _selectedIndustries;
     }
 
     if (proposedChanges.isEmpty) {
@@ -224,37 +273,72 @@ class _EditInvestorViewState extends State<EditInvestorView> {
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: _type,
-                        decoration: const InputDecoration(labelText: 'Type'),
-                        items:
-                            [
-                              'VC',
-                              'Angel',
-                              'PE',
-                              'Corporate',
-                              'Accelerator',
-                              'Syndicate',
-                              'Other',
-                            ].map((String val) {
-                              return DropdownMenuItem(
-                                value: val,
-                                child: Text(val),
-                              );
-                            }).toList(),
-                        onChanged: (newVal) {
-                          if (newVal != null) {
-                            setState(() {
-                              _type = newVal;
-                            });
-                          }
-                        },
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _type,
+                              decoration: const InputDecoration(labelText: 'Type'),
+                              items: _types.map((String val) {
+                                return DropdownMenuItem(
+                                  value: val,
+                                  child: Text(val),
+                                );
+                              }).toList(),
+                              onChanged: (newVal) {
+                                setState(() {
+                                  _type = newVal;
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit, color: AppColors.primary),
+                              tooltip: 'Manage Types',
+                              onPressed: _showManageTypesDialog,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _logoUrlController,
-                        decoration: const InputDecoration(
-                          labelText: 'Logo URL',
+                      Container(
+                        height: 56, // Matches standard TextFormField height
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.image, color: AppColors.textSecondary),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _logoUrlController.text.isNotEmpty
+                                    ? 'Logo uploaded'
+                                    : 'No logo selected',
+                                style: TextStyle(
+                                  color: _logoUrlController.text.isNotEmpty
+                                      ? AppColors.success
+                                      : AppColors.textSecondary,
+                                  fontWeight: _logoUrlController.text.isNotEmpty ? FontWeight.bold : FontWeight.normal,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: _isSaving ? null : _pickAndUploadLogo,
+                              icon: const Icon(Icons.upload_file, size: 18),
+                              label: const Text('Upload'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -280,18 +364,28 @@ class _EditInvestorViewState extends State<EditInvestorView> {
                         maxLines: 3,
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _stagesController,
-                        decoration: const InputDecoration(
-                          labelText: 'Preferred Stages (comma-separated)',
-                        ),
+                      EditableMultiSelectField(
+                        label: 'Preferred Stages',
+                        storageKey: 'investor_preferred_stages',
+                        defaultOptions: const ['Pre-seed', 'Seed', 'Series A', 'Series B', 'Series C+'],
+                        initialValues: _selectedStages,
+                        onChanged: (values) {
+                          setState(() {
+                            _selectedStages = values;
+                          });
+                        },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _industriesController,
-                        decoration: const InputDecoration(
-                          labelText: 'Preferred Industries (comma-separated)',
-                        ),
+                      EditableMultiSelectField(
+                        label: 'Preferred Industries',
+                        storageKey: 'investor_preferred_industries',
+                        defaultOptions: const ['FinTech', 'HealthTech', 'EdTech', 'E-commerce', 'SaaS', 'AI & Data'],
+                        initialValues: _selectedIndustries,
+                        onChanged: (values) {
+                          setState(() {
+                            _selectedIndustries = values;
+                          });
+                        },
                       ),
                       const SizedBox(height: 32),
                       ElevatedButton(
@@ -315,6 +409,124 @@ class _EditInvestorViewState extends State<EditInvestorView> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showManageTypesDialog() {
+    final newTypeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Manage Investor Types', style: TextStyle(fontWeight: FontWeight.bold)),
+              contentPadding: const EdgeInsets.all(24),
+              content: SizedBox(
+                width: 450,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: newTypeController,
+                            decoration: const InputDecoration(
+                              labelText: 'New Type',
+                              border: OutlineInputBorder(),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            onSubmitted: (val) {
+                              if (val.trim().isNotEmpty && !_types.contains(val.trim())) {
+                                setState(() {
+                                  _types.add(val.trim());
+                                  if (_type == null) _type = val.trim();
+                                  _saveTypes();
+                                });
+                                setDialogState(() {});
+                                newTypeController.clear();
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            final val = newTypeController.text.trim();
+                            if (val.isNotEmpty && !_types.contains(val)) {
+                              setState(() {
+                                _types.add(val);
+                                if (_type == null) _type = val;
+                                _saveTypes();
+                              });
+                              setDialogState(() {});
+                              newTypeController.clear();
+                            }
+                          },
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Add'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    if (_types.isEmpty)
+                      const Text(
+                        'No types available.',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      )
+                    else
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 350),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: _types.length,
+                          separatorBuilder: (context, index) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final type = _types[index];
+                            return ListTile(
+                              dense: true,
+                              title: Text(type, style: const TextStyle(fontWeight: FontWeight.w500)),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
+                                tooltip: 'Delete option',
+                                onPressed: () {
+                                  setState(() {
+                                    _types.removeAt(index);
+                                    if (_type == type) {
+                                      _type = _types.isNotEmpty ? _types.first : null;
+                                    }
+                                    _saveTypes();
+                                  });
+                                  setDialogState(() {});
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

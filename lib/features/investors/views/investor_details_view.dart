@@ -5,6 +5,7 @@ import 'package:investrack_admin/features/investors/controllers/investors_contro
 import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/utils/localizations.dart';
 import 'package:investrack_admin/widgets/custom_logo_widget.dart';
+import 'package:investrack_admin/features/companies/models/company_model.dart';
 
 class InvestorDetailsView extends StatefulWidget {
   final String investorId;
@@ -274,6 +275,11 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
                           }
                         },
                       ),
+                      
+                      if (investor.companies.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        _buildInvestmentsSection(investor.companies),
+                      ],
                     ],
                   ),
                 ),
@@ -350,6 +356,78 @@ class _InvestorDetailsViewState extends State<InvestorDetailsView> {
               ),
             ],
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInvestmentsSection(List<Company> companies) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Invested Companies',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: companies.map((company) {
+            return InkWell(
+              onTap: () => context.push('/companies/view/${company.id}'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: 250,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    CustomLogoWidget(
+                      imageUrl: company.logoUrl,
+                      fallbackName: company.name,
+                      size: 40,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            company.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (company.industry.isNotEmpty)
+                            Text(
+                              company.industry,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ],
     );

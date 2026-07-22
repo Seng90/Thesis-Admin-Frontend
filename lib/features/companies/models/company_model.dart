@@ -1,3 +1,6 @@
+import 'package:investrack_admin/features/founders/models/founder_model.dart';
+import 'package:investrack_admin/features/investors/models/investor_model.dart';
+
 class Company {
   final String id;
   final String name;
@@ -23,6 +26,8 @@ class Company {
   final List<String> keyPartners;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final List<Founder> founders;
+  final List<Investor> investors;
 
   Company({
     required this.id,
@@ -49,6 +54,8 @@ class Company {
     this.keyPartners = const [],
     this.createdAt,
     this.updatedAt,
+    this.founders = const [],
+    this.investors = const [],
   });
 
   factory Company.fromJson(Map<String, dynamic> json) {
@@ -83,6 +90,18 @@ class Company {
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'].toString())
           : null,
+      founders: (json['companies_found'] as List?)?.map((cf) {
+            if (cf['founders'] != null) {
+              return Founder.fromJson(cf['founders']);
+            }
+            return null;
+          }).whereType<Founder>().toList() ?? [],
+      investors: (json['investments'] as List?)?.map((inv) {
+            if (inv['investors'] != null) {
+              return Investor.fromJson(inv['investors']);
+            }
+            return null;
+          }).whereType<Investor>().toList() ?? [],
     );
   }
 

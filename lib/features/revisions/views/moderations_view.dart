@@ -7,6 +7,7 @@ import 'package:investrack_admin/utils/constants.dart';
 import 'package:investrack_admin/widgets/admin_header.dart';
 import 'package:investrack_admin/features/revisions/controllers/revisions_controller.dart';
 import 'package:investrack_admin/features/revisions/models/revision_model.dart';
+import 'package:investrack_admin/features/investors/controllers/investors_controller.dart';
 import 'package:investrack_admin/features/companies/controllers/companies_controller.dart';
 import 'package:investrack_admin/features/members/controllers/members_controller.dart';
 import 'package:investrack_admin/features/founders/controllers/founders_controller.dart';
@@ -28,7 +29,10 @@ class _ModerationsViewState extends State<ModerationsView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RevisionsController>(context, listen: false).loadPendingRevisions();
+      final controller = Provider.of<RevisionsController>(context, listen: false);
+      if (controller.pendingRevisions.isEmpty && !controller.isLoading) {
+        controller.loadPendingRevisions();
+      }
     });
   }
 
@@ -40,10 +44,21 @@ class _ModerationsViewState extends State<ModerationsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const AdminHeader(
+            AdminHeader(
               title: 'Moderation Queue',
-              subtitle:
-                  'Review user submissions and edit suggestions before they go live',
+              subtitle: 'Review user submissions and edit suggestions before they go live',
+              action: OutlinedButton.icon(
+                onPressed: () {
+                  context.read<RevisionsController>().loadPendingRevisions();
+                },
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Refresh'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textPrimary,
+                  side: const BorderSide(color: AppColors.border),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -116,26 +131,32 @@ class _ModerationsViewState extends State<ModerationsView> {
 
                   if (controller.errorMessage != null) {
                     return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            size: 48,
-                            color: AppColors.error,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            controller.errorMessage!,
-                            style: const TextStyle(color: AppColors.textSecondary),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: () => controller.loadPendingRevisions(),
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Retry'),
-                          ),
-                        ],
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              size: 48,
+                              color: AppColors.error,
+                            ),
+                            const SizedBox(height: 16),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                controller.errorMessage!,
+                                style: const TextStyle(color: AppColors.textSecondary),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: () => controller.loadPendingRevisions(),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Retry'),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
@@ -346,8 +367,8 @@ class _ModerationsViewState extends State<ModerationsView> {
                 const SizedBox(height: 4),
                 Text(
                   revision.submitterType == 'member'
-                      ? 'Requested by ${revision.requestor?['username'] ?? 'Founder'} · ${revision.createdAt?.toString().split('.')[0] ?? 'N/A'}'
-                      : 'Submitted by Admin · ${revision.createdAt?.toString().split('.')[0] ?? 'N/A'}',
+                      ? 'Requested by ${revision.requestor?['username'] ?? 'Founder'} · ${(revision.createdAt?.toString() ?? 'N/A').split('.')[0]}'
+                      : 'Submitted by Admin · ${(revision.createdAt?.toString() ?? 'N/A').split('.')[0]}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -650,6 +671,9 @@ class _ModerationsViewState extends State<ModerationsView> {
     switch (entityType.toLowerCase()) {
       case 'company':
         context.read<CompaniesController>().loadCompanies();
+        break;
+      case 'investor':
+        context.read<InvestorsController>().loadInvestors();
         break;
       case 'member':
         context.read<MembersController>().loadMembers();

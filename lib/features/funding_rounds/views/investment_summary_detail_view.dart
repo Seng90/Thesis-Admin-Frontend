@@ -195,7 +195,9 @@ class _InvestmentSummaryDetailViewState
                         final cards = [
                           _buildStatCard(
                             'Total Raised',
-                            '\$${_formatAmount(summary.totalRaised)}',
+                            summary.totalRaised == 0
+                                ? 'Undisclosed'
+                                : '\$${_formatAmount(summary.totalRaised)}',
                             Icons.account_balance_wallet_outlined,
                             AppColors.primary,
                             AppColors.primaryLight,

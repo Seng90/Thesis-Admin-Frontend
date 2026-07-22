@@ -1,3 +1,5 @@
+import 'package:investrack_admin/features/companies/models/company_model.dart';
+
 class Founder {
   final String id;
   final String nameEn;
@@ -11,6 +13,8 @@ class Founder {
   final String? pastExperience;
   final String? twitterUrl;
   final String? githubUrl;
+  final String? avatarUrl;
+  final List<Company> companies;
 
   Founder({
     required this.id,
@@ -25,6 +29,8 @@ class Founder {
     this.pastExperience,
     this.twitterUrl,
     this.githubUrl,
+    this.avatarUrl,
+    this.companies = const [],
   });
 
   factory Founder.fromJson(Map<String, dynamic> json) {
@@ -49,6 +55,12 @@ class Founder {
       pastExperience: json['past_experience'] ?? json['pastExperience'],
       twitterUrl: json['twitter_url'] ?? json['twitterUrl'],
       githubUrl: json['github_url'] ?? json['githubUrl'],
+      avatarUrl: json['avatar_url'] ?? json['avatarUrl'],
+      companies: json['companies_found'] != null
+          ? (json['companies_found'] as List)
+              .map((cf) => Company.fromJson(cf['companies'] ?? {}))
+              .toList()
+          : [],
     );
   }
 
@@ -64,6 +76,7 @@ class Founder {
       'past_experience': pastExperience,
       'twitter_url': twitterUrl,
       'github_url': githubUrl,
+      'avatar_url': avatarUrl,
     };
   }
 }

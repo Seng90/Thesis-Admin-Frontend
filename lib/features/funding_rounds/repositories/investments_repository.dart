@@ -39,4 +39,13 @@ class InvestmentsRepository {
   Future<void> deleteInvestment(String id) async {
     await _apiService.client.delete('/admin/investments/$id');
   }
+
+  Future<Map<String, dynamic>> createFundingRound(Map<String, dynamic> data) async {
+    final response = await _apiService.client.post('/admin/funding-rounds', data: data);
+    return response.data;
+  }
+
+  Future<void> deleteFundingRound(String id) async {
+    await _apiService.client.delete('/admin/funding-rounds/$id');
+  }
 }

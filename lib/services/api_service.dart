@@ -34,6 +34,15 @@ class ApiService {
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+          
+          // Prevent aggressive browser caching on Web for GET requests
+          if (options.method == 'GET') {
+            options.queryParameters['_t'] = DateTime.now().millisecondsSinceEpoch.toString();
+            options.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+            options.headers['Pragma'] = 'no-cache';
+            options.headers['Expires'] = '0';
+          }
+          
           return handler.next(options);
         },
         onResponse: (response, handler) {

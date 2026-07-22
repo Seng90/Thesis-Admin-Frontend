@@ -135,7 +135,7 @@ class _PackageDetailsViewState extends State<PackageDetailsView> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Premium Package',
+                                      'Duration: ${package.durationDays != null && package.durationDays! > 0 ? '${package.durationDays} Days' : 'Lifetime'}',
                                       style: const TextStyle(
                                         fontSize: 16,
                                         color: AppColors.textSecondary,

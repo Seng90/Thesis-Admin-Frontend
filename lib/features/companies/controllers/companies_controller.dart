@@ -105,4 +105,14 @@ class CompaniesController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<String?> uploadCompanyLogo(dynamic fileBytes, String fileName) async {
+    try {
+      return await _repository.uploadCompanyLogo(fileBytes, fileName);
+    } catch (e) {
+      _errorMessage = ErrorHandler.getErrorMessage(e, defaultMessage: 'Failed to upload logo');
+      notifyListeners();
+      return null;
+    }
+  }
 }
