@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -473,17 +471,15 @@ class _ModerationsViewState extends State<ModerationsView> {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Proposed Changes Details'),
-                      content: ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 400),
-                        child: SingleChildScrollView(
-                          child: Text(
-                            const JsonEncoder.withIndent('  ').convert(changes),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'monospace',
-                            ),
+                      title: const Text('Proposed Changes Details', style: TextStyle(fontWeight: FontWeight.bold)),
+                      contentPadding: EdgeInsets.zero,
+                      content: SizedBox(
+                        width: 600,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * 0.8,
                           ),
+                          child: _buildDiffView(changes, revision.originalData),
                         ),
                       ),
                       actions: [
@@ -693,6 +689,205 @@ class _ModerationsViewState extends State<ModerationsView> {
         context.read<FundraisingPostsController>().loadPosts();
         break;
     }
+  }
+
+  Widget _buildDiffView(Map<String, dynamic> changes, Map<String, dynamic>? originalData) {
+    if (changes.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Text('No changes proposed.', style: TextStyle(color: AppColors.textSecondary)),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: List.generate(changes.length, (index) {
+          final key = changes.keys.elementAt(index);
+          final newValue = changes[key];
+          final oldValue = originalData?[key];
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      key.replaceAll('_', ' ').toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (originalData != null && oldValue != newValue)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Original Data', style: TextStyle(fontSize: 10, color: AppColors.error, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.errorBg.withValues(alpha: 0.3),
+                                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Opacity(
+                                    opacity: 0.7,
+                                    child: _buildDiffValue(oldValue, isOld: true),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 24),
+                            child: Icon(LucideIcons.arrowRight, size: 16, color: AppColors.textMuted),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Proposed Change', style: TextStyle(fontSize: 10, color: AppColors.success, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.successBg.withValues(alpha: 0.3),
+                                    border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: _buildDiffValue(newValue),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      _buildDiffValue(newValue),
+                  ],
+                ),
+              ),
+              if (index < changes.length - 1) const Divider(height: 1),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildDiffValue(dynamic value, {bool isOld = false}) {
+    if (value == null) {
+      return const Text('null', style: TextStyle(color: AppColors.textMuted, fontStyle: FontStyle.italic));
+    }
+
+    if (value is bool) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: value ? AppColors.successBg : AppColors.errorBg,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          value.toString().toUpperCase(),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: value ? AppColors.success : AppColors.error,
+          ),
+        ),
+      );
+    }
+
+    if (value is List) {
+      if (value.isEmpty) {
+        return const Text('Empty List', style: TextStyle(color: AppColors.textMuted, fontStyle: FontStyle.italic));
+      }
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: value.map((item) {
+          return Chip(
+            label: Text(item.toString(), style: const TextStyle(fontSize: 13)),
+            backgroundColor: AppColors.primaryLight,
+            side: BorderSide.none,
+            padding: EdgeInsets.zero,
+          );
+        }).toList(),
+      );
+    }
+
+    String stringValue = value.toString();
+
+    // Check if URL
+    if (stringValue.startsWith('http://') || stringValue.startsWith('https://')) {
+      bool isImage = stringValue.endsWith('.png') || stringValue.endsWith('.jpg') || stringValue.endsWith('.jpeg') || stringValue.endsWith('.gif') || stringValue.contains('image');
+      
+      if (isImage) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(
+              stringValue,
+              style: const TextStyle(color: AppColors.primary, decoration: TextDecoration.underline, fontSize: 13),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              height: 100,
+              width: 100,
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: NetworkImage(stringValue),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+
+      return SelectableText(
+        stringValue,
+        style: const TextStyle(color: AppColors.primary, decoration: TextDecoration.underline, fontSize: 14),
+      );
+    }
+
+    if (stringValue.length > 100 || stringValue.contains('\n')) {
+      return SelectableText(
+        stringValue,
+        style: TextStyle(
+          fontSize: 13,
+          height: 1.5,
+          color: isOld ? AppColors.textSecondary : AppColors.textPrimary,
+          decoration: isOld ? TextDecoration.lineThrough : null,
+        ),
+      );
+    }
+
+    return SelectableText(
+      stringValue,
+      style: TextStyle(
+        fontSize: 14,
+        color: isOld ? AppColors.textSecondary : AppColors.textPrimary,
+        fontWeight: FontWeight.w500,
+        decoration: isOld ? TextDecoration.lineThrough : null,
+      ),
+    );
   }
 }
 

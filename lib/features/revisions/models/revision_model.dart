@@ -3,6 +3,7 @@ class Revision {
   final String entityType; // e.g. "Company", "Investor", etc.
   final String entityId; // The ID of the item being edited
   final Map<String, dynamic> proposedChanges;
+  final Map<String, dynamic>? originalData;
   final String status;
   final String? createdBy;
   final DateTime? createdAt;
@@ -18,6 +19,7 @@ class Revision {
     required this.entityType,
     required this.entityId,
     required this.proposedChanges,
+    this.originalData,
     required this.status,
     this.createdBy,
     this.createdAt,
@@ -86,6 +88,7 @@ class Revision {
       entityType: json['entity_type'] ?? '',
       entityId: json['entity_id'] ?? '',
       proposedChanges: parseProposedChanges(json['proposed_changes']),
+      originalData: json['original_data'] != null ? parseProposedChanges(json['original_data']) : null,
       status: json['status'] ?? 'Pending',
       createdBy: json['created_by'],
       createdAt: json['created_at'] != null
@@ -111,6 +114,7 @@ class Revision {
       'entity_type': entityType,
       'entity_id': entityId,
       'proposed_changes': proposedChanges,
+      'original_data': originalData,
       'requested_by': requestedBy,
       'submitter_type': submitterType,
       'field_decisions': fieldDecisions,
